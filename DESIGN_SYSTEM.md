@@ -447,6 +447,501 @@ mb-8    → 32px   /* Between major sections */
 
 ---
 
+## Smooth Scrolling System
+
+### Overview
+
+Platform MBG menggunakan **kombinasi multiple optimizations** untuk menciptakan scrolling experience yang sangat smooth dan responsive. Teknik-teknik ini bekerja bersama untuk memberikan user experience yang premium.
+
+### 1. Native Smooth Scrolling (CSS)
+
+```css
+/* Global Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Scroll Padding for Fixed Headers */
+html {
+  scroll-padding-top: 80px; /* Height of fixed navbar */
+}
+```
+
+**Usage**:
+```tsx
+// Anchor link smooth scrolling
+<a href="#section-id" className="text-blue-400 hover:underline">
+  Jump to Section
+</a>
+
+// Programmatic smooth scrolling
+<button onClick={() => {
+  document.getElementById('target')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  })
+}}>
+  Scroll to Target
+</button>
+```
+
+### 2. GPU Acceleration
+
+```css
+/* Force GPU Acceleration for Animations */
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Optimized Transform Animations */
+.smooth-transform {
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+```
+
+**When to Use**:
+```tsx
+// Animated cards or panels
+<div className="transform translate-y-0 hover:-translate-y-2 transition-transform duration-300">
+  Card content
+</div>
+
+// Parallax effects
+<div className="will-change-transform transform translate-y-[var(--scroll-offset)]">
+  Parallax content
+</div>
+```
+
+### 3. Optimized Animations with Framer Motion
+
+```tsx
+import { motion, useInView, useReducedMotion } from 'framer-motion'
+
+// Fade in animation with custom easing
+const fadeInVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: [0.4, 0, 0.2, 1] // cubic-bezier
+    }
+  }
+}
+
+// Stagger children animation
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+}
+
+// Usage example
+<motion.div
+  initial="hidden"
+  animate="visible"
+  variants={fadeInVariants}
+>
+  Content
+</motion.div>
+
+<motion.div
+  variants={containerVariants}
+  initial="hidden"
+  animate="visible"
+>
+  {items.map((item, i) => (
+    <motion.div key={i} variants={fadeInVariants}>
+      {item}
+    </motion.div>
+  ))}
+</motion.div>
+```
+
+### 4. Performance Optimizations
+
+#### Throttling Scroll Events
+
+```tsx
+import { useEffect, useRef } from 'react'
+
+function useThrottledScroll(callback: () => void, delay = 100) {
+  const lastRun = useRef(Date.now())
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const now = Date.now()
+      if (now - lastRun.current >= delay) {
+        callback()
+        lastRun.current = now
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [callback, delay])
+}
+
+// Usage
+function ParallaxSection() {
+  useThrottledScroll(() => {
+    // Update parallax offset
+  }, 16) // ~60fps
+
+  return <div>Parallax content</div>
+}
+```
+
+#### Image Preloading
+
+```tsx
+// Preload critical images
+useEffect(() => {
+  const preloadImages = [
+    '/hero-bg.jpg',
+    '/feature-1.jpg',
+    '/feature-2.jpg'
+  ]
+
+  preloadImages.forEach(src => {
+    const img = new Image()
+    img.src = src
+  })
+}, [])
+```
+
+#### Lazy Loading with Intersection Observer
+
+```tsx
+import { useEffect, useRef, useState } from 'react'
+
+function useLazyLoad() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '50px' } // Preload 50px before visible
+    )
+
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+
+  return { ref, isVisible }
+}
+
+// Usage
+function LazySection() {
+  const { ref, isVisible } = useLazyLoad()
+
+  return (
+    <div ref={ref}>
+      {isVisible && <ExpensiveComponent />}
+    </div>
+  )
+}
+```
+
+### 5. Consistent Cubic-Bezier Timing Functions
+
+```css
+/* Design System Easing Curves */
+:root {
+  /* Standard easing - Most common */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Decelerate - Entering elements */
+  --ease-decelerate: cubic-bezier(0.0, 0, 0.2, 1);
+
+  /* Accelerate - Exiting elements */
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Snappy - Interactive elements */
+  --ease-snappy: cubic-bezier(0.4, 0, 0.6, 1);
+}
+```
+
+**Usage Examples**:
+```tsx
+// Entering animations (decelerate)
+<motion.div
+  initial={{ opacity: 0, scale: 0.9 }}
+  animate={{ opacity: 1, scale: 1 }}
+  transition={{ duration: 0.3, ease: [0.0, 0, 0.2, 1] }}
+>
+  Modal content
+</motion.div>
+
+// Exiting animations (accelerate)
+<motion.div
+  exit={{ opacity: 0, scale: 0.9 }}
+  transition={{ duration: 0.2, ease: [0.4, 0, 1, 1] }}
+>
+  Dismissing content
+</motion.div>
+
+// Hover effects (snappy)
+<button className="transition-all duration-200 hover:scale-105"
+  style={{ transitionTimingFunction: 'var(--ease-snappy)' }}>
+  Interactive Button
+</button>
+```
+
+### 6. Viewport-Based Triggering (useInView)
+
+```tsx
+import { motion, useInView } from 'framer-motion'
+import { useRef } from 'react'
+
+// Trigger once when in view
+function AnimateOnScroll({ children }: { children: React.ReactNode }) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, {
+    once: true,           // Trigger only once
+    margin: "-100px"      // Trigger 100px before entering viewport
+  })
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// Multiple sections with stagger
+function ScrollSections() {
+  return (
+    <div className="space-y-8">
+      {sections.map((section, i) => (
+        <AnimateOnScroll key={i}>
+          <div className="glass rounded-2xl p-6">
+            {section.content}
+          </div>
+        </AnimateOnScroll>
+      ))}
+    </div>
+  )
+}
+```
+
+### 7. Accessibility - Reduced Motion Support
+
+```tsx
+import { useReducedMotion } from 'framer-motion'
+
+// Respect user's motion preferences
+function AccessibleAnimation({ children }: { children: React.ReactNode }) {
+  const shouldReduceMotion = useReducedMotion()
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: shouldReduceMotion ? 0.01 : 0.5,
+        ease: [0.4, 0, 0.2, 1]
+      }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+```
+
+**CSS Support**:
+```css
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+```
+
+### Complete Example - Smooth Scrolling Page
+
+```tsx
+'use client'
+
+import { motion, useInView, useReducedMotion } from 'framer-motion'
+import { useRef } from 'react'
+import { ChevronDown } from 'lucide-react'
+
+export default function SmoothScrollPage() {
+  const shouldReduceMotion = useReducedMotion()
+
+  // Scroll to next section
+  const scrollToNext = () => {
+    document.getElementById('features')?.scrollIntoView({
+      behavior: 'smooth'
+    })
+  }
+
+  return (
+    <div className="min-h-screen gradient-bg-5">
+      {/* Hero Section */}
+      <section className="min-h-screen flex flex-col items-center justify-center px-4">
+        <motion.h1
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0.01 : 0.6, ease: [0.0, 0, 0.2, 1] }}
+          className="text-5xl md:text-6xl font-bold text-white text-center mb-6"
+        >
+          Smooth Scrolling Demo
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: shouldReduceMotion ? 0.01 : 0.6, delay: 0.2, ease: [0.0, 0, 0.2, 1] }}
+          className="text-xl text-gray-200 text-center mb-8"
+        >
+          Experience premium scrolling performance
+        </motion.p>
+
+        <motion.button
+          initial={{ opacity: 0, scale: shouldReduceMotion ? 1 : 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: shouldReduceMotion ? 0.01 : 0.4, delay: 0.4 }}
+          whileHover={{ scale: shouldReduceMotion ? 1 : 1.05 }}
+          whileTap={{ scale: shouldReduceMotion ? 1 : 0.95 }}
+          onClick={scrollToNext}
+          className="glass px-8 py-4 rounded-xl font-semibold text-white flex items-center gap-2 hover:shadow-glow transition-smooth"
+        >
+          Explore Features
+          <ChevronDown className="w-5 h-5 animate-bounce" />
+        </motion.button>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="min-h-screen py-20 px-4">
+        <div className="max-w-6xl mx-auto">
+          <ScrollReveal>
+            <h2 className="text-4xl font-bold text-white text-center mb-12">
+              Premium Features
+            </h2>
+          </ScrollReveal>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {features.map((feature, i) => (
+              <ScrollReveal key={i} delay={i * 0.1}>
+                <div className="glass rounded-2xl p-6 transform hover:-translate-y-2 transition-transform duration-300">
+                  <h3 className="text-xl font-bold text-white mb-3">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-300">
+                    {feature.description}
+                  </p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+// Reusable scroll reveal component
+function ScrollReveal({
+  children,
+  delay = 0
+}: {
+  children: React.ReactNode
+  delay?: number
+}) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const shouldReduceMotion = useReducedMotion()
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 50 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+      transition={{
+        duration: shouldReduceMotion ? 0.01 : 0.5,
+        delay: shouldReduceMotion ? 0 : delay,
+        ease: [0.4, 0, 0.2, 1]
+      }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+const features = [
+  { title: "GPU Accelerated", description: "Hardware-accelerated animations for 60fps performance" },
+  { title: "Smart Throttling", description: "Optimized event handlers for smooth scrolling" },
+  { title: "Accessible", description: "Respects reduced motion preferences" }
+]
+```
+
+### Performance Best Practices
+
+**✅ DO**:
+1. Use `transform` and `opacity` for animations (GPU-accelerated)
+2. Add `will-change` sparingly and remove after animation
+3. Use `passive: true` for scroll listeners
+4. Throttle/debounce scroll events
+5. Implement lazy loading for heavy content
+6. Respect `prefers-reduced-motion`
+7. Use `intersection-observer` for viewport triggers
+
+**❌ DON'T**:
+1. Animate `width`, `height`, `top`, `left` (causes reflow)
+2. Add `will-change` to everything (memory issues)
+3. Use unthrottled scroll listeners
+4. Load all content immediately
+5. Ignore accessibility preferences
+6. Use synchronous scroll handlers
+
+### Dependencies
+
+```json
+{
+  "dependencies": {
+    "framer-motion": "^10.16.0"
+  }
+}
+```
+
+**Install**:
+```bash
+npm install framer-motion
+```
+
+---
+
 ## Responsive Design
 
 ### Breakpoints

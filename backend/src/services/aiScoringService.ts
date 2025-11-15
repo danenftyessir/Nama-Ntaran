@@ -1,5 +1,5 @@
-import pool from '../config/database';
-import axios from 'axios';
+import pool from '../config/database.js';
+import { getPovertyData, calculatePovertyIndex } from './bpsDataService.js';
 
 /**
  * AI Scoring Service untuk menentukan prioritas sekolah
@@ -8,6 +8,8 @@ import axios from 'axios';
  * Priority Score = (Poverty Index * 0.4) + (Stunting Rate * 0.4) + (Geographic Access * 0.2)
  *
  * Score Range: 0-100 (semakin tinggi = semakin prioritas)
+ *
+ * UPDATE: Now uses real BPS API data for poverty index!
  */
 
 interface School {
@@ -31,59 +33,47 @@ interface StuntingData {
 }
 
 /**
- * Get poverty data from BPS API
+ * Get poverty index from BPS API (REAL DATA!)
+ * Returns poverty index score 0-100 (higher = worse poverty)
  */
-async function getPovertyDataByProvince(province: string): Promise<number> {
+async function getPovertyIndexByProvince(province: string): Promise<number> {
   try {
-    // BPS API untuk data kemiskinan
-    // Untuk MVP, kita gunakan data simulasi
-    // Dalam produksi, call ke BPS API yang sebenarnya
+    // Fetch real poverty data from BPS service
+    const povertyData = await getPovertyData(province, true); // use cache
 
-    const povertySimulation: { [key: string]: number } = {
-      'Jawa Barat': 7.88,
-      'DKI Jakarta': 4.69,
-      'Jawa Timur': 10.85,
-      'Jawa Tengah': 11.35,
-      'Sumatera Utara': 8.75,
-      'Sulawesi Selatan': 8.54,
-      'Banten': 5.42,
-      'Nusa Tenggara Timur': 19.96,
-      'Papua': 26.55,
-      'Maluku': 15.47,
-      // Default untuk provinsi lainnya
-      'default': 10.0
-    };
+    // Calculate poverty index (0-100 scale)
+    const povertyIndex = calculatePovertyIndex(povertyData);
 
-    return povertySimulation[province] || povertySimulation['default'];
+    console.log(`[AI Scoring] ${province} - Poverty: ${povertyData.povertyRate.toFixed(2)}%, Index: ${povertyIndex.toFixed(2)}, Source: ${povertyData.source}`);
+
+    return povertyIndex;
   } catch (error) {
     console.error('Error fetching poverty data:', error);
-    return 10.0; // Default moderate poverty rate
+    return 50.0; // Default moderate poverty index
   }
 }
 
 /**
- * Get stunting data from SatuSehat API / Simulation
+ * Get stunting data from database cache
+ * (Kemenkes API not available, using pre-populated data from migration)
  */
-async function getStuntingDataByProvince(province: string): Promise<number> {
+async function getStuntingRateByProvince(province: string): Promise<number> {
   try {
-    // SatuSehat API untuk data stunting
-    // Untuk MVP, kita gunakan data simulasi
+    // Fetch from database cache (populated by migration)
+    const result = await pool.query(
+      `SELECT stunting_rate FROM latest_stunting_data WHERE province = $1`,
+      [province]
+    );
 
-    const stuntingSimulation: { [key: string]: number } = {
-      'Jawa Barat': 20.2,
-      'DKI Jakarta': 15.6,
-      'Jawa Timur': 19.2,
-      'Jawa Tengah': 20.8,
-      'Sumatera Utara': 21.1,
-      'Sulawesi Selatan': 22.3,
-      'Banten': 17.8,
-      'Nusa Tenggara Timur': 35.3,
-      'Papua': 31.8,
-      'Maluku': 27.5,
-      'default': 21.6 // National average
-    };
+    if (result.rows.length > 0) {
+      const stuntingRate = parseFloat(result.rows[0].stunting_rate);
+      console.log(`[AI Scoring] ${province} - Stunting: ${stuntingRate.toFixed(2)}%`);
+      return stuntingRate;
+    }
 
-    return stuntingSimulation[province] || stuntingSimulation['default'];
+    // Fallback to national average if not found
+    console.warn(`[AI Scoring] Stunting data not found for ${province}, using national average`);
+    return 21.6; // National average
   } catch (error) {
     console.error('Error fetching stunting data:', error);
     return 21.6; // National average
@@ -133,27 +123,22 @@ function normalize(value: number, min: number, max: number): number {
 
 /**
  * Calculate priority score for a single school
+ * UPDATED to use real BPS data and database stunting data
  */
 async function calculateSchoolPriority(school: School): Promise<number> {
   try {
-    // Get external data
-    const povertyRate = await getPovertyDataByProvince(school.province);
-    const stuntingRate = await getStuntingDataByProvince(school.province);
+    // Get data from real sources
+    const povertyIndex = await getPovertyIndexByProvince(school.province); // Already 0-100
+    const stuntingRate = await getStuntingRateByProvince(school.province);
     const geographicScore = calculateGeographicScore(school);
 
-    // Normalize scores
-    // Poverty: 0-30% → 0-100
-    const normalizedPoverty = normalize(povertyRate, 0, 30);
-
-    // Stunting: 0-40% → 0-100
+    // Normalize stunting: 0-40% → 0-100
     const normalizedStunting = normalize(stuntingRate, 0, 40);
 
-    // Geographic already 0-100
-
     // Weighted average
-    // Poverty: 40%, Stunting: 40%, Geographic: 20%
+    // Poverty Index: 40%, Stunting: 40%, Geographic: 20%
     const priorityScore =
-      (normalizedPoverty * 0.4) +
+      (povertyIndex * 0.4) +
       (normalizedStunting * 0.4) +
       (geographicScore * 0.2);
 

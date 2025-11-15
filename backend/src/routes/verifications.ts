@@ -5,6 +5,12 @@ import { authenticateToken, requireRole } from '../middleware/auth.js';
 import type { AuthRequest } from '../middleware/auth.js';
 import { releaseEscrowForDelivery } from '../services/blockchain.js';
 import { emitToSchool, emitToCatering, emitToAdmins } from '../config/socket.js';
+import {
+  analyzeFoodPhoto,
+  needsManualReview,
+  generateVerificationDecision,
+  type FoodAnalysisRequest
+} from '../services/computerVision.js';
 
 const router = express.Router();
 
@@ -12,6 +18,7 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // POST /api/verifications - Create verification (School verifies delivery)
+// NOW WITH AI COMPUTER VISION ANALYSIS! 🤖📸
 router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: Response) => {
   const {
     delivery_id,
@@ -42,13 +49,19 @@ router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: R
 
     // Verify the delivery exists and belongs to the school
     const deliveryCheck = await pool.query(
-      'SELECT * FROM deliveries WHERE id = $1 AND school_id = $2',
+      `SELECT d.*, c.name as catering_name, s.name as school_name
+       FROM deliveries d
+       JOIN caterings c ON d.catering_id = c.id
+       JOIN schools s ON d.school_id = s.id
+       WHERE d.id = $1 AND d.school_id = $2`,
       [delivery_id, school_id]
     );
 
     if (deliveryCheck.rows.length === 0) {
       return res.status(404).json({ error: 'Delivery not found or does not belong to this school' });
     }
+
+    const delivery = deliveryCheck.rows[0];
 
     // Create verification
     const result = await pool.query(
@@ -76,51 +89,168 @@ router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: R
       ]
     );
 
+    const verification = result.rows[0];
+
+    // ========================================
+    // 🤖 AI COMPUTER VISION ANALYSIS
+    // ========================================
+    let aiAnalysis = null;
+    let aiAnalysisId = null;
+
+    if (photo_url && process.env.ANTHROPIC_API_KEY) {
+      console.log('🤖 Starting AI food quality analysis...');
+
+      try {
+        // Prepare analysis request
+        const analysisRequest: FoodAnalysisRequest = {
+          imageUrl: photo_url,
+          expectedMenu: delivery.notes ? delivery.notes.split(',').map((s: string) => s.trim()) : ['Nasi', 'Lauk', 'Sayur'],
+          expectedPortions: delivery.portions,
+          deliveryId: delivery_id,
+          schoolName: delivery.school_name,
+          cateringName: delivery.catering_name,
+        };
+
+        // Call Claude Vision API
+        aiAnalysis = await analyzeFoodPhoto(analysisRequest);
+
+        // Save AI analysis to database
+        const aiResult = await pool.query(
+          `INSERT INTO ai_food_analyses (
+            verification_id,
+            delivery_id,
+            detected_items,
+            portion_estimate,
+            portion_confidence,
+            quality_score,
+            freshness_score,
+            presentation_score,
+            hygiene_score,
+            estimated_calories,
+            estimated_protein,
+            estimated_carbs,
+            has_vegetables,
+            menu_match,
+            portion_match,
+            quality_acceptable,
+            meets_bgn_standards,
+            confidence,
+            reasoning,
+            issues,
+            warnings,
+            recommendations,
+            needs_manual_review,
+            analyzed_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, CURRENT_TIMESTAMP)
+          RETURNING id`,
+          [
+            verification.id,
+            delivery_id,
+            aiAnalysis.detectedItems,
+            aiAnalysis.portionEstimate,
+            aiAnalysis.portionConfidence,
+            aiAnalysis.qualityScore,
+            aiAnalysis.freshnessScore,
+            aiAnalysis.presentationScore,
+            aiAnalysis.hygieneScore,
+            aiAnalysis.nutritionEstimate.calories,
+            aiAnalysis.nutritionEstimate.protein,
+            aiAnalysis.nutritionEstimate.carbs,
+            aiAnalysis.nutritionEstimate.vegetables,
+            aiAnalysis.compliance.menuMatch,
+            aiAnalysis.compliance.portionMatch,
+            aiAnalysis.compliance.qualityAcceptable,
+            aiAnalysis.compliance.meetsBGNStandards,
+            aiAnalysis.confidence,
+            aiAnalysis.reasoning,
+            aiAnalysis.issues,
+            aiAnalysis.warnings,
+            aiAnalysis.recommendations,
+            needsManualReview(aiAnalysis),
+          ]
+        );
+
+        aiAnalysisId = aiResult.rows[0].id;
+
+        // Update verification with AI analysis reference
+        await pool.query(
+          'UPDATE verifications SET ai_analysis_id = $1 WHERE id = $2',
+          [aiAnalysisId, verification.id]
+        );
+
+        console.log(`✅ AI Analysis complete - Quality Score: ${aiAnalysis.qualityScore}/100`);
+
+        // Check if manual review needed
+        if (needsManualReview(aiAnalysis)) {
+          console.warn('⚠️  AI flagged for manual review');
+
+          // Notify admins about manual review needed
+          emitToAdmins('ai:manual_review_needed', {
+            verificationId: verification.id,
+            deliveryId: delivery_id,
+            aiAnalysis: aiAnalysis,
+            school: delivery.school_name,
+            catering: delivery.catering_name,
+          });
+        }
+
+      } catch (aiError) {
+        console.error('❌ AI Analysis failed:', aiError);
+        // Don't fail the verification if AI analysis fails
+        // Log the error but continue with the process
+      }
+    } else if (!process.env.ANTHROPIC_API_KEY) {
+      console.warn('⚠️  ANTHROPIC_API_KEY not configured - skipping AI analysis');
+    }
+
     // Update delivery status to verified
     await pool.query(
       `UPDATE deliveries SET status = 'verified', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
       [delivery_id]
     );
 
-    // Release escrow on blockchain (if configured)
+    // ========================================
+    // 💰 BLOCKCHAIN ESCROW RELEASE
+    // ========================================
     let blockchainRelease = null;
-    try {
-      blockchainRelease = await releaseEscrowForDelivery(delivery_id);
-      console.log('✅ Blockchain escrow released:', blockchainRelease);
-    } catch (blockchainError) {
-      console.warn('⚠️  Blockchain release failed (verification still recorded):', blockchainError);
-      // Don't fail the verification if blockchain release fails
-      // The blockchain release can be retried later if needed
+
+    // Only release if AI analysis passed or not configured
+    const shouldRelease = !aiAnalysis || aiAnalysis.compliance.qualityAcceptable;
+
+    if (shouldRelease) {
+      try {
+        blockchainRelease = await releaseEscrowForDelivery(delivery_id);
+        console.log('✅ Blockchain escrow released:', blockchainRelease);
+      } catch (blockchainError) {
+        console.warn('⚠️  Blockchain release failed (verification still recorded):', blockchainError);
+      }
+    } else {
+      console.warn('⚠️  Escrow release blocked - AI quality check failed');
     }
 
-    // Get delivery details with catering info for websocket notification
-    const delivery = deliveryCheck.rows[0];
-    const deliveryDetails = await pool.query(
-      `SELECT d.*, c.name as catering_name, s.name as school_name
-       FROM deliveries d
-       JOIN caterings c ON d.catering_id = c.id
-       JOIN schools s ON d.school_id = s.id
-       WHERE d.id = $1`,
-      [delivery_id]
-    );
-
-    const deliveryInfo = deliveryDetails.rows[0];
-
-    // Emit WebSocket events
+    // ========================================
+    // 📢 WEBSOCKET NOTIFICATIONS
+    // ========================================
     try {
       // Notify the catering about the verification
       emitToCatering(delivery.catering_id, 'verification:created', {
-        verification: result.rows[0],
-        delivery: deliveryInfo,
+        verification: verification,
+        delivery: delivery,
         blockchain: blockchainRelease,
-        message: `Pengiriman ke ${deliveryInfo.school_name} telah diverifikasi`,
+        aiAnalysis: aiAnalysis ? {
+          qualityScore: aiAnalysis.qualityScore,
+          compliance: aiAnalysis.compliance,
+          needsReview: needsManualReview(aiAnalysis),
+        } : null,
+        message: `Pengiriman ke ${delivery.school_name} telah diverifikasi`,
       });
 
       // Notify admins
       emitToAdmins('verification:created', {
-        verification: result.rows[0],
-        delivery: deliveryInfo,
+        verification: verification,
+        delivery: delivery,
         blockchain: blockchainRelease,
+        aiAnalysis: aiAnalysis,
       });
 
       console.log('📢 WebSocket notifications sent for verification');
@@ -128,16 +258,35 @@ router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: R
       console.warn('⚠️  WebSocket notification failed:', socketError);
     }
 
+    // ========================================
+    // 📤 RESPONSE
+    // ========================================
     res.status(201).json({
       message: 'Verification created successfully',
-      verification: result.rows[0],
+      verification: verification,
+      aiAnalysis: aiAnalysis ? {
+        id: aiAnalysisId,
+        qualityScore: aiAnalysis.qualityScore,
+        freshnessScore: aiAnalysis.freshnessScore,
+        presentationScore: aiAnalysis.presentationScore,
+        hygieneScore: aiAnalysis.hygieneScore,
+        detectedItems: aiAnalysis.detectedItems,
+        portionEstimate: aiAnalysis.portionEstimate,
+        compliance: aiAnalysis.compliance,
+        confidence: aiAnalysis.confidence,
+        needsManualReview: needsManualReview(aiAnalysis),
+        issues: aiAnalysis.issues,
+        warnings: aiAnalysis.warnings,
+        recommendations: aiAnalysis.recommendations,
+        reasoning: aiAnalysis.reasoning,
+      } : null,
       blockchain: blockchainRelease ? {
         released: true,
         transactionHash: blockchainRelease.transactionHash,
         blockNumber: blockchainRelease.blockNumber
       } : {
         released: false,
-        reason: 'Blockchain not configured or release failed'
+        reason: shouldRelease ? 'Blockchain not configured or release failed' : 'Quality check failed - manual review required'
       }
     });
   } catch (error) {
