@@ -1,0 +1,9 @@
+@echo off
+echo Stopping existing Next.js dev servers...
+taskkill /F /IM node.exe >nul 2>&1
+
+echo Cleaning lock files...
+if exist ".next\dev\lock" del /F /Q ".next\dev\lock" >nul 2>&1
+
+echo Starting Next.js dev server...
+npm run dev

@@ -1,14 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(taskkill //F //PID 7224)",
-      "Bash(psql:*)",
-      "Bash(set:*)",
-      "Bash(npx tsc:*)",
-      "Bash(node dist/scripts/seed.js:*)",
-      "Bash(npx tsx:*)",
-      "Bash(npm run dev:*)",
-      "Bash(taskkill:*)"
+      "Bash(if exist \".next\\dev\\lock\" del /F /Q \".next\\dev\\lock\")"
     ],
     "deny": [],
     "ask": []

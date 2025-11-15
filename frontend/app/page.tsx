@@ -104,13 +104,15 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen mesh-gradient">
-      <Navbar role="public" />
+    <div className="min-h-screen bg-gray-950 blockchain-mesh">
+      <div className="relative z-10">
+        <Navbar role="public" />
+      </div>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 grid-pattern opacity-30"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative">
+      <div className="relative overflow-hidden z-10">
+        <div className="absolute inset-0 grid-pattern opacity-10 pointer-events-none"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
           <div className="text-center fade-in">
             <div className="inline-block mb-4 px-4 py-2 glass-subtle rounded-full">
               <span className="text-sm font-semibold text-white">
@@ -141,7 +143,7 @@ export default function Home() {
                 />
                 <button
                   type="submit"
-                  className="btn-modern gradient-bg-1 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-glow transition-smooth"
+                  className="btn-modern bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-smooth"
                 >
                   Cari
                 </button>
@@ -151,7 +153,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 relative z-10">
         {/* Statistics */}
         <section className="fade-in">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -159,7 +161,7 @@ export default function Home() {
               title="Total Anggaran"
               value={stats.totalFunds}
               icon={DollarSign}
-              gradient="gradient-bg-1"
+              gradient="bg-blue-600"
               trend={{ value: 12, isPositive: true }}
               subtitle="Total alokasi program"
             />
@@ -167,7 +169,7 @@ export default function Home() {
               title="Dana Dialokasikan"
               value={stats.allocated}
               icon={Shield}
-              gradient="gradient-bg-2"
+              gradient="bg-purple-600"
               trend={{ value: 8, isPositive: true }}
               subtitle="Terkunci di escrow"
             />
@@ -175,7 +177,7 @@ export default function Home() {
               title="Dana Dicairkan"
               value={stats.disbursed}
               icon={CheckCircle}
-              gradient="gradient-bg-4"
+              gradient="bg-green-600"
               trend={{ value: 15, isPositive: true }}
               subtitle="Berhasil disalurkan"
             />
@@ -183,7 +185,7 @@ export default function Home() {
               title="Sekolah Terlayani"
               value={stats.schools}
               icon={School}
-              gradient="gradient-bg-5"
+              gradient="bg-orange-600"
               trend={{ value: 5, isPositive: true }}
               subtitle="Di seluruh Indonesia"
             />
@@ -197,28 +199,28 @@ export default function Home() {
             <GlassPanel className="h-full">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  <h2 className="text-2xl font-bold text-white mb-1">
                     Peta Prioritas AI
                   </h2>
-                  <p className="text-gray-600">
+                  <p className="text-gray-300">
                     Visualisasi scoring berbasis data real-time
                   </p>
                 </div>
-                <button className="px-4 py-2 glass-subtle rounded-xl text-sm font-semibold hover:shadow-modern transition-smooth">
+                <button className="px-4 py-2 glass-subtle rounded-xl text-sm font-semibold text-white hover:shadow-modern transition-smooth">
                   <MapPin className="w-4 h-4 inline mr-2" />
                   Peta Lengkap
                 </button>
               </div>
 
               {/* Map Placeholder */}
-              <div className="relative h-96 rounded-xl overflow-hidden bg-gradient-bg-3/20 border-2 border-dashed border-gray-300">
+              <div className="relative h-96 rounded-xl overflow-hidden bg-gradient-bg-3/20 border-2 border-dashed border-gray-600">
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <MapPin className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                    <p className="text-gray-600 font-semibold">
+                    <MapPin className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                    <p className="text-white font-semibold">
                       Peta Interaktif Prioritas
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-gray-400 mt-2">
                       Integrasi Leaflet.js sedang dalam pengembangan
                     </p>
                   </div>
@@ -232,10 +234,10 @@ export default function Home() {
             <GlassPanel className="h-full">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  <h2 className="text-xl font-bold text-white mb-1">
                     Live Feed
                   </h2>
-                  <p className="text-sm text-gray-600">Blockchain real-time</p>
+                  <p className="text-sm text-gray-300">Blockchain real-time</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -274,27 +276,27 @@ export default function Home() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
+                        <p className="text-sm font-semibold text-white truncate">
                           {tx.school}
                         </p>
                         {tx.catering && (
-                          <p className="text-xs text-gray-600 truncate">
+                          <p className="text-xs text-gray-300 truncate">
                             {tx.catering}
                           </p>
                         )}
                         {tx.amount && (
-                          <p className="text-xs font-semibold text-blue-600 mt-1">
+                          <p className="text-xs font-semibold text-blue-400 mt-1">
                             {tx.amount}
                           </p>
                         )}
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-400">
                             {tx.time}
                           </span>
                           {tx.txHash && (
                             <>
-                              <span className="text-xs text-gray-300">•</span>
-                              <button className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                              <span className="text-xs text-gray-500">•</span>
+                              <button className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1">
                                 {tx.txHash}
                                 <ExternalLink className="w-3 h-3" />
                               </button>
@@ -313,10 +315,10 @@ export default function Home() {
         {/* Charts Section */}
         <section>
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               Analisis & Insights
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-300">
               Data-driven transparency dengan AI analytics
             </p>
           </div>
@@ -371,10 +373,10 @@ export default function Home() {
         {/* How It Works */}
         <section>
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl font-bold text-white mb-2">
               Cara Kerja MBG
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-300">
               5 langkah transparansi dengan AI & Blockchain
             </p>
           </div>
@@ -386,35 +388,35 @@ export default function Home() {
                 title: 'AI Scoring',
                 desc: 'Analisis data prioritas',
                 icon: Activity,
-                color: 'gradient-bg-1',
+                color: 'bg-blue-600',
               },
               {
                 step: '2',
                 title: 'Dana Dikunci',
                 desc: 'Escrow smart contract',
                 icon: Shield,
-                color: 'gradient-bg-2',
+                color: 'bg-purple-600',
               },
               {
                 step: '3',
                 title: 'Pengiriman',
                 desc: 'Katering mengirim makanan',
                 icon: UtensilsCrossed,
-                color: 'gradient-bg-5',
+                color: 'bg-orange-600',
               },
               {
                 step: '4',
                 title: 'Verifikasi',
                 desc: 'Sekolah konfirmasi',
                 icon: School,
-                color: 'gradient-bg-4',
+                color: 'bg-green-600',
               },
               {
                 step: '5',
                 title: 'Pencairan',
                 desc: 'Auto-transfer blockchain',
                 icon: CheckCircle,
-                color: 'gradient-bg-3',
+                color: 'bg-cyan-600',
               },
             ].map((item) => {
               const Icon = item.icon;
@@ -430,12 +432,12 @@ export default function Home() {
                     <Icon className="w-8 h-8 text-white" />
                   </div>
                   <div className="inline-block px-3 py-1 glass-subtle rounded-full mb-3">
-                    <span className="text-xs font-bold text-gray-700">
+                    <span className="text-xs font-bold text-white">
                       STEP {item.step}
                     </span>
                   </div>
-                  <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.desc}</p>
+                  <h3 className="font-bold text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-gray-300">{item.desc}</p>
                 </GlassPanel>
               );
             })}
@@ -447,21 +449,21 @@ export default function Home() {
           <GlassPanel className="!p-12 text-center relative overflow-hidden">
             <div className="absolute inset-0 gradient-bg-1 opacity-10"></div>
             <div className="relative z-10">
-              <Shield className="w-16 h-16 mx-auto mb-6 text-blue-600 pulse-glow" />
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              <Shield className="w-16 h-16 mx-auto mb-6 text-blue-400 pulse-glow" />
+              <h2 className="text-4xl font-bold text-white mb-4">
                 Transparansi Penuh, Akuntabilitas Nyata
               </h2>
-              <p className="text-gray-700 mb-8 max-w-3xl mx-auto text-lg">
+              <p className="text-gray-300 mb-8 max-w-3xl mx-auto text-lg">
                 Setiap transaksi tercatat di blockchain. Setiap keputusan didukung
                 AI. Setiap rupiah dapat dilacak. Mari bersama wujudkan program gizi
                 sekolah yang benar-benar sampai ke anak-anak.
               </p>
               <div className="flex gap-4 justify-center">
-                <button className="btn-modern gradient-bg-1 text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-2 shadow-modern hover:shadow-glow-lg">
+                <button className="btn-modern bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-2 shadow-modern">
                   Lihat Dokumentasi
                   <ChevronRight className="w-5 h-5" />
                 </button>
-                <button className="btn-modern glass px-8 py-4 rounded-xl font-semibold text-gray-900 shadow-modern hover:shadow-glow">
+                <button className="btn-modern glass px-8 py-4 rounded-xl font-semibold text-white shadow-modern hover:bg-white/10">
                   Jelajahi Data
                 </button>
               </div>
@@ -471,8 +473,8 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="relative overflow-hidden mt-20 bg-gray-900 text-white py-12">
-        <div className="absolute inset-0 dot-pattern opacity-10"></div>
+      <footer className="relative overflow-hidden mt-20 bg-gray-900 text-white py-12 z-10">
+        <div className="absolute inset-0 dot-pattern opacity-10 pointer-events-none"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>

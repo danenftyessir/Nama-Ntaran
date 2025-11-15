@@ -65,6 +65,24 @@ export default function Navbar({ role = 'public' }: NavbarProps) {
                 </Link>
               );
             })}
+
+            {/* Login & Register Buttons - Only for public role */}
+            {role === 'public' && (
+              <div className="flex items-center gap-2 ml-4">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Register
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -93,6 +111,26 @@ export default function Navbar({ role = 'public' }: NavbarProps) {
                 </Link>
               );
             })}
+
+            {/* Mobile Login & Register - Only for public role */}
+            {role === 'public' && (
+              <div className="flex flex-col gap-2 px-4 pt-4 border-t border-gray-200 mt-4">
+                <Link
+                  href="/login"
+                  className="px-4 py-3 rounded-lg text-center text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-3 rounded-lg text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Register
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>

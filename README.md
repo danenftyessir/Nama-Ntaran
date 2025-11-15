@@ -25,6 +25,40 @@
 
 ---
 
+## 🚀 Quick Start (Sudah Setup)
+
+Jika sudah pernah setup sebelumnya, langsung jalankan:
+
+```bash
+# 1. Start Database (jika belum running)
+# PostgreSQL harus sudah running
+
+# 2. Start Blockchain Node (Terminal 1)
+cd blockchain
+npx hardhat node
+
+# 3. Start Backend (Terminal 2)
+cd backend
+npm run dev
+
+# 4. Start Frontend (Terminal 3)
+cd frontend
+.\dev.ps1  # Windows PowerShell (RECOMMENDED)
+# atau
+.\dev.bat  # Windows CMD
+# atau
+npm run dev  # Manual
+```
+
+Akses: **http://localhost:3000**
+
+**Script Otomatis (`dev.ps1` / `dev.bat`)** akan:
+- ✅ Kill semua proses Node.js yang lama
+- ✅ Hapus lock files yang bentrok
+- ✅ Start fresh dev server
+
+---
+
 ## Tentang Proyek
 
 **MBG (Makan Bergizi Ga Bocor)** adalah platform digital yang mengintegrasikan **AI**, **Blockchain**, dan **Web Technology** untuk menciptakan sistem distribusi makanan bergizi sekolah yang transparan, efisien, dan bebas korupsi.
@@ -554,11 +588,36 @@ NEXT_PUBLIC_APP_VERSION=1.0.0
 
 #### C. Start Development Server
 
+**Cara 1: Menggunakan Script Otomatis (RECOMMENDED)**
+
+Script ini otomatis membunuh proses Node.js lama dan membersihkan lock files:
+
+**Windows (PowerShell)**:
+```powershell
+.\dev.ps1
+```
+
+**Windows (Command Prompt)**:
+```cmd
+dev.bat
+```
+
+**Cara 2: Manual**:
 ```bash
 npm run dev
 ```
 
 Frontend akan running di: `http://localhost:3000`
+
+**⚠️ Troubleshooting - Jika Port/Lock Error**:
+```bash
+# Manual cleanup (Windows)
+taskkill /F /IM node.exe
+powershell -Command "if (Test-Path '.next\dev\lock') { Remove-Item '.next\dev\lock' -Force }"
+
+# Lalu jalankan lagi
+npm run dev
+```
 
 ### 6. Verify Full Stack
 

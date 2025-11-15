@@ -1,13 +1,16 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Blockchain gradient colors */
-  --blockchain-primary: rgba(102, 126, 234, 0.4);
-  --blockchain-secondary: rgba(118, 75, 162, 0.4);
-  --blockchain-accent: rgba(79, 172, 254, 0.3);
+  /* Blockchain gradient colors - Aurora effect */
+  --blockchain-primary: rgba(102, 126, 234, 0.15);
+  --blockchain-secondary: rgba(118, 75, 162, 0.15);
+  --blockchain-accent: rgba(79, 172, 254, 0.12);
+  --blockchain-purple: rgba(139, 92, 246, 0.12);
 
   /* Brand Colors - Extended */
   --primary-500: #667eea;
@@ -19,13 +22,6 @@
   --success-500: #10b981;
   --warning-500: #f59e0b;
   --error-500: #ef4444;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -85,11 +81,13 @@ body {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 20% 50%, var(--blockchain-primary) 0%, transparent 25%),
-    radial-gradient(circle at 80% 80%, var(--blockchain-secondary) 0%, transparent 25%),
-    radial-gradient(circle at 40% 20%, var(--blockchain-accent) 0%, transparent 25%),
-    radial-gradient(circle at 60% 60%, rgba(139, 92, 246, 0.3) 0%, transparent 25%);
-  z-index: -1;
+    radial-gradient(ellipse at 20% 30%, var(--blockchain-primary) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, var(--blockchain-secondary) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 20%, var(--blockchain-accent) 0%, transparent 45%),
+    radial-gradient(ellipse at 40% 80%, var(--blockchain-purple) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 40%, var(--blockchain-primary) 0%, transparent 40%);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .mesh-gradient {
@@ -124,17 +122,17 @@ body {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow:
-    0 8px 32px 0 rgba(31, 38, 135, 0.1),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+    0 8px 32px 0 rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
 }
 
 .glass-dark {
-  background: rgba(17, 24, 39, 0.7);
+  background: rgba(17, 24, 39, 0.5);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -144,10 +142,10 @@ body {
 }
 
 .glass-subtle {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ========================================
