@@ -1,522 +1,506 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
-import GlassPanel from './components/ui/GlassPanel';
-import ModernStatCard from './components/ui/ModernStatCard';
-import DonutChart from './components/charts/DonutChart';
-import BarChart from './components/charts/BarChart';
-import LineChart from './components/charts/LineChart';
 import {
-  DollarSign,
-  UtensilsCrossed,
-  School,
-  Shield,
-  CheckCircle,
-  MapPin,
-  Search,
-  Activity,
-  TrendingUp,
-  Clock,
-  AlertTriangle,
-  ExternalLink,
-  ChevronRight,
-} from 'lucide-react';
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const heroRef = useRef(null);
+  const whatsPokeRef = useRef(null);
+  const chartRef = useRef(null);
+  const contentRef = useRef(null);
+  const tableRef = useRef(null);
 
-  // Mock data
-  const stats = {
-    totalFunds: 'Rp 500 M',
-    allocated: 'Rp 350 M',
-    disbursed: 'Rp 280 M',
-    schools: '1,234',
+  // menggunakan useInView untuk trigger animasi saat scroll
+  const heroInView = useInView(heroRef, { once: true, amount: 0.3 });
+  const whatsPokeInView = useInView(whatsPokeRef, { once: true, amount: 0.3 });
+  const chartInView = useInView(chartRef, { once: true, amount: 0.2 });
+  const contentInView = useInView(contentRef, { once: true, amount: 0.3 });
+  const tableInView = useInView(tableRef, { once: true, amount: 0.2 });
+
+  // scroll parallax untuk hero image
+  const { scrollY } = useScroll();
+  const heroImageY = useTransform(scrollY, [0, 500], [0, 150]);
+  const heroImageOpacity = useTransform(scrollY, [0, 300], [1, 0]);
+
+  // data untuk chart status alokasi
+  const chartData = [
+    { month: 'Jan', alokasi: 180, distribusi: 165 },
+    { month: 'Feb', alokasi: 220, distribusi: 200 },
+    { month: 'Mar', alokasi: 260, distribusi: 235 },
+    { month: 'Apr', alokasi: 240, distribusi: 220 },
+    { month: 'Mei', alokasi: 280, distribusi: 250 },
+    { month: 'Jun', alokasi: 300, distribusi: 280 },
+  ];
+
+  // data untuk tabel sekolah prioritas
+  const prioritySchools = [
+    {
+      nama: 'SDN Bukit Batin 1',
+      kota: 'Jakarta',
+      anggaran: 'Rp 1.5 M',
+      status: 'Aktif',
+      statusColor: 'text-green-600 bg-green-50',
+    },
+    {
+      nama: 'SMPN Harapan Bangsa',
+      kota: 'Surabaya',
+      anggaran: 'Rp 1.2 M',
+      status: 'Aktif',
+      statusColor: 'text-green-600 bg-green-50',
+    },
+    {
+      nama: 'SMAN Cerdas Mandiri',
+      kota: 'Bandung',
+      anggaran: 'Rp 1.8 M',
+      status: 'Aktif',
+      statusColor: 'text-green-600 bg-green-50',
+    },
+    {
+      nama: 'SDIT Cahaya Ilmu',
+      kota: 'Yogyakarta',
+      anggaran: 'Rp 1.0 M',
+      status: 'Aktif',
+      statusColor: 'text-green-600 bg-green-50',
+    },
+    {
+      nama: 'SMP Bhinneka Tunggal',
+      kota: 'Medan',
+      anggaran: 'Rp 1.1 M',
+      status: 'Aktif',
+      statusColor: 'text-green-600 bg-green-50',
+    },
+    {
+      nama: 'SMK Teknologi Maju',
+      kota: 'Semarang',
+      anggaran: 'Rp 1.4 M',
+      status: 'Selesai',
+      statusColor: 'text-blue-600 bg-blue-50',
+    },
+  ];
+
+  // variasi animasi untuk stagger effect
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
   };
 
-  const fundDistribution = [
-    { name: 'Dikunci (Escrow)', value: 70, color: '#3b82f6' },
-    { name: 'Dicairkan', value: 210, color: '#10b981' },
-    { name: 'Tersedia', value: 150, color: '#6b7280' },
-  ];
-
-  const regionalData = [
-    { name: 'Jawa Barat', schools: 245, portions: 24500 },
-    { name: 'DKI Jakarta', schools: 189, portions: 18900 },
-    { name: 'Jawa Timur', schools: 234, portions: 23400 },
-    { name: 'Sumatera Utara', schools: 123, portions: 12300 },
-    { name: 'Sulawesi Selatan', schools: 98, portions: 9800 },
-  ];
-
-  const monthlyTrend = [
-    { name: 'Jan', disbursed: 45, portions: 450000 },
-    { name: 'Feb', disbursed: 52, portions: 520000 },
-    { name: 'Mar', disbursed: 61, portions: 610000 },
-    { name: 'Apr', disbursed: 70, portions: 700000 },
-    { name: 'Mei', disbursed: 85, portions: 850000 },
-    { name: 'Jun', disbursed: 95, portions: 950000 },
-    { name: 'Jul', disbursed: 108, portions: 1080000 },
-  ];
-
-  const recentTransactions = [
-    {
-      id: 1,
-      type: 'released',
-      school: 'SDN 01 Bandung',
-      catering: 'Katering Sehat Mandiri',
-      amount: 'Rp 15.000.000',
-      time: '2 menit lalu',
-      txHash: '0x7f9f...a3b2',
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 100,
+        damping: 12,
+      },
     },
-    {
-      id: 2,
-      type: 'verified',
-      school: 'SDN 05 Jakarta',
-      catering: null,
-      amount: '100 porsi',
-      time: '15 menit lalu',
-      txHash: null,
-    },
-    {
-      id: 3,
-      type: 'locked',
-      school: 'SDN 08 Surabaya',
-      catering: 'Boga Rasa',
-      amount: 'Rp 12.500.000',
-      time: '1 jam lalu',
-      txHash: '0x3d2f...c9e1',
-    },
-    {
-      id: 4,
-      type: 'issue',
-      school: 'SDN 12 Medan',
-      catering: 'Gizi Nusantara',
-      amount: null,
-      time: '3 jam lalu',
-      txHash: null,
-    },
-  ];
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement search functionality
-    console.log('Searching for:', searchQuery);
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 blockchain-mesh">
-      <div className="relative z-10">
-        <Navbar role="public" />
-      </div>
+    <div className="min-h-screen bg-white">
+      <Navbar role="public" />
 
-      {/* Hero Section */}
-      <div className="relative overflow-hidden z-10">
-        <div className="absolute inset-0 grid-pattern opacity-10 pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-          <div className="text-center fade-in">
-            <div className="inline-block mb-4 px-4 py-2 glass-subtle rounded-full">
-              <span className="text-sm font-semibold text-white">
-                Powered by AI & Blockchain
-              </span>
-            </div>
-            <h1 className="text-7xl font-bold mb-4 text-white drop-shadow-lg">
-              MBG
-            </h1>
-            <p className="text-3xl mb-3 font-semibold text-white">
-              Makan Bergizi Gabocor
-            </p>
-            <p className="text-white/90 max-w-2xl mx-auto text-lg mb-8">
-              Platform transparansi berbasis AI dan Blockchain untuk program Makan
-              Bergizi Gratis. Memastikan setiap rupiah sampai kepada yang berhak.
-            </p>
+      {/* hero section */}
+      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-white to-blue-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* text content */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={heroInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8, ease: [0.6, 0.05, 0.01, 0.9] }}
+              className="space-y-6"
+            >
+              <motion.h1
+                className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.2, duration: 0.8 }}
+              >
+                Transparansi Dan Program Distribusi Pangan
+              </motion.h1>
+              <motion.p
+                className="text-lg text-gray-600 leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                animate={heroInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ delay: 0.4, duration: 0.8 }}
+              >
+                MBG berkomitmen untuk memastikan bahwa setiap donasi mencapai
+                tujuan yang diinginkan, memberdayakan komunitas dan memberikan
+                nutrisi penting kepada mereka yang paling membutuhkannya.
+              </motion.p>
+            </motion.div>
 
-            {/* Search Bar */}
-            <form onSubmit={handleSearch} className="max-w-2xl mx-auto scale-in">
-              <div className="glass rounded-2xl p-2 flex items-center gap-2 shadow-modern-lg">
-                <Search className="w-6 h-6 text-gray-400 ml-3" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Cari sekolah berdasarkan nama atau NPSN..."
-                  className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 px-2 py-3"
+            {/* hero image dengan parallax */}
+            <motion.div
+              className="relative"
+              style={{ y: heroImageY, opacity: heroImageOpacity }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={heroInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ delay: 0.3, duration: 0.8, ease: [0.6, 0.05, 0.01, 0.9] }}
+            >
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="/aesthetic view.jpg"
+                  alt="Program Distribusi Pangan"
+                  className="w-full h-[400px] md:h-[500px] object-cover transform hover:scale-105 transition-transform duration-700"
+                  loading="eager"
                 />
-                <button
-                  type="submit"
-                  className="btn-modern bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-smooth"
-                >
-                  Cari
-                </button>
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-900/20 to-transparent" />
               </div>
-            </form>
+              {/* floating decoration */}
+              <motion.div
+                className="absolute -top-6 -right-6 w-32 h-32 bg-gradient-to-br from-purple-400 to-blue-500 rounded-full blur-3xl opacity-50"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 90, 0],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
+            </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 relative z-10">
-        {/* Statistics */}
-        <section className="fade-in">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <ModernStatCard
-              title="Total Anggaran"
-              value={stats.totalFunds}
-              icon={DollarSign}
-              gradient="bg-blue-600"
-              trend={{ value: 12, isPositive: true }}
-              subtitle="Total alokasi program"
-            />
-            <ModernStatCard
-              title="Dana Dialokasikan"
-              value={stats.allocated}
-              icon={Shield}
-              gradient="bg-purple-600"
-              trend={{ value: 8, isPositive: true }}
-              subtitle="Terkunci di escrow"
-            />
-            <ModernStatCard
-              title="Dana Dicairkan"
-              value={stats.disbursed}
-              icon={CheckCircle}
-              gradient="bg-green-600"
-              trend={{ value: 15, isPositive: true }}
-              subtitle="Berhasil disalurkan"
-            />
-            <ModernStatCard
-              title="Sekolah Terlayani"
-              value={stats.schools}
-              icon={School}
-              gradient="bg-orange-600"
-              trend={{ value: 5, isPositive: true }}
-              subtitle="Di seluruh Indonesia"
-            />
-          </div>
-        </section>
-
-        {/* Map & Live Feed */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Priority Map */}
-          <div className="lg:col-span-2">
-            <GlassPanel className="h-full">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">
-                    Peta Prioritas AI
-                  </h2>
-                  <p className="text-gray-300">
-                    Visualisasi scoring berbasis data real-time
-                  </p>
-                </div>
-                <button className="px-4 py-2 glass-subtle rounded-xl text-sm font-semibold text-white hover:shadow-modern transition-smooth">
-                  <MapPin className="w-4 h-4 inline mr-2" />
-                  Peta Lengkap
-                </button>
-              </div>
-
-              {/* Map Placeholder */}
-              <div className="relative h-96 rounded-xl overflow-hidden bg-gradient-bg-3/20 border-2 border-dashed border-gray-600">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                    <p className="text-white font-semibold">
-                      Peta Interaktif Prioritas
-                    </p>
-                    <p className="text-sm text-gray-400 mt-2">
-                      Integrasi Leaflet.js sedang dalam pengembangan
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </GlassPanel>
-          </div>
-
-          {/* Live Blockchain Feed */}
-          <div className="lg:col-span-1">
-            <GlassPanel className="h-full">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-1">
-                    Live Feed
-                  </h2>
-                  <p className="text-sm text-gray-300">Blockchain real-time</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="text-xs text-green-600 font-semibold">
-                    LIVE
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {recentTransactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="glass-subtle rounded-xl p-3 hover:shadow-modern transition-smooth cursor-pointer"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`p-2 rounded-lg flex-shrink-0 ${
-                          tx.type === 'released'
-                            ? 'bg-green-100'
-                            : tx.type === 'verified'
-                            ? 'bg-blue-100'
-                            : tx.type === 'locked'
-                            ? 'bg-yellow-100'
-                            : 'bg-red-100'
-                        }`}
-                      >
-                        {tx.type === 'released' ? (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                        ) : tx.type === 'verified' ? (
-                          <Shield className="w-4 h-4 text-blue-600" />
-                        ) : tx.type === 'locked' ? (
-                          <Clock className="w-4 h-4 text-yellow-600" />
-                        ) : (
-                          <AlertTriangle className="w-4 h-4 text-red-600" />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white truncate">
-                          {tx.school}
-                        </p>
-                        {tx.catering && (
-                          <p className="text-xs text-gray-300 truncate">
-                            {tx.catering}
-                          </p>
-                        )}
-                        {tx.amount && (
-                          <p className="text-xs font-semibold text-blue-400 mt-1">
-                            {tx.amount}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-gray-400">
-                            {tx.time}
-                          </span>
-                          {tx.txHash && (
-                            <>
-                              <span className="text-xs text-gray-500">•</span>
-                              <button className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1">
-                                {tx.txHash}
-                                <ExternalLink className="w-3 h-3" />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </GlassPanel>
-          </div>
-        </section>
-
-        {/* Charts Section */}
-        <section>
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              Analisis & Insights
+      {/* what's poke section */}
+      <section ref={whatsPokeRef} className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            className="text-center max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 30 }}
+            animate={whatsPokeInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              What's Poke
             </h2>
-            <p className="text-gray-300">
-              Data-driven transparency dengan AI analytics
+            <p className="text-gray-600 text-lg leading-relaxed">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat.
             </p>
-          </div>
+          </motion.div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <GlassPanel>
-              <DonutChart
-                data={fundDistribution}
-                title="Distribusi Dana (Juta Rupiah)"
-                centerLabel="Total"
-                centerValue="430M"
-              />
-            </GlassPanel>
-
-            <GlassPanel>
-              <BarChart
-                data={regionalData}
-                bars={[
-                  { dataKey: 'schools', name: 'Jumlah Sekolah', color: '#3b82f6' },
-                  { dataKey: 'portions', name: 'Porsi Terdistribusi', color: '#10b981' },
-                ]}
-                title="Distribusi per Wilayah"
-                height={300}
-              />
-            </GlassPanel>
-          </div>
-
-          <GlassPanel>
-            <LineChart
-              data={monthlyTrend}
-              lines={[
-                {
-                  dataKey: 'disbursed',
-                  name: 'Dana Dicairkan (Juta Rp)',
-                  color: '#3b82f6',
-                  strokeWidth: 3,
-                },
-                {
-                  dataKey: 'portions',
-                  name: 'Porsi Makanan',
-                  color: '#10b981',
-                  strokeWidth: 3,
-                },
-              ]}
-              title="Trend Pencairan Dana & Distribusi (7 Bulan)"
-              height={350}
-              showArea={true}
-            />
-          </GlassPanel>
-        </section>
-
-        {/* How It Works */}
-        <section>
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              Cara Kerja MBG
+      {/* chart section - status alokasi */}
+      <section ref={chartRef} className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={chartInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+              Status Alokasi Dan Distribusi Dana (Jutaan Rupiah)
             </h2>
-            <p className="text-gray-300">
-              5 langkah transparansi dengan AI & Blockchain
+            <p className="text-gray-600 text-center mb-12">
+              Grafik hasil analisa menampilkan program
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            {[
-              {
-                step: '1',
-                title: 'AI Scoring',
-                desc: 'Analisis data prioritas',
-                icon: Activity,
-                color: 'bg-blue-600',
-              },
-              {
-                step: '2',
-                title: 'Dana Dikunci',
-                desc: 'Escrow smart contract',
-                icon: Shield,
-                color: 'bg-purple-600',
-              },
-              {
-                step: '3',
-                title: 'Pengiriman',
-                desc: 'Katering mengirim makanan',
-                icon: UtensilsCrossed,
-                color: 'bg-orange-600',
-              },
-              {
-                step: '4',
-                title: 'Verifikasi',
-                desc: 'Sekolah konfirmasi',
-                icon: School,
-                color: 'bg-green-600',
-              },
-              {
-                step: '5',
-                title: 'Pencairan',
-                desc: 'Auto-transfer blockchain',
-                icon: CheckCircle,
-                color: 'bg-cyan-600',
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <GlassPanel
-                  key={item.step}
-                  hover
-                  className="text-center group"
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl p-6 md:p-8 border border-gray-100"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={chartInView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ delay: 0.2, duration: 0.8 }}
+              style={{ willChange: 'transform' }}
+            >
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                 >
-                  <div
-                    className={`w-16 h-16 ${item.color} rounded-xl flex items-center justify-center mx-auto mb-4 shadow-modern group-hover:shadow-glow transition-smooth`}
-                  >
-                    <Icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div className="inline-block px-3 py-1 glass-subtle rounded-full mb-3">
-                    <span className="text-xs font-bold text-white">
-                      STEP {item.step}
-                    </span>
-                  </div>
-                  <h3 className="font-bold text-white mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-300">{item.desc}</p>
-                </GlassPanel>
-              );
-            })}
-          </div>
-        </section>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="month"
+                    tick={{ fill: '#6b7280', fontSize: 14 }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <YAxis
+                    tick={{ fill: '#6b7280', fontSize: 14 }}
+                    axisLine={{ stroke: '#e5e7eb' }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ paddingTop: '20px' }}
+                    iconType="circle"
+                  />
+                  <Bar
+                    dataKey="alokasi"
+                    name="Alokasi"
+                    fill="#8b5cf6"
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={1500}
+                    animationBegin={0}
+                  />
+                  <Bar
+                    dataKey="distribusi"
+                    name="Distribusi"
+                    fill="#ec4899"
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={1500}
+                    animationBegin={200}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
 
-        {/* CTA Section */}
-        <section>
-          <GlassPanel className="!p-12 text-center relative overflow-hidden">
-            <div className="absolute inset-0 gradient-bg-1 opacity-10"></div>
-            <div className="relative z-10">
-              <Shield className="w-16 h-16 mx-auto mb-6 text-blue-400 pulse-glow" />
-              <h2 className="text-4xl font-bold text-white mb-4">
-                Transparansi Penuh, Akuntabilitas Nyata
+      {/* content section dengan image */}
+      <section ref={contentRef} className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* text content */}
+            <motion.div
+              className="space-y-6"
+              initial={{ opacity: 0, x: -30 }}
+              animate={contentInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Lorem
               </h2>
-              <p className="text-gray-300 mb-8 max-w-3xl mx-auto text-lg">
-                Setiap transaksi tercatat di blockchain. Setiap keputusan didukung
-                AI. Setiap rupiah dapat dilacak. Mari bersama wujudkan program gizi
-                sekolah yang benar-benar sampai ke anak-anak.
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua.
               </p>
-              <div className="flex gap-4 justify-center">
-                <button className="btn-modern bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold flex items-center gap-2 shadow-modern">
-                  Lihat Dokumentasi
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-                <button className="btn-modern glass px-8 py-4 rounded-xl font-semibold text-white shadow-modern hover:bg-white/10">
-                  Jelajahi Data
-                </button>
-              </div>
-            </div>
-          </GlassPanel>
-        </section>
-      </div>
+              <h3 className="text-2xl font-bold text-gray-900 pt-6">Lorem</h3>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Ut enim ad minim veniam, quis nostrud exercitation ullamco
+                laboris nisi ut aliquip ex ea commodo consequat. Duis aute
+                irure dolor in reprehenderit in voluptate velit esse cillum
+                dolore eu fugiat nulla pariatur.
+              </p>
+            </motion.div>
 
-      {/* Footer */}
-      <footer className="relative overflow-hidden mt-20 bg-gray-900 text-white py-12 z-10">
-        <div className="absolute inset-0 dot-pattern opacity-10 pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="font-bold text-2xl mb-2">MBG</h3>
-              <p className="text-sm font-semibold mb-2">
-                Makan Bergizi Gabocor
-              </p>
-              <p className="text-gray-400 text-sm">
-                Platform transparansi berbasis AI & Blockchain
+            {/* image */}
+            <motion.div
+              className="relative"
+              initial={{ opacity: 0, x: 30 }}
+              animate={contentInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ delay: 0.2, duration: 0.8 }}
+            >
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="/aesthetic view 2.jpg"
+                  alt="Program Pangan"
+                  className="w-full h-[400px] md:h-[500px] object-cover transform hover:scale-105 transition-transform duration-700"
+                  loading="lazy"
+                />
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* table section - sekolah prioritas */}
+      <section ref={tableRef} className="py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={tableInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 text-center">
+              Sekolah Prioritas Teratas
+            </h2>
+            <p className="text-gray-600 text-center mb-12">
+              Daftar sekolah penerima manfaat berdasarkan program
+            </p>
+
+            <motion.div
+              className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100"
+              initial={{ opacity: 0, y: 20 }}
+              animate={tableInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.2, duration: 0.8 }}
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gradient-to-r from-purple-50 to-blue-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                        Sekolah
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                        Kota
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                        Anggaran Dialokasikan
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <motion.tbody
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate={tableInView ? 'visible' : 'hidden'}
+                    className="divide-y divide-gray-100"
+                  >
+                    {prioritySchools.map((school, index) => (
+                      <motion.tr
+                        key={index}
+                        variants={itemVariants}
+                        className="hover:bg-gray-50 transition-colors"
+                        whileHover={{ scale: 1.01 }}
+                        transition={{ type: 'spring', stiffness: 300 }}
+                      >
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                          {school.nama}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {school.kota}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                          {school.anggaran}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${school.statusColor}`}
+                          >
+                            {school.status}
+                          </span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </motion.tbody>
+                </table>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* footer */}
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            {/* logo dan copyright */}
+            <div className="col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg">M</span>
+                </div>
+                <span className="text-xl font-bold">MBG</span>
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                © 2025 MBG. Semua hak dilindungi undang-undang.
               </p>
             </div>
+
+            {/* perusahaan */}
             <div>
-              <h4 className="font-semibold mb-4">Fitur</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>AI Priority Scoring</li>
-                <li>Blockchain Escrow</li>
-                <li>Real-time Monitoring</li>
-                <li>Transparent Tracking</li>
+              <h3 className="font-bold text-lg mb-4">Perusahaan</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Tentang Kami
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Kara
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Tim
+                  </a>
+                </li>
               </ul>
             </div>
+
+            {/* sumber daya */}
             <div>
-              <h4 className="font-semibold mb-4">Untuk</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>Pemerintah Daerah</li>
-                <li>Sekolah</li>
-                <li>Mitra Katering</li>
-                <li>Masyarakat Umum</li>
+              <h3 className="font-bold text-lg mb-4">Sumber Daya</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    FAQ
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Blog
+                  </a>
+                </li>
               </ul>
             </div>
+
+            {/* hukum */}
             <div>
-              <h4 className="font-semibold mb-4">Teknologi</h4>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li>Next.js & React</li>
-                <li>Solidity Smart Contracts</li>
-                <li>Polygon Network</li>
-                <li>PostgreSQL</li>
+              <h3 className="font-bold text-lg mb-4">Hukum</h3>
+              <ul className="space-y-3">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Kebijakan Privasi
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Syarat Layanan
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 MBG. Built with transparency in mind.
+
+          <div className="border-t border-gray-800 pt-8">
+            <p className="text-center text-gray-400 text-sm">
+              Made with Love in Indonesia
             </p>
           </div>
         </div>

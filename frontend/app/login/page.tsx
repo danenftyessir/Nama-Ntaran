@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import Button from '../components/ui/Button';
-import { LogIn, Mail, Lock, School, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { LogIn, ChevronDown, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    role: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,13 +24,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // TODO: implementasi validasi form sebelum submit
       await login(formData.email, formData.password);
 
-      // Get user to determine redirect (will be in context after login)
+      // ambil user dari localStorage untuk menentukan redirect
       const userStr = localStorage.getItem('user');
       const user = userStr ? JSON.parse(userStr) : null;
 
-      // Redirect based on role
+      // redirect berdasarkan role
       if (user) {
         switch (user.role) {
           case 'admin':
@@ -46,123 +48,316 @@ export default function LoginPage() {
         }
       }
     } catch (err: any) {
-      setError(err.message || 'Login gagal. Periksa email dan password Anda.');
+      setError(err.message || 'Login gagal. Periksa kredensial Anda.');
     } finally {
       setLoading(false);
     }
   };
 
+  // variasi animasi untuk form elements
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        type: 'spring',
+        stiffness: 100,
+        damping: 12,
+      },
+    },
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center px-4 py-12">
-      <div className="max-w-md w-full">
-        {/* Logo/Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4">
-            <School className="w-10 h-10 text-blue-600" />
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* navbar */}
+      <motion.nav
+        className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* tombol back */}
+            <Link href="/" className="flex items-center gap-2 group">
+              <motion.div
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
+              </motion.div>
+              <span className="text-gray-700 hover:text-purple-600 transition-colors font-medium">
+                Back
+              </span>
+            </Link>
+
+            {/* link ke register */}
+            <Link
+              href="/register"
+              className="text-gray-700 hover:text-purple-600 transition-colors font-medium"
+            >
+              Register
+            </Link>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-2">NutriChain</h1>
-          <p className="text-blue-200">Makan Bergizi Ga Bocor</p>
         </div>
+      </motion.nav>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Login ke Akun Anda</h2>
-
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border-l-4 border-red-600 rounded">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600" />
-                <p className="text-sm text-red-800">{error}</p>
+      {/* content wrapper */}
+      <div className="flex-1 flex">
+        {/* section kiri - form login */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12">
+        <motion.div
+          className="w-full max-w-md"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
+          {/* logo dan heading */}
+          <motion.div className="mb-8" variants={itemVariants}>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-xl">M</span>
               </div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                MBG Platform
+              </h1>
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+            <h2 className="text-3xl font-bold text-gray-900 mb-3">
+              Masuk Ke MBG Platform
+            </h2>
+            <p className="text-gray-600">
+              Masukkan Kredensial Anda Untuk Mengakses Platform.
+            </p>
+          </motion.div>
+
+          {/* form */}
+          <motion.form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+            variants={containerVariants}
+          >
+            {/* error message */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
+              >
+                {error}
+              </motion.div>
+            )}
+
+            {/* nama pengguna atau email */}
+            <motion.div variants={itemVariants}>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Nama Pengguna Atau Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10 pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="nama@email.com"
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 gpu-accelerate placeholder:text-gray-400 placeholder:font-normal relative z-0"
+                  placeholder="Masukkan nama pengguna atau email Anda"
                 />
               </div>
-            </div>
+            </motion.div>
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
+            {/* kata sandi */}
+            <motion.div variants={itemVariants}>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Kata Sandi
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 z-10 pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </div>
                 <input
                   id="password"
                   type="password"
                   required
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="••••••••"
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 gpu-accelerate placeholder:text-gray-400 placeholder:font-normal relative z-0"
+                  placeholder="Masukkan kata sandi Anda"
                 />
               </div>
-            </div>
+            </motion.div>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              variant="primary"
-              icon={LogIn}
-              className="w-full"
-              size="lg"
-              disabled={loading}
+            {/* pilih peran */}
+            <motion.div variants={itemVariants}>
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Pilih Peran
+              </label>
+              <div className="relative">
+                <select
+                  id="role"
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value })
+                  }
+                  className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white transition-all duration-200 gpu-accelerate cursor-pointer ${
+                    formData.role === ''
+                      ? 'text-gray-400 font-normal'
+                      : 'text-gray-900 font-semibold'
+                  }`}
+                  required
+                >
+                  <option value="" disabled className="text-gray-400 font-normal">
+                    Tekan Untuk Pilih Bagian Anda
+                  </option>
+                  <option value="pemerintah" className="text-gray-900 font-semibold">
+                    Pemerintah
+                  </option>
+                  <option value="admin" className="text-gray-900 font-semibold">
+                    Admin
+                  </option>
+                  <option value="school" className="text-gray-900 font-semibold">
+                    Sekolah
+                  </option>
+                  <option value="catering" className="text-gray-900 font-semibold">
+                    Katering
+                  </option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+            </motion.div>
+
+            {/* tombol masuk */}
+            <motion.div variants={itemVariants}>
+              <motion.button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 gpu-accelerate"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  <>
+                    <LogIn className="w-5 h-5" />
+                    Masuk
+                  </>
+                )}
+              </motion.button>
+            </motion.div>
+
+            {/* links */}
+            <motion.div
+              variants={itemVariants}
+              className="flex items-center justify-between pt-2"
             >
-              {loading ? 'Memproses...' : 'Login'}
-            </Button>
-          </form>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              >
+                Lupa Kata Sandi?
+              </Link>
+              <Link
+                href="/register"
+                className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              >
+                Buat Akun
+              </Link>
+            </motion.div>
+          </motion.form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Belum punya akun?</span>
-            </div>
-          </div>
+        </motion.div>
+      </div>
 
-          {/* Register Link */}
-          <Link href="/register">
-            <Button variant="outline" className="w-full">
-              Daftar Akun Baru
-            </Button>
-          </Link>
+      {/* section kanan - gambar jagung */}
+      <motion.div
+        className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-800 via-gray-900 to-black items-center justify-center relative overflow-hidden"
+        initial={{ opacity: 0, x: 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, ease: [0.6, 0.05, 0.01, 0.9] }}
+      >
+        {/* overlay gelap untuk efek cinematic */}
+        <div className="absolute inset-0 bg-black/40 z-10" />
 
-          {/* Back to Home */}
-          <div className="mt-6 text-center">
-            <Link href="/" className="text-sm text-blue-600 hover:text-blue-800 hover:underline">
-              Kembali ke Beranda
-            </Link>
-          </div>
-        </div>
+        {/* gambar jagung dengan parallax */}
+        <motion.div
+          className="absolute inset-0 z-0"
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.2, ease: 'easeOut' }}
+        >
+          <img
+            src="/jagung.jpg"
+            alt="Jagung"
+            className="w-full h-full object-cover opacity-80"
+            loading="eager"
+          />
+        </motion.div>
 
-        {/* Demo Accounts Info */}
-        <div className="mt-6 bg-blue-800 bg-opacity-50 rounded-lg p-4 text-white text-sm">
-          <p className="font-semibold mb-2">Demo Accounts:</p>
-          <ul className="space-y-1 text-blue-200">
-            <li>• Admin: admin@nutrichain.id / password123</li>
-            <li>• Sekolah: sdn01.jakarta@sekolah.id / password123</li>
-            <li>• Katering: sehat.jaya@katering.id / password123</li>
-          </ul>
-        </div>
+        {/* gradient overlay untuk depth */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 z-10" />
+
+        {/* vignette effect */}
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-transparent to-black/50 z-10" />
+      </motion.div>
       </div>
     </div>
   );
