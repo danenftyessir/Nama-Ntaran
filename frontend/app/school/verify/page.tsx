@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import useDeliveries from '../../hooks/useDeliveries';
 import ModernSidebar from '../../components/layout/ModernSidebar';
-import TopHeader from '../../components/layout/TopHeader';
 import GlassPanel from '../../components/ui/GlassPanel';
 import DeliveryCard from '../../components/school/DeliveryCard';
 import {
@@ -92,22 +91,14 @@ export default function VerifyPage() {
       <ModernSidebar
         navItems={navItems}
         userRole="School"
-        userName="Kepala Sekolah"
-        userEmail={schoolInfo.name}
+        userName={user?.name || 'Kepala Sekolah'}
+        userEmail={user?.email || 'sekolah@mbg.id'}
+        schoolName={schoolInfo.name}
         onLogout={handleLogout}
       />
 
       {/* main content */}
       <main className="ml-72 min-h-screen bg-gray-50">
-        {/* top header */}
-        <TopHeader
-          userName="Kepala Sekolah"
-          userEmail={schoolInfo.name}
-          notificationCount={pendingDeliveries.length}
-          messageCount={0}
-          onLogout={handleLogout}
-        />
-
         <div className="max-w-7xl mx-auto p-8 gpu-accelerate">
           {/* page header */}
           <motion.div

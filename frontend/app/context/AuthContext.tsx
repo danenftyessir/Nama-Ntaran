@@ -12,10 +12,11 @@ import { authApi, getToken, getUser, setToken, setUser, removeToken } from '@/li
 export interface User {
   id: number;
   email: string;
+  name?: string;
   role: 'admin' | 'school' | 'catering';
   is_active: boolean;
   created_at: string;
-  // Additional fields from backend
+  // field tambahan dari backend
   school_id?: number;
   school_name?: string;
   catering_id?: number;

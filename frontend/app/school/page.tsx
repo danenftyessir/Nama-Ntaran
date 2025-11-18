@@ -7,8 +7,12 @@ import useDeliveries from '../hooks/useDeliveries';
 import useVerifications from '../hooks/useVerifications';
 import useIssues from '../hooks/useIssues';
 import ModernSidebar from '../components/layout/ModernSidebar';
-import TopHeader from '../components/layout/TopHeader';
 import GlassPanel from '../components/ui/GlassPanel';
+
+// TO DO: implementasi fetch data profil sekolah dari API
+// TO DO: tambahkan fitur export laporan bulanan ke PDF
+// TO DO: integrasikan dengan sistem notifikasi real-time
+// TO DO: tambahkan analytics dan grafik tren pengiriman
 import ModernStatCard from '../components/ui/ModernStatCard';
 import DeliveryCard from '../components/school/DeliveryCard';
 import VerificationModal from '../components/school/VerificationModal';
@@ -171,22 +175,14 @@ export default function SchoolDashboard() {
       <ModernSidebar
         navItems={navItems}
         userRole="School"
-        userName="Kepala Sekolah"
-        userEmail={schoolInfo.name}
+        userName={user.name || 'Kepala Sekolah'}
+        userEmail={user.email || 'sekolah@mbg.id'}
+        schoolName={schoolInfo.name}
         onLogout={handleLogout}
       />
 
       {/* main content */}
       <main className="ml-72 min-h-screen bg-gray-50">
-        {/* top header */}
-        <TopHeader
-          userName="Kepala Sekolah"
-          userEmail={schoolInfo.name}
-          notificationCount={pendingVerifications}
-          messageCount={0}
-          onLogout={handleLogout}
-        />
-
         <div className="max-w-7xl mx-auto p-8">
           {/* page header */}
           <div className="mb-8">

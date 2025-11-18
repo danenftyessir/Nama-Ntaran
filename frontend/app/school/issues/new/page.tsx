@@ -210,8 +210,9 @@ function ReportIssueContent() {
       <ModernSidebar
         navItems={navItems}
         userRole="School"
-        userName={user.school_name || 'Kepala Sekolah'}
+        userName={user.name || 'Kepala Sekolah'}
         userEmail={user.email || 'sekolah@mbg.id'}
+        schoolName={user.school_name || 'Sekolah'}
       />
 
       {/* main content dengan margin left untuk sidebar */}

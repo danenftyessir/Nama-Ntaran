@@ -310,6 +310,36 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* animate-in utilities untuk dropdown dan modal */
+.animate-in {
+  animation-duration: 200ms;
+  animation-fill-mode: both;
+}
+
+.animate-in.fade-in {
+  animation-name: fadeIn;
+}
+
+.animate-in.slide-in-from-top-2 {
+  --tw-enter-translate-y: -0.5rem;
+  animation-name: slideInFromTop;
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(var(--tw-enter-translate-y, -0.5rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.duration-200 {
+  animation-duration: 200ms;
+}
+
 /* ========================================
    SIDEBAR NAVIGATION
    ======================================== */

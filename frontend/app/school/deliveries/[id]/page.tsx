@@ -4,8 +4,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import ModernSidebar from '../../../components/layout/ModernSidebar';
-import TopHeader from '../../../components/layout/TopHeader';
 import { motion } from 'framer-motion';
+
+// TO DO: implementasi tracking status pengiriman real-time
+// TO DO: tambahkan fitur print detail pengiriman
+// TO DO: integrasikan dengan sistem notifikasi untuk update status
 import { useInView } from 'react-intersection-observer';
 import {
   ArrowLeft,
@@ -313,22 +316,14 @@ export default function DeliveryDetailPage() {
       <ModernSidebar
         navItems={navItems}
         userRole="School"
-        userName={user?.school_name || 'Kepala Sekolah'}
-        userEmail={user?.email || 'sekolah@example.com'}
+        userName={user?.name || 'Kepala Sekolah'}
+        userEmail={user?.email || 'sekolah@mbg.id'}
+        schoolName={user?.school_name || 'Sekolah'}
         onLogout={() => router.push('/login')}
       />
 
       {/* konten utama */}
       <main className="flex-1 ml-72 scroll-container">
-        {/* top header */}
-        <TopHeader
-          userName={user?.school_name || 'Kepala Sekolah'}
-          userEmail={user?.email}
-          notificationCount={3}
-          messageCount={2}
-          onLogout={() => router.push('/login')}
-        />
-
         <div className="p-8 smooth-animate">
           {/* header dengan back button */}
           <motion.div

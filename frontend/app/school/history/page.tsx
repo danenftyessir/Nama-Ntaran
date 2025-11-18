@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import useDeliveries from '../../hooks/useDeliveries';
 import ModernSidebar from '../../components/layout/ModernSidebar';
-import TopHeader from '../../components/layout/TopHeader';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// TO DO: implementasi export data ke CSV/Excel
+// TO DO: tambahkan grafik statistik verifikasi per bulan
+// TO DO: integrasikan filter pemasok dengan API caterings
 import { useInView } from 'react-intersection-observer';
 import {
   History,
@@ -231,22 +234,14 @@ export default function HistoryPage() {
       <ModernSidebar
         navItems={navItems}
         userRole="School"
-        userName={user.school_name || 'Kepala Sekolah'}
-        userEmail={user.email || 'sekolah@example.com'}
+        userName={user.name || 'Kepala Sekolah'}
+        userEmail={user.email || 'sekolah@mbg.id'}
+        schoolName={user.school_name || 'Sekolah'}
         onLogout={() => router.push('/login')}
       />
 
       {/* konten utama */}
       <main className="flex-1 ml-72 scroll-container">
-        {/* top header */}
-        <TopHeader
-          userName={user.school_name || 'Kepala Sekolah'}
-          userEmail={user.email}
-          notificationCount={3}
-          messageCount={2}
-          onLogout={() => router.push('/login')}
-        />
-
         <div className="p-8 smooth-animate">
           {/* header section */}
           <motion.div

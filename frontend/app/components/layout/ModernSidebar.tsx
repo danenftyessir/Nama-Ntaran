@@ -17,6 +17,7 @@ interface ModernSidebarProps {
   userRole: string;
   userName: string;
   userEmail: string;
+  schoolName?: string;
   onLogout?: () => void;
 }
 
@@ -25,6 +26,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   userRole,
   userName,
   userEmail,
+  schoolName,
   onLogout,
 }) => {
   const pathname = usePathname();
@@ -73,10 +75,10 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 truncate">{userName}</p>
-            <p className="text-xs text-gray-600 truncate">{userEmail}</p>
-            <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-              {userRole}
-            </span>
+            {schoolName && (
+              <p className="text-xs text-gray-600 truncate">{schoolName}</p>
+            )}
+            <p className="text-xs text-gray-500 truncate">{userEmail}</p>
           </div>
         </div>
       </div>
@@ -143,9 +145,9 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
 
       {/* footer */}
       <div className="p-4 border-t border-gray-200 flex-shrink-0">
-        <div className="p-3 rounded-xl bg-blue-600 text-white text-sm shadow-md">
-          <p className="font-semibold mb-1">Powered By AI & Blockchain</p>
-          <p className="text-xs text-white/90">
+        <div className="text-center text-sm">
+          <p className="font-semibold text-gray-700 mb-1">Powered By AI & Blockchain</p>
+          <p className="text-xs text-gray-500">
             Transparansi Penuh Untuk Generasi Lebih Sehat
           </p>
         </div>
