@@ -37,9 +37,7 @@ export default function SchoolListPage() {
   const itemsPerPage = 9;
 
   const heroRef = useRef(null);
-  const cardsRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true, margin: "-100px" });
-  const cardsInView = useInView(cardsRef, { once: true, margin: "-100px" });
 
   // TODO: PENTING - ganti dengan API call ke database
   // gunakan useEffect untuk fetch data dari endpoint /api/schools
@@ -115,38 +113,26 @@ export default function SchoolListPage() {
     '> Rp 2.5 M'
   ];
 
-  // variasi animasi
+  // variasi animasi - hanya untuk hero section
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0,
+        staggerChildren: 0.1,
         delayChildren: 0,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 15,
-        duration: 0.6,
+        duration: 0.3,
       },
-    },
-  };
-
-  const cardHover = {
-    y: -8,
-    transition: {
-      type: 'spring',
-      stiffness: 300,
-      damping: 20,
     },
   };
 
@@ -214,28 +200,13 @@ export default function SchoolListPage() {
     setCurrentPage(1);
   };
 
-  // komponen SVG placeholder untuk gambar sekolah - simpel dan minimalis
+  // komponen placeholder untuk gambar sekolah - simple div untuk performa maksimal
   const SchoolPlaceholder = ({ className = "" }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="400" height="300" fill="url(#gradient)" />
-      {/* icon buku sederhana */}
-      <g transform="translate(150, 100)">
-        <rect x="0" y="0" width="100" height="80" rx="4" fill="white" fillOpacity="0.9" />
-        <rect x="10" y="10" width="80" height="3" fill="#8b5cf6" fillOpacity="0.6" />
-        <rect x="10" y="20" width="60" height="3" fill="#8b5cf6" fillOpacity="0.5" />
-        <rect x="10" y="30" width="70" height="3" fill="#8b5cf6" fillOpacity="0.5" />
-        <rect x="10" y="40" width="50" height="3" fill="#8b5cf6" fillOpacity="0.5" />
-        <rect x="10" y="50" width="65" height="3" fill="#8b5cf6" fillOpacity="0.5" />
-        <circle cx="50" cy="100" r="15" fill="#6366f1" fillOpacity="0.7" />
-        <path d="M50 92 L50 108 M42 100 L58 100" stroke="white" strokeWidth="3" strokeLinecap="round" />
-      </g>
-      <defs>
-        <linearGradient id="gradient" x1="0" y1="0" x2="400" y2="300" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#f3f4f6" />
-          <stop offset="1" stopColor="#e5e7eb" />
-        </linearGradient>
-      </defs>
-    </svg>
+    <div className={`${className} flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100`}>
+      <div className="w-20 h-20 rounded-full bg-white/80 flex items-center justify-center">
+        <span className="text-4xl">🏫</span>
+      </div>
+    </div>
   );
 
   return (
@@ -400,32 +371,21 @@ export default function SchoolListPage() {
       </motion.section>
 
       {/* school cards section */}
-      <motion.section
-        ref={cardsRef}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12"
-        initial="hidden"
-        animate={cardsInView ? "visible" : "hidden"}
-        variants={containerVariants}
-      >
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {filteredSchools.length === 0 ? (
-          <motion.div
-            variants={itemVariants}
-            className="text-center py-16"
-          >
+          <div className="text-center py-16">
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">Tidak Ada Sekolah Ditemukan</h3>
               <p className="text-gray-500">Coba ubah kriteria filter untuk melihat lebih banyak hasil.</p>
             </div>
-          </motion.div>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {currentSchools.map((school, index) => (
-              <motion.div
+              <div
                 key={school.id}
-                variants={itemVariants}
-                whileHover={cardHover}
-                className="bg-white rounded-xl shadow-lg overflow-hidden gpu-accelerate cursor-pointer"
+                className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transition-transform duration-200 hover:-translate-y-2"
               >
                 {/* school image placeholder */}
                 <div className="h-48 bg-gradient-to-br from-purple-100 to-blue-100 relative overflow-hidden">
@@ -459,67 +419,56 @@ export default function SchoolListPage() {
                   </div>
 
                   {/* button */}
-                  <motion.button
-                    className="w-full py-2 px-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-lg hover:border-purple-600 hover:text-purple-600 transition-all duration-300 gpu-accelerate"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
+                    className="w-full py-2 px-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-lg hover:border-purple-600 hover:text-purple-600 transition-all duration-200"
                   >
                     Lihat Detail
-                  </motion.button>
+                  </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         )}
 
         {/* pagination */}
         {filteredSchools.length > 0 && (
-          <motion.div
-            variants={itemVariants}
-            className="flex items-center justify-center gap-2 mt-12"
-          >
-            <motion.button
+          <div className="flex items-center justify-center gap-2 mt-12">
+            <button
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
-              whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-              whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
             >
               <ChevronLeft className="w-4 h-4" />
               Previous
-            </motion.button>
+            </button>
 
             <div className="flex items-center gap-2">
               {getPageNumbers().map((pageNum) => (
-                <motion.button
+                <button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`w-10 h-10 rounded-lg font-bold transition-all duration-200 ${
+                  className={`w-10 h-10 rounded-lg font-bold transition-all duration-150 ${
                     currentPage === pageNum
                       ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
                       : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                   }`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
                 >
                   {pageNum}
-                </motion.button>
+                </button>
               ))}
             </div>
 
-            <motion.button
+            <button
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(currentPage + 1)}
-              whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-              whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
             >
               Next
               <ChevronRight className="w-4 h-4" />
-            </motion.button>
-          </motion.div>
+            </button>
+          </div>
         )}
-      </motion.section>
+      </section>
 
       {/* footer */}
       <footer className="bg-gray-900 text-white py-12">
