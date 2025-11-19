@@ -110,35 +110,6 @@ const InputField = memo(function InputField({
   );
 });
 
-// komponen untuk button aksi
-const ActionButton = memo(function ActionButton({
-  children,
-  onClick,
-  variant = 'default',
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: 'default' | 'primary';
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        w-full px-4 py-3 rounded-xl text-sm font-medium
-        transition-all duration-200 ease-out
-        transform-gpu will-change-transform
-        ${variant === 'primary'
-          ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-          : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
-        }
-      `}
-    >
-      {children}
-    </button>
-  );
-});
-
 export default function SchoolSettingsPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
@@ -171,10 +142,6 @@ export default function SchoolSettingsPage() {
     reminderTime: '30',
   });
 
-  // state untuk keamanan
-  const [security, setSecurity] = useState({
-    twoFactorAuth: false,
-  });
 
   // redirect jika tidak terautentikasi
   useEffect(() => {
@@ -207,20 +174,9 @@ export default function SchoolSettingsPage() {
       schoolProfile,
       notifications,
       verification,
-      security,
     });
     alert('Pengaturan berhasil disimpan!');
-  }, [schoolProfile, notifications, verification, security]);
-
-  // handler untuk ubah kata sandi
-  const handleChangePassword = useCallback(() => {
-    alert('Fitur ubah kata sandi akan segera tersedia');
-  }, []);
-
-  // handler untuk lihat sesi aktif
-  const handleViewSessions = useCallback(() => {
-    alert('Fitur lihat sesi aktif akan segera tersedia');
-  }, []);
+  }, [schoolProfile, notifications, verification]);
 
   // handler untuk logout
   const handleLogout = useCallback(() => {
@@ -316,7 +272,7 @@ export default function SchoolSettingsPage() {
           </div>
 
           {/* grid layout untuk sections */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* profil sekolah */}
             <SectionCard
               title="Profil Sekolah"
@@ -387,7 +343,7 @@ export default function SchoolSettingsPage() {
               </button>
             </SectionCard>
 
-            {/* kolom kanan */}
+            {/* kolom kanan - menumpuk preferensi notifikasi dan pengaturan verifikasi */}
             <div className="space-y-6">
               {/* preferensi notifikasi */}
               <SectionCard
@@ -431,77 +387,49 @@ export default function SchoolSettingsPage() {
                   />
                 </div>
               </SectionCard>
+
+              {/* pengaturan verifikasi */}
+              <SectionCard
+                title="Pengaturan Verifikasi"
+                subtitle="Konfigurasi proses verifikasi pengiriman makanan."
+              >
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Verifikator Default
+                    </label>
+                    <Select
+                      value={verification.defaultVerifier}
+                      onChange={(value) =>
+                        setVerification(prev => ({ ...prev, defaultVerifier: value }))
+                      }
+                      options={verifierOptions}
+                    />
+                  </div>
+
+                  <ToggleItem
+                    label="Wajib Unggah Foto Verifikasi"
+                    checked={verification.requirePhoto}
+                    onChange={(checked) =>
+                      setVerification(prev => ({ ...prev, requirePhoto: checked }))
+                    }
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Waktu Pengingat Otomatis Sebelum Pengiriman
+                    </label>
+                    <Select
+                      value={verification.reminderTime}
+                      onChange={(value) =>
+                        setVerification(prev => ({ ...prev, reminderTime: value }))
+                      }
+                      options={reminderTimeOptions}
+                    />
+                  </div>
+                </div>
+              </SectionCard>
             </div>
-          </div>
-
-          {/* baris kedua */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* pengaturan verifikasi */}
-            <SectionCard
-              title="Pengaturan Verifikasi"
-              subtitle="Konfigurasi proses verifikasi pengiriman makanan."
-            >
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Verifikator Default
-                  </label>
-                  <Select
-                    value={verification.defaultVerifier}
-                    onChange={(value) =>
-                      setVerification(prev => ({ ...prev, defaultVerifier: value }))
-                    }
-                    options={verifierOptions}
-                  />
-                </div>
-
-                <ToggleItem
-                  label="Wajib Unggah Foto Verifikasi"
-                  checked={verification.requirePhoto}
-                  onChange={(checked) =>
-                    setVerification(prev => ({ ...prev, requirePhoto: checked }))
-                  }
-                />
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Waktu Pengingat Otomatis Sebelum Pengiriman
-                  </label>
-                  <Select
-                    value={verification.reminderTime}
-                    onChange={(value) =>
-                      setVerification(prev => ({ ...prev, reminderTime: value }))
-                    }
-                    options={reminderTimeOptions}
-                  />
-                </div>
-              </div>
-            </SectionCard>
-
-            {/* keamanan */}
-            <SectionCard
-              title="Keamanan"
-              subtitle="Kelola pengaturan keamanan akun Anda."
-            >
-              <div className="space-y-3">
-                <ActionButton onClick={handleChangePassword}>
-                  Ubah Kata Sandi
-                </ActionButton>
-                <ActionButton onClick={handleViewSessions}>
-                  Lihat Sesi Aktif
-                </ActionButton>
-              </div>
-
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <ToggleItem
-                  label="Autentikasi Dua Faktor"
-                  checked={security.twoFactorAuth}
-                  onChange={(checked) =>
-                    setSecurity(prev => ({ ...prev, twoFactorAuth: checked }))
-                  }
-                />
-              </div>
-            </SectionCard>
           </div>
 
           {/* footer */}
