@@ -9,15 +9,12 @@ import QuickActions from '../components/catering/QuickActions';
 import UpcomingDeliveries from '../components/catering/UpcomingDeliveries';
 import CateringFooter from '../components/catering/CateringFooter';
 import UploadMenuModal from '../components/catering/UploadMenuModal';
-import { useCateringDashboard, useSidebarState } from '../hooks/useCateringDashboard';
+import { useCateringDashboard } from '../hooks/useCateringDashboard';
 import { Calendar, Upload, CreditCard, RefreshCw, AlertTriangle } from 'lucide-react';
 
 export default function CateringDashboard() {
   // hook untuk data dashboard dengan caching dan error handling
   const { stats, deliveries, badges, isLoading, error, refetch } = useCateringDashboard();
-
-  // hook untuk sidebar state dengan local storage persistence
-  const { isCollapsed, toggleCollapsed, isInitialized } = useSidebarState();
 
   // state untuk modal upload menu
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -52,24 +49,6 @@ export default function CateringDashboard() {
       path: '/catering/payments',
     },
   ];
-
-  // animasi variants untuk konten utama dengan GPU acceleration
-  const mainContentVariants = {
-    expanded: {
-      marginLeft: 256,
-      transition: {
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
-      },
-    },
-    collapsed: {
-      marginLeft: 80,
-      transition: {
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
-      },
-    },
-  };
 
   // preload gambar untuk performa
   useEffect(() => {
@@ -121,35 +100,13 @@ export default function CateringDashboard() {
     </div>
   );
 
-  // tunggu sampai sidebar state ter-inisialisasi
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* sidebar navigation */}
-      <CateringSidebar
-        isCollapsed={isCollapsed}
-        onToggleCollapse={toggleCollapsed}
-        badges={badges}
-      />
+      <CateringSidebar badges={badges} />
 
       {/* main content area */}
-      <motion.main
-        initial={false}
-        animate={isCollapsed ? 'collapsed' : 'expanded'}
-        variants={mainContentVariants}
-        className="min-h-screen"
-        style={{
-          willChange: 'margin-left',
-          transform: 'translateZ(0)',
-        }}
-      >
+      <main className="min-h-screen ml-72" style={{ transform: 'translateZ(0)' }}>
         <div className="max-w-6xl mx-auto px-6 py-6">
           <AnimatePresence mode="wait">
             {isLoading ? (
@@ -211,7 +168,7 @@ export default function CateringDashboard() {
             )}
           </AnimatePresence>
         </div>
-      </motion.main>
+      </main>
 
       {/* modal upload menu */}
       <UploadMenuModal

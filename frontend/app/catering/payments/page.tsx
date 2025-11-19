@@ -15,14 +15,12 @@ import CashFlowChart, { PeriodFilter } from '../../components/catering/CashFlowC
 
 // hooks
 import { usePaymentsData, CashFlowData } from '../../hooks/usePaymentsData';
-import { useSidebarState } from '../../hooks/useCateringDashboard';
 import { usePaymentsDataWithSocket } from '../../hooks/usePaymentSocket';
 
 export default function PaymentsPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const { data, isLoading, error, refreshData } = usePaymentsData();
-  const { isCollapsed, setIsCollapsed } = useSidebarState();
 
   // state untuk period filter
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('monthly');
@@ -119,25 +117,12 @@ export default function PaymentsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* sidebar */}
-      <CateringSidebar
-        isCollapsed={isCollapsed}
-        onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-        badges={[
-          { path: '/catering/schedule', count: 3 },
-        ]}
-      />
+      <CateringSidebar badges={[{ path: '/catering/schedule', count: 3 }]} />
 
       {/* main content */}
-      <main
-        className={`flex-1 transition-all duration-300 ease-out ${
-          isCollapsed ? 'ml-20' : 'ml-64'
-        }`}
-        style={{
-          willChange: 'margin-left',
-        }}
-      >
+      <main className="min-h-screen ml-72" style={{ transform: 'translateZ(0)' }}>
         <motion.div
           variants={pageVariants}
           initial="hidden"

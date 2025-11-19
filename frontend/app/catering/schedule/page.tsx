@@ -9,7 +9,6 @@ import ScheduleCard from '../../components/catering/ScheduleCard';
 import ScheduleFilterTabs, { FilterType } from '../../components/catering/ScheduleFilterTabs';
 import ScheduleDetailModal from '../../components/catering/ScheduleDetailModal';
 import { useScheduleData, ScheduleItem } from '../../hooks/useScheduleData';
-import { useSidebarState } from '../../hooks/useCateringDashboard';
 import { Calendar, RefreshCw, AlertTriangle } from 'lucide-react';
 
 export default function SchedulePage() {
@@ -26,9 +25,6 @@ export default function SchedulePage() {
 
   // hook untuk data schedule dengan filtering
   const { schedules, isLoading, error, refetch } = useScheduleData(activeFilter);
-
-  // hook untuk sidebar state
-  const { isCollapsed, toggleCollapsed, isInitialized } = useSidebarState();
 
   // handler untuk perubahan filter dengan URL update
   const handleFilterChange = useCallback((filter: FilterType) => {
@@ -58,24 +54,6 @@ export default function SchedulePage() {
     // setelah berhasil, refetch data
     await refetch();
   }, [refetch]);
-
-  // animasi variants untuk konten utama
-  const mainContentVariants = {
-    expanded: {
-      marginLeft: 256,
-      transition: {
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
-      },
-    },
-    collapsed: {
-      marginLeft: 80,
-      transition: {
-        duration: 0.3,
-        ease: [0.4, 0, 0.2, 1],
-      },
-    },
-  };
 
   // animasi untuk list
   const listVariants = {
@@ -124,29 +102,14 @@ export default function SchedulePage() {
     </div>
   );
 
-  // tunggu inisialisasi sidebar
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* sidebar */}
-      <CateringSidebar
-        isCollapsed={isCollapsed}
-        onToggleCollapse={toggleCollapsed}
-      />
+      <CateringSidebar />
 
       {/* konten utama */}
-      <motion.main
-        initial={false}
-        animate={isCollapsed ? 'collapsed' : 'expanded'}
-        variants={mainContentVariants}
-        className="min-h-screen"
+      <main
+        className="min-h-screen ml-72"
         style={{
           willChange: 'margin-left',
           transform: 'translateZ(0)',
@@ -224,7 +187,7 @@ export default function SchedulePage() {
           {/* footer */}
           <CateringFooter />
         </div>
-      </motion.main>
+      </main>
 
       {/* modal detail */}
       <ScheduleDetailModal

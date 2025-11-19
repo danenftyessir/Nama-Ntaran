@@ -12,7 +12,6 @@ import CateringFooter from '../../components/catering/CateringFooter';
 import MenuCard from '../../components/catering/MenuCard';
 
 // hooks
-import { useSidebarState } from '../../hooks/useCateringDashboard';
 import { useMenuData } from '../../hooks/useMenuData';
 
 // interface untuk menu item
@@ -30,7 +29,6 @@ interface MenuItem {
 export default function MenuPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
-  const { isCollapsed, setIsCollapsed } = useSidebarState();
   const { data, isLoading, error, refreshData } = useMenuData();
 
   // state untuk modal dan loading
@@ -125,25 +123,12 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* sidebar */}
-      <CateringSidebar
-        isCollapsed={isCollapsed}
-        onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
-        badges={[
-          { path: '/catering/schedule', count: 3 },
-        ]}
-      />
+      <CateringSidebar badges={[{ path: '/catering/schedule', count: 3 }]} />
 
       {/* main content */}
-      <main
-        className={`flex-1 transition-all duration-300 ease-out ${
-          isCollapsed ? 'ml-20' : 'ml-64'
-        }`}
-        style={{
-          willChange: 'margin-left',
-        }}
-      >
+      <main className="min-h-screen ml-72" style={{ transform: 'translateZ(0)' }}>
         <motion.div
           variants={pageVariants}
           initial="hidden"
