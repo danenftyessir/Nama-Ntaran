@@ -7,9 +7,6 @@ import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Upload, CreditCard, LucideIcon } from 'lucide-react';
 
-// TO DO: implementasi modal untuk upload menu
-// TO DO: integrasi dengan API untuk quick actions
-
 interface QuickActionItem {
   id: string;
   label: string;

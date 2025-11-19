@@ -17,9 +17,6 @@ import {
   LucideIcon,
 } from 'lucide-react';
 
-// TO DO: integrasi dengan API untuk mendapatkan notifikasi badge dinamis
-// TO DO: implementasi fitur collapse sidebar dengan local storage persistence
-
 interface NavItemType {
   label: string;
   path: string;
@@ -27,26 +24,39 @@ interface NavItemType {
   badge?: number;
 }
 
+interface NotificationBadge {
+  path: string;
+  count: number;
+}
+
 interface CateringSidebarProps {
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  badges?: NotificationBadge[];
 }
 
 const CateringSidebar: React.FC<CateringSidebarProps> = ({
   isCollapsed = false,
   onToggleCollapse,
+  badges = [],
 }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  // daftar navigasi utama
+  // helper untuk mendapatkan badge count dari path
+  const getBadgeCount = (path: string): number | undefined => {
+    const badge = badges.find(b => b.path === path);
+    return badge?.count;
+  };
+
+  // daftar navigasi utama dengan badge dinamis
   const navItems: NavItemType[] = [
     { label: 'Dashboard', path: '/catering', icon: LayoutDashboard },
-    { label: 'Delivery Schedule', path: '/catering/schedule', icon: Calendar },
-    { label: 'Payment Status', path: '/catering/payments', icon: CreditCard },
+    { label: 'Delivery Schedule', path: '/catering/schedule', icon: Calendar, badge: getBadgeCount('/catering/schedule') },
+    { label: 'Payment Status', path: '/catering/payments', icon: CreditCard, badge: getBadgeCount('/catering/payments') },
     { label: 'Delivery History', path: '/catering/history', icon: History },
     { label: 'Menu Management', path: '/catering/menu', icon: UtensilsCrossed },
-    { label: 'Issues & Reputation', path: '/catering/issues', icon: AlertCircle },
+    { label: 'Issues & Reputation', path: '/catering/issues', icon: AlertCircle, badge: getBadgeCount('/catering/issues') },
   ];
 
   const handleNavigation = (path: string) => {

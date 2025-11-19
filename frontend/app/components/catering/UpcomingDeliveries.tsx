@@ -1,14 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, Clock, Package } from 'lucide-react';
-
-// TO DO: integrasi dengan API untuk mendapatkan data jadwal pengiriman real-time
-// TO DO: implementasi fitur sorting dan filtering
+import { Building2, Clock, Package, ArrowUpDown, Filter } from 'lucide-react';
 
 interface DeliveryItem {
   id: string | number;
@@ -23,6 +20,7 @@ interface UpcomingDeliveriesProps {
   subtitle?: string;
   deliveries: DeliveryItem[];
   onDetailClick?: (delivery: DeliveryItem) => void;
+  showFilters?: boolean;
 }
 
 const UpcomingDeliveries: React.FC<UpcomingDeliveriesProps> = ({
@@ -30,10 +28,52 @@ const UpcomingDeliveries: React.FC<UpcomingDeliveriesProps> = ({
   subtitle = 'Pengiriman Selanjutnya',
   deliveries = [],
   onDetailClick,
+  showFilters = true,
 }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
   const router = useRouter();
+
+  // state untuk sorting dan filtering
+  const [sortBy, setSortBy] = useState<'time' | 'portions' | 'name'>('time');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  // filter dan sort deliveries
+  const filteredDeliveries = useMemo(() => {
+    return deliveries
+      .filter(delivery => {
+        if (filterStatus === 'all') return true;
+        return delivery.status === filterStatus;
+      })
+      .sort((a, b) => {
+        let comparison = 0;
+
+        switch (sortBy) {
+          case 'time':
+            comparison = a.time.localeCompare(b.time);
+            break;
+          case 'portions':
+            comparison = a.portions - b.portions;
+            break;
+          case 'name':
+            comparison = a.schoolName.localeCompare(b.schoolName);
+            break;
+        }
+
+        return sortOrder === 'asc' ? comparison : -comparison;
+      });
+  }, [deliveries, sortBy, sortOrder, filterStatus]);
+
+  // toggle sort order
+  const handleSort = (newSortBy: 'time' | 'portions' | 'name') => {
+    if (sortBy === newSortBy) {
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      setSortOrder('asc');
+    }
+  };
 
   const handleDetailClick = (delivery: DeliveryItem) => {
     if (onDetailClick) {
@@ -83,19 +123,66 @@ const UpcomingDeliveries: React.FC<UpcomingDeliveriesProps> = ({
     >
       {/* header section */}
       <div className="px-5 py-4 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+          </div>
+
+          {/* kontrol sorting dan filtering */}
+          {showFilters && (
+            <div className="flex items-center gap-2">
+              {/* dropdown sort */}
+              <div className="relative">
+                <select
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value as 'time' | 'portions' | 'name')}
+                  className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="time">Waktu</option>
+                  <option value="portions">Porsi</option>
+                  <option value="name">Nama</option>
+                </select>
+                <ArrowUpDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+              </div>
+
+              {/* tombol toggle order */}
+              <button
+                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="p-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors duration-200"
+                title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+              >
+                <ArrowUpDown className={`w-3.5 h-3.5 transition-transform duration-200 ${sortOrder === 'desc' ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* dropdown filter status */}
+              <div className="relative">
+                <select
+                  value={filterStatus}
+                  onChange={e => setFilterStatus(e.target.value)}
+                  className="appearance-none pl-3 pr-8 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg border-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                >
+                  <option value="all">Semua</option>
+                  <option value="pending">Menunggu</option>
+                  <option value="in_progress">Berlangsung</option>
+                  <option value="completed">Selesai</option>
+                </select>
+                <Filter className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* list pengiriman */}
       <div className="divide-y divide-gray-50">
-        {deliveries.length === 0 ? (
+        {filteredDeliveries.length === 0 ? (
           <div className="px-5 py-8 text-center">
             <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500 text-sm">Tidak ada jadwal pengiriman</p>
           </div>
         ) : (
-          deliveries.map((delivery) => (
+          filteredDeliveries.map((delivery) => (
             <motion.div
               key={delivery.id}
               variants={itemVariants}

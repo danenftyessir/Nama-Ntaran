@@ -4,24 +4,31 @@ import React from 'react';
 import Link from 'next/link';
 import { HelpCircle, Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 
-// TO DO: implementasi link sosial media yang valid
-// TO DO: integrasi dengan support system
-
 interface CateringFooterProps {
   showSocialLinks?: boolean;
+  facebookUrl?: string;
+  twitterUrl?: string;
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  youtubeUrl?: string;
 }
 
 const CateringFooter: React.FC<CateringFooterProps> = ({
   showSocialLinks = true,
+  facebookUrl = 'https://facebook.com/nutrichainmbg',
+  twitterUrl = 'https://twitter.com/nutrichainmbg',
+  instagramUrl = 'https://instagram.com/nutrichainmbg',
+  linkedinUrl = 'https://linkedin.com/company/nutrichainmbg',
+  youtubeUrl = 'https://youtube.com/@nutrichainmbg',
 }) => {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
-    { id: 'facebook', icon: Facebook, href: '#', label: 'Facebook' },
-    { id: 'twitter', icon: Twitter, href: '#', label: 'Twitter' },
-    { id: 'instagram', icon: Instagram, href: '#', label: 'Instagram' },
-    { id: 'linkedin', icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { id: 'youtube', icon: Youtube, href: '#', label: 'YouTube' },
+    { id: 'facebook', icon: Facebook, href: facebookUrl, label: 'Facebook' },
+    { id: 'twitter', icon: Twitter, href: twitterUrl, label: 'Twitter' },
+    { id: 'instagram', icon: Instagram, href: instagramUrl, label: 'Instagram' },
+    { id: 'linkedin', icon: Linkedin, href: linkedinUrl, label: 'LinkedIn' },
+    { id: 'youtube', icon: Youtube, href: youtubeUrl, label: 'YouTube' },
   ];
 
   return (
