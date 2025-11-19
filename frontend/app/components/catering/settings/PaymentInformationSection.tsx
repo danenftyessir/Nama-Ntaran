@@ -58,7 +58,7 @@ const PaymentInformationSection: React.FC<PaymentInformationSectionProps> = ({
             type={showBankAccount ? 'text' : 'password'}
             value={data.bankAccount}
             onChange={(e) => handleFieldChange('bankAccount', e.target.value)}
-            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+            className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
             placeholder="**** **** **** 1234"
           />
           <button
@@ -117,7 +117,7 @@ const PaymentInformationSection: React.FC<PaymentInformationSectionProps> = ({
           type="text"
           value={data.taxRegistration}
           onChange={(e) => handleFieldChange('taxRegistration', e.target.value)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
           placeholder="TXID-XXXXXXXXX"
         />
         <p className="text-xs text-gray-600 mt-2 font-medium">

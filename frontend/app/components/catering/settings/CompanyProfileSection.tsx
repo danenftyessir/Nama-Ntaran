@@ -48,7 +48,6 @@ const CUISINE_OPTIONS = [
 ];
 
 const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onUpdate }) => {
-  const [isEditingLogo, setIsEditingLogo] = useState(false);
   const [newCuisine, setNewCuisine] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -67,7 +66,6 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
         const reader = new FileReader();
         reader.onloadend = () => {
           onUpdate({ logo: reader.result as string });
-          setIsEditingLogo(false);
         };
         reader.readAsDataURL(file);
       }
@@ -156,7 +154,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
           type="text"
           value={data.businessName}
           onChange={(e) => onUpdate({ businessName: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
           placeholder="Enter Business Name"
         />
       </div>
@@ -168,7 +166,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
           type="text"
           value={data.officialAddress}
           onChange={(e) => onUpdate({ officialAddress: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
           placeholder="Enter Official Address"
         />
       </div>
@@ -180,7 +178,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
           type="text"
           value={data.licenseNumber}
           onChange={(e) => onUpdate({ licenseNumber: e.target.value })}
-          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
           placeholder="Enter License Number"
         />
       </div>
@@ -200,7 +198,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
               type="tel"
               value={data.phoneNumber}
               onChange={(e) => onUpdate({ phoneNumber: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
               placeholder="+1 (555) 123-4567"
             />
           </div>
@@ -215,7 +213,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
               type="email"
               value={data.email}
               onChange={(e) => onUpdate({ email: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
               placeholder="email@example.com"
             />
           </div>
@@ -231,7 +229,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
             type="text"
             value={data.pointOfContact}
             onChange={(e) => onUpdate({ pointOfContact: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium placeholder:text-gray-400"
+            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold placeholder:text-gray-500 placeholder:font-normal"
             placeholder="Enter Contact Person Name"
           />
         </div>
@@ -259,7 +257,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
                   },
                 })
               }
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold"
             />
             <span className="text-gray-700 font-semibold">-</span>
             <input
@@ -273,7 +271,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
                   },
                 })
               }
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold"
             />
           </div>
         </div>
@@ -293,7 +291,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
                   },
                 })
               }
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold"
             />
             <span className="text-gray-700 font-semibold">-</span>
             <input
@@ -307,7 +305,7 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
                   },
                 })
               }
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-medium"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold"
             />
           </div>
         </div>
@@ -346,9 +344,10 @@ const CompanyProfileSection: React.FC<CompanyProfileSectionProps> = ({ data, onU
           <select
             value={newCuisine}
             onChange={(e) => setNewCuisine(e.target.value)}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth"
+            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-smooth text-gray-900 font-semibold"
+            style={{ color: newCuisine ? '#111827' : '#6B7280' }}
           >
-            <option value="">Select Cuisine Type</option>
+            <option value="" className="text-gray-500">Select Cuisine Type</option>
             {CUISINE_OPTIONS.filter((c) => !data.cuisineSpecializations.includes(c)).map(
               (cuisine) => (
                 <option key={cuisine} value={cuisine}>
