@@ -287,3 +287,54 @@ export const analyticsApi = {
     return apiRequest(`/api/analytics/trends${query}`, { requireAuth: true });
   },
 };
+
+// Default export object dengan semua API dan generic HTTP methods
+const api = {
+  // Named API exports
+  auth: authApi,
+  deliveries: deliveriesApi,
+  verifications: verificationsApi,
+  schools: schoolsApi,
+  caterings: cateringsApi,
+  issues: issuesApi,
+  analytics: analyticsApi,
+
+  // Generic HTTP methods untuk backward compatibility
+  async get(endpoint: string, config?: { params?: Record<string, any> }) {
+    const query = config?.params ? `?${new URLSearchParams(config.params).toString()}` : '';
+    return apiRequest(`${endpoint}${query}`, { requireAuth: true });
+  },
+
+  async post(endpoint: string, data?: any) {
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: data,
+      requireAuth: true,
+    });
+  },
+
+  async put(endpoint: string, data?: any) {
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: data,
+      requireAuth: true,
+    });
+  },
+
+  async patch(endpoint: string, data?: any) {
+    return apiRequest(endpoint, {
+      method: 'PATCH',
+      body: data,
+      requireAuth: true,
+    });
+  },
+
+  async delete(endpoint: string) {
+    return apiRequest(endpoint, {
+      method: 'DELETE',
+      requireAuth: true,
+    });
+  },
+};
+
+export default api;
