@@ -1,0 +1,21 @@
+{
+  "totalDeliveries": 4022,
+  "successDeliveries": 4022,
+  "failedDeliveries": 0,
+  "deliveriesByStatus": {
+    "verified": 2423,
+    "scheduled": 417,
+    "in_transit": 93,
+    "delivered": 812,
+    "cancelled": 88,
+    "pending": 189
+  },
+  "deliveriesByMonth": {
+    "2025-11": 1336,
+    "2025-10": 970,
+    "2025-08": 293,
+    "2025-09": 911,
+    "2025-12": 512
+  },
+  "errors": []
+}

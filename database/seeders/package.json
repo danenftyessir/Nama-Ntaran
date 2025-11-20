@@ -4,9 +4,11 @@
   "description": "Seeding scripts for MBG (Makanan Bergizi Gratis) database",
   "scripts": {
     "seed:users": "ts-node 01-seed-users.ts",
-    "seed:schools": "ts-node 02-seed-schools.ts",
-    "seed:caterings": "ts-node 03-seed-caterings.ts",
-    "seed:all": "npm run seed:users && npm run seed:schools && npm run seed:caterings"
+    "seed:menu-items": "ts-node 02-seed-menu-items.ts",
+    "seed:deliveries": "ts-node 04-seed-deliveries.ts",
+    "seed:allocations": "ts-node 03-seed-allocations.ts",
+    "seed:verifications": "ts-node 05-seed-verifications.ts",
+    "seed:all": "npm run seed:users && npm run seed:menu-items && npm run seed:deliveries && npm run seed:allocations && npm run seed:verifications"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

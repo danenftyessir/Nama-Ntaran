@@ -1,0 +1,19 @@
+{
+  "totalDeliveries": 1000,
+  "totalVerifications": 1000,
+  "successCount": 1000,
+  "failedCount": 0,
+  "byQualityRating": {
+    "1": 5,
+    "2": 40,
+    "3": 105,
+    "4": 340,
+    "5": 510
+  },
+  "byStatus": {
+    "approved": 902,
+    "pending": 77,
+    "rejected": 21
+  },
+  "errors": []
+}

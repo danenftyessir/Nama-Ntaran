@@ -1,0 +1,16 @@
+{
+  "totalMenus": 2034,
+  "successMenus": 2034,
+  "failedMenus": 0,
+  "menusByCategory": {
+    "complete_meal": 781,
+    "main_course": 256,
+    "soup": 262,
+    "side_dish": 287,
+    "dessert": 121,
+    "salad": 111,
+    "snack": 100,
+    "beverage": 116
+  },
+  "errors": []
+}

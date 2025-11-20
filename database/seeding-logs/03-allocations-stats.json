@@ -1,0 +1,13 @@
+{
+  "totalAllocations": 1000,
+  "successAllocations": 1000,
+  "failedAllocations": 0,
+  "allocationsByStatus": {
+    "LOCKED": 454,
+    "RELEASED": 479,
+    "RELEASING": 16,
+    "CANCELLED": 38,
+    "ON_HOLD": 13
+  },
+  "errors": []
+}
