@@ -16,12 +16,11 @@
   "aggregates": {
     "avg_stunting_rate": "22.67",
     "avg_severe_stunting_rate": "7.56",
-    "total_stunting_count": "24.255.538",
+    "total_stunting_count": "24.243.112",
     "data_points_per_province": 5
   },
   "by_source": {
-    "cached": 88,
-    "kemenkes_api": 82
+    "simulated": 170
   },
   "by_year": {
     "2020": 34,
@@ -35,8 +34,8 @@
   },
   "highest_stunting": [
     "Nusa Tenggara Timur (33.3%)",
-    "Papua (30.2%)",
-    "Aceh (29.7%)",
+    "Papua (30.3%)",
+    "Aceh (29.6%)",
     "Nusa Tenggara Barat (28.9%)",
     "Papua Barat (28.8%)"
   ],
@@ -45,6 +44,6 @@
     "Bali (14.1%)",
     "Kepulauan Bangka Belitung (14.8%)",
     "Kepulauan Riau (15.4%)",
-    "DI Yogyakarta (16.3%)"
+    "DI Yogyakarta (16.4%)"
   ]
 }

@@ -1,23 +1,23 @@
 {
-  "totalSnapshots": 19573,
-  "successCount": 19573,
+  "totalSnapshots": 19550,
+  "successCount": 19550,
   "failedCount": 0,
   "byWalletType": {
-    "government": 251,
-    "escrow_contract": 335,
-    "school": 9440,
-    "catering": 9547
+    "government": 246,
+    "escrow_contract": 320,
+    "school": 9420,
+    "catering": 9564
   },
   "bySnapshotType": {
-    "scheduled": 19255,
-    "on_transaction": 284,
-    "manual": 34
+    "scheduled": 19239,
+    "on_transaction": 275,
+    "manual": 36
   },
   "byNetwork": {
-    "polygon-mainnet": 6788,
-    "arbitrum-one": 6440,
-    "optimism-mainnet": 6345
+    "polygon-mainnet": 6778,
+    "arbitrum-one": 6435,
+    "optimism-mainnet": 6337
   },
-  "totalBalanceIDR": 59732322441375,
+  "totalBalanceIDR": 54484375641190,
   "errors": []
 }

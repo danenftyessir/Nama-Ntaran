@@ -148,17 +148,8 @@ router.get('/dashboard', async (req: AuthRequest, res: Response) => {
       expense: parseInt(row.expense),
     }));
 
-    // jika tidak ada data, buat data dummy untuk demo
-    if (cashFlowData.length === 0) {
-      const months = ['Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov'];
-      months.forEach((month) => {
-        cashFlowData.push({
-          month,
-          income: Math.floor(Math.random() * 30000000) + 20000000,
-          expense: Math.floor(Math.random() * 20000000) + 15000000,
-        });
-      });
-    }
+    // Return actual data (empty array if no historical data exists)
+    // Frontend should handle empty state gracefully
 
     // ============================================
     // Return Combined Response

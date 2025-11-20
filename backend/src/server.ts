@@ -24,6 +24,10 @@ import cateringPaymentRoutes from './routes/cateringPaymentRoutes.js';
 import cateringHistoryRoutes from './routes/cateringHistoryRoutes.js';
 import cateringMenuRoutes from './routes/cateringMenuRoutes.js';
 import cateringIssuesRoutes from './routes/cateringIssuesRoutes.js';
+import schedulerRoutes from './routes/schedulerRoutes.js';
+
+// Import scheduler service
+import schedulerService from './services/schedulerService.js';
 
 dotenv.config();
 
@@ -66,6 +70,7 @@ app.use('/api/catering/payments', cateringPaymentRoutes);
 app.use('/api/catering/history', cateringHistoryRoutes);
 app.use('/api/catering/menu', cateringMenuRoutes);
 app.use('/api/catering/issues', cateringIssuesRoutes);
+app.use('/api/scheduler', schedulerRoutes); // 🕐 Scheduler endpoints
 
 // Health check route
 app.get('/api/health', async (req, res) => {
@@ -168,5 +173,14 @@ httpServer.listen(PORT, async () => {
     console.log('✅ Blockchain listener started successfully!\n');
   } catch (error) {
     console.error('❌ Failed to start blockchain listener:', error);
+  }
+
+  // Start scheduler service
+  try {
+    console.log('🕐 Starting scheduler service...');
+    schedulerService.start();
+    console.log('✅ Scheduler started successfully!\n');
+  } catch (error) {
+    console.error('❌ Failed to start scheduler:', error);
   }
 });

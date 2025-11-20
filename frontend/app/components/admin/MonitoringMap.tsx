@@ -1,14 +1,15 @@
 'use client';
 
-import React from 'react';
-import { MapPin, TrendingUp, AlertTriangle, CheckCircle, Map } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { MapPin, TrendingUp, AlertTriangle, CheckCircle, Map, Loader2, Info } from 'lucide-react';
 
 interface SchoolMarker {
   id: number;
   name: string;
   location: string;
-  lat: number;
-  lng: number;
+  lat?: number | null;
+  lng?: number | null;
   status: 'active' | 'issue' | 'pending';
   priority: number;
   lastDelivery: string;
@@ -20,52 +21,48 @@ interface MonitoringMapProps {
 }
 
 const MonitoringMap: React.FC<MonitoringMapProps> = ({ height = '500px' }) => {
-  const schools: SchoolMarker[] = [
-    {
-      id: 1,
-      name: 'SDN 01 Bandung',
-      location: 'Bandung, Jawa Barat',
-      lat: -6.9175,
-      lng: 107.6191,
-      status: 'active',
-      priority: 85,
-      lastDelivery: '15 Nov 2025',
-      students: 450,
-    },
-    {
-      id: 2,
-      name: 'SDN 05 Jakarta',
-      location: 'Jakarta Selatan',
-      lat: -6.2615,
-      lng: 106.7810,
-      status: 'active',
-      priority: 78,
-      lastDelivery: '15 Nov 2025',
-      students: 380,
-    },
-    {
-      id: 3,
-      name: 'SMP 12 Surabaya',
-      location: 'Surabaya, Jawa Timur',
-      lat: -7.2575,
-      lng: 112.7521,
-      status: 'issue',
-      priority: 92,
-      lastDelivery: '14 Nov 2025',
-      students: 520,
-    },
-    {
-      id: 4,
-      name: 'SDN 03 Yogyakarta',
-      location: 'Yogyakarta',
-      lat: -7.7956,
-      lng: 110.3695,
-      status: 'pending',
-      priority: 65,
-      lastDelivery: '13 Nov 2025',
-      students: 290,
-    },
-  ];
+  const [schools, setSchools] = useState<SchoolMarker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+        const token = localStorage.getItem('token');
+
+        const response = await axios.get(`${apiUrl}/schools?limit=100`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (response.data && response.data.schools) {
+          // Map schools to SchoolMarker format
+          const schoolsData: SchoolMarker[] = response.data.schools.map((school: any) => ({
+            id: school.id,
+            name: school.name,
+            location: `${school.city || school.kabupaten}, ${school.province || school.provinsi}`,
+            lat: school.latitude || null,
+            lng: school.longitude || null,
+            status: 'active' as const, // Default status
+            priority: school.priority_score || 50,
+            lastDelivery: 'N/A',
+            students: school.student_count || 0,
+          }));
+
+          setSchools(schoolsData.slice(0, 20)); // Limit to 20 for performance
+        }
+      } catch (err: any) {
+        console.error('Error fetching schools:', err);
+        setError('Gagal memuat data sekolah');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchools();
+  }, []);
+
+  const schoolsWithCoordinates = schools.filter(s => s.lat && s.lng);
 
   const getStatusConfig = (status: SchoolMarker['status']) => {
     switch (status) {
@@ -135,28 +132,56 @@ const MonitoringMap: React.FC<MonitoringMapProps> = ({ height = '500px' }) => {
 
         {/* Map Icon */}
         <div className="relative z-10 text-center">
-          <Map className="w-24 h-24 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500 font-semibold mb-2">Leaflet.js Map Integration</p>
-          <p className="text-sm text-gray-400 max-w-md">
-            Peta interaktif akan menampilkan lokasi sekolah dengan marker berwarna<br />
-            berdasarkan status dan ukuran berdasarkan prioritas AI
-          </p>
-          <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 glass-subtle rounded-xl">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-semibold text-gray-700">
-              {schools.length} Sekolah Terdaftar
-            </span>
-          </div>
+          {loading ? (
+            <>
+              <Loader2 className="w-24 h-24 text-gray-300 mx-auto mb-4 animate-spin" />
+              <p className="text-gray-500 font-semibold mb-2">Memuat data sekolah...</p>
+            </>
+          ) : error ? (
+            <>
+              <AlertTriangle className="w-24 h-24 text-red-300 mx-auto mb-4" />
+              <p className="text-red-500 font-semibold mb-2">{error}</p>
+            </>
+          ) : (
+            <>
+              <Map className="w-24 h-24 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 font-semibold mb-2">Leaflet.js Map Integration</p>
+              <p className="text-sm text-gray-400 max-w-md">
+                Peta interaktif akan menampilkan lokasi sekolah dengan marker berwarna<br />
+                berdasarkan status dan ukuran berdasarkan prioritas AI
+              </p>
+              {schoolsWithCoordinates.length === 0 && schools.length > 0 && (
+                <div className="mt-4 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-xl max-w-md mx-auto">
+                  <div className="flex items-start gap-2">
+                    <Info className="w-5 h-5 text-yellow-600 mt-0.5" />
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-yellow-800">Data Koordinat Belum Tersedia</p>
+                      <p className="text-xs text-yellow-700 mt-1">
+                        Geocoding service sedang memproses {schools.length} sekolah untuk menampilkan lokasi di peta.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 glass-subtle rounded-xl">
+                <MapPin className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-semibold text-gray-700">
+                  {schools.length} Sekolah Terdaftar
+                  {schoolsWithCoordinates.length > 0 && ` (${schoolsWithCoordinates.length} dengan koordinat)`}
+                </span>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Simulated Markers */}
+        {/* Simulated Markers - Only show if coordinates available */}
         <div className="absolute inset-0 pointer-events-none">
-          {schools.map((school, idx) => {
+          {schoolsWithCoordinates.slice(0, 4).map((school, idx) => {
             const statusConfig = getStatusConfig(school.status);
             const priorityColor = getPriorityColor(school.priority);
             const StatusIcon = statusConfig.icon;
 
-            // Simulate random positions (in production, these would be based on real coordinates)
+            // Simulate positions based on array index (in production, use real lat/lng projection)
             const positions = [
               { top: '20%', left: '25%' },
               { top: '40%', left: '60%' },

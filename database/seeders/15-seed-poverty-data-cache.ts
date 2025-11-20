@@ -129,11 +129,9 @@ function estimatePovertyCount(povertyRate: number, provinceCode: string): number
 }
 
 function getDataSource(year: number, month: number): string {
-  // Simulate different data sources
-  if (year === 2024 && month >= 6) return 'bps_api';
-  if (year === 2024) return 'cached';
-  if (Math.random() > 0.7) return 'bps_api';
-  return 'cached';
+  // ALL data is simulated for development/demo purposes
+  // In production, replace with actual BPS API integration
+  return 'simulated';
 }
 
 // ============================================

@@ -3,25 +3,25 @@
   "successCount": 5000,
   "failedCount": 0,
   "byStatus": {
-    "success": 4610,
-    "failed": 303,
-    "pending": 87
+    "pending": 93,
+    "success": 4634,
+    "failed": 273
   },
   "byNetwork": {
-    "polygon-mainnet": 3453,
-    "arbitrum-one": 1052,
-    "optimism-mainnet": 495
+    "polygon-mainnet": 3448,
+    "arbitrum-one": 1027,
+    "optimism-mainnet": 525
   },
   "byType": {
-    "DIRECT_PAYMENT": 980,
-    "REFUND": 408,
-    "WALLET_FUNDING": 474,
-    "ESCROW_RELEASE": 1431,
-    "ESCROW_LOCK": 1512,
-    "GAS_FEE_PAYMENT": 137,
-    "CONTRACT_DEPLOYMENT": 58
+    "ESCROW_LOCK": 1469,
+    "DIRECT_PAYMENT": 957,
+    "REFUND": 419,
+    "WALLET_FUNDING": 530,
+    "GAS_FEE_PAYMENT": 160,
+    "ESCROW_RELEASE": 1405,
+    "CONTRACT_DEPLOYMENT": 60
   },
-  "totalValueIDR": 209645722056,
-  "totalFeesIDR": 535726479,
+  "totalValueIDR": 225655267491,
+  "totalFeesIDR": 554505589,
   "errors": []
 }

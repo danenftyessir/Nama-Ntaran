@@ -37,8 +37,7 @@ router.get('/', authenticateToken, async (req: Request, res: Response) => {
 
     const cateringId = cateringResult.rows[0].id;
 
-    // TO DO: query ke database untuk mendapatkan menu
-    // contoh query (sesuaikan dengan schema database)
+    // Query ke database untuk mendapatkan menu items
     const menusResult = await pool.query(
       `SELECT
         id,
@@ -49,7 +48,7 @@ router.get('/', authenticateToken, async (req: Request, res: Response) => {
         vitamins,
         price,
         image_url
-      FROM menus
+      FROM menu_items
       WHERE catering_id = $1
       ORDER BY created_at DESC`,
       [cateringId]
@@ -87,7 +86,7 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // TO DO: implementasi query untuk detail menu
+    // Query untuk detail menu
     const result = await pool.query(
       `SELECT
         m.id,
@@ -98,7 +97,7 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response) => {
         m.vitamins,
         m.price,
         m.image_url
-      FROM menus m
+      FROM menu_items m
       JOIN caterings c ON m.catering_id = c.id
       WHERE m.id = $1 AND c.user_id = $2`,
       [menuId, userId]
@@ -153,9 +152,9 @@ router.post('/', authenticateToken, async (req: Request, res: Response) => {
 
     const cateringId = cateringResult.rows[0].id;
 
-    // TO DO: implementasi insert menu ke database
+    // Insert menu baru ke database
     const result = await pool.query(
-      `INSERT INTO menus (catering_id, name, description, calories, protein, vitamins, price, image_url)
+      `INSERT INTO menu_items (catering_id, name, description, calories, protein, vitamins, price, image_url)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING id`,
       [cateringId, name, description, calories, protein, vitamins, price, imageUrl]
@@ -182,9 +181,9 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // TO DO: implementasi update menu di database
+    // Update menu di database
     const result = await pool.query(
-      `UPDATE menus m
+      `UPDATE menu_items m
       SET name = $1, description = $2, calories = $3, protein = $4,
           vitamins = $5, price = $6, image_url = $7, updated_at = NOW()
       FROM caterings c
@@ -217,9 +216,9 @@ router.delete('/:id', authenticateToken, async (req: Request, res: Response) => 
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // TO DO: implementasi delete menu dari database
+    // Delete menu dari database
     const result = await pool.query(
-      `DELETE FROM menus m
+      `DELETE FROM menu_items m
       USING caterings c
       WHERE m.id = $1 AND m.catering_id = c.id AND c.user_id = $2
       RETURNING m.id`,
@@ -249,7 +248,7 @@ function getDefaultImage(index: number): string {
     '/aesthetic view 5.jpg',
     '/jagung.jpg',
   ];
-  return images[index % images.length];
+  return images[index % images.length] || '/aesthetic view.jpg';
 }
 
 export default router;

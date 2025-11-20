@@ -14,14 +14,13 @@
     "success_rate": "100.0"
   },
   "aggregates": {
-    "avg_poverty_rate": "9.97",
+    "avg_poverty_rate": "9.98",
     "avg_gini_ratio": "0.364",
-    "total_poverty_count": "124.132.250",
+    "total_poverty_count": "124.274.080",
     "data_points_per_province": 5
   },
   "by_source": {
-    "cached": 92,
-    "bps_api": 78
+    "simulated": 170
   },
   "by_year": {
     "2020": 34,
@@ -39,8 +38,8 @@
   ],
   "lowest_poverty": [
     "Kalimantan Selatan (4.2%)",
-    "Bali (4.3%)",
     "DKI Jakarta (4.3%)",
+    "Bali (4.3%)",
     "Kepulauan Bangka Belitung (4.4%)",
     "Kalimantan Tengah (4.7%)"
   ]

@@ -1,24 +1,90 @@
 {
-  "totalEvents": 2558,
-  "successCount": 2558,
-  "failedCount": 0,
+  "totalEvents": 2551,
+  "successCount": 0,
+  "failedCount": 2551,
   "byEventName": {
+    "EscrowReleased": 353,
+    "PaymentCompleted": 533,
+    "Transfer": 766,
     "EscrowLocked": 370,
-    "Transfer": 774,
-    "AllocationCreated": 269,
-    "PaymentInitiated": 251,
-    "PaymentCompleted": 537,
-    "EscrowReleased": 357
+    "AllocationCreated": 273,
+    "PaymentInitiated": 256
   },
   "byNetwork": {
-    "polygon-mainnet": 1720,
-    "optimism-mainnet": 253,
-    "arbitrum-one": 585
+    "polygon-mainnet": 1733,
+    "optimism-mainnet": 234,
+    "arbitrum-one": 584
   },
   "byProcessedStatus": {
-    "processed": 2157,
-    "pending": 313,
-    "failed": 88
+    "processed": 2176,
+    "pending": 307,
+    "failed": 68
   },
-  "errors": []
+  "errors": [
+    {
+      "batch": 1,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 2,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 3,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 4,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 5,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 6,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 7,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 8,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 9,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 10,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 11,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 12,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 200
+    },
+    {
+      "batch": 13,
+      "error": "duplicate key value violates unique constraint \"smart_contract_events_raw_tx_hash_log_index_key\"",
+      "count": 151
+    }
+  ]
 }

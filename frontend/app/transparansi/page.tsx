@@ -28,6 +28,10 @@ export default function TransparansiPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // state untuk summary stats
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [totalSchools, setTotalSchools] = useState<number>(0);
+
   // fetch transparency dashboard data
   useEffect(() => {
     const fetchTransparencyData = async () => {
@@ -35,16 +39,27 @@ export default function TransparansiPage() {
         setLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-        const response = await axios.get(`${apiUrl}/public/transparency`);
-
-        if (response.data.success) {
-          setTrendData(response.data.data.trendData || []);
-          setRegionalData(response.data.data.regionalData || []);
-          setTransactions(response.data.data.transactions || []);
-          setScoreData(response.data.data.scoreData || []);
-        } else {
-          throw new Error(response.data.error || 'Failed to fetch transparency data');
+        // Fetch statistics
+        const statsResponse = await axios.get(`${apiUrl}/public/statistics`);
+        if (statsResponse.data.success) {
+          const { summary, topRegions } = statsResponse.data.data;
+          setTotalAmount(summary.totalAmountDistributed || 0);
+          setTotalSchools(summary.schoolsServed || 0);
+          setRegionalData(topRegions || []);
         }
+
+        // Fetch blockchain transactions for feed
+        const txResponse = await axios.get(`${apiUrl}/public/blockchain-transactions?limit=10`);
+        if (txResponse.data.success) {
+          setTransactions(txResponse.data.data || []);
+        }
+
+        // Fetch regions for scoring data
+        const regionsResponse = await axios.get(`${apiUrl}/public/regions`);
+        if (regionsResponse.data.success) {
+          setScoreData(regionsResponse.data.data || []);
+        }
+
       } catch (err: any) {
         console.error('Error fetching transparency data:', err);
         setError(err.message || 'Gagal memuat data transparansi. Silakan coba lagi nanti.');
@@ -239,11 +254,15 @@ export default function TransparansiPage() {
                 {/* statistik cards */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white rounded-xl p-4 shadow-md">
-                    <div className="text-2xl font-bold text-blue-600">Rp 123M</div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {loading ? 'Loading...' : `Rp ${(totalAmount / 1_000_000).toFixed(1)}M`}
+                    </div>
                     <div className="text-sm text-gray-600">Total Dana</div>
                   </div>
                   <div className="bg-white rounded-xl p-4 shadow-md">
-                    <div className="text-2xl font-bold text-purple-600">578</div>
+                    <div className="text-2xl font-bold text-purple-600">
+                      {loading ? '...' : totalSchools}
+                    </div>
                     <div className="text-sm text-gray-600">Sekolah</div>
                   </div>
                 </div>
