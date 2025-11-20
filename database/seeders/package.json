@@ -1,0 +1,23 @@
+{
+  "name": "mbg-seeders",
+  "version": "1.0.0",
+  "description": "Seeding scripts for MBG (Makanan Bergizi Gratis) database",
+  "scripts": {
+    "seed:users": "ts-node 01-seed-users.ts",
+    "seed:schools": "ts-node 02-seed-schools.ts",
+    "seed:caterings": "ts-node 03-seed-caterings.ts",
+    "seed:all": "npm run seed:users && npm run seed:schools && npm run seed:caterings"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "bcrypt": "^5.1.1",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^20.10.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

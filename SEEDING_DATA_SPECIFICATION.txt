@@ -1,0 +1,3105 @@
+================================================================================
+                    SPESIFIKASI DATA SEEDING LENGKAP
+                         SISTEM MAKANAN BERGIZI GRATIS
+                              Database: Supabase
+================================================================================
+
+Dibuat: 2025-11-19
+Versi: 1.0
+Tujuan: Merombak semua data hardcode/mockup menjadi data seeding yang realistis 
+dan tersimpan di supabase
+
+================================================================================
+                          RINGKASAN EKSEKUTIF
+================================================================================
+
+Total Tabel yang Perlu Di-Seed: 20 tabel (+2 blockchain tables)
+Estimasi Total Records: 83.000 - 170.000+ records
+Sumber Data Sekolah: CSV file detail_sekolah_dikdas_*.csv & detail_sekolah_dikmen_*.csv
+Storage Gambar: Supabase Storage Bucket "mbg" (public)
+
+PRIORITAS SEEDING:
+1. Users & Authentication (WAJIB - Foundation)
+2. Schools (WAJIB - dari CSV dikdas + dikmen)
+3. Caterings (WAJIB - simulasi vendor)
+4. Menu Items (WAJIB - katalog menu)
+5. Deliveries (WAJIB - histori pengiriman)
+6. Verifications (WAJIB - validasi penerimaan)
+7. Allocations & Payments (WAJIB - sistem pembayaran)
+8. Escrow & Blockchain (WAJIB - blockchain transparency)
+9. Issues (WAJIB - laporan masalah)
+10. AI Features (WAJIB - fitur AI)
+11. Supporting Tables (WAJIB - data pendukung)
+
+================================================================================
+                         1. TABEL: users
+================================================================================
+
+DESKRIPSI: Tabel utama untuk autentikasi dan manajemen user
+SUMBER: Generate dari CSV sekolah + simulasi catering + admin manual
+
+STRUKTUR DATA:
+--------------
+id                  : SERIAL PRIMARY KEY (auto-increment)
+email               : VARCHAR(255) UNIQUE NOT NULL
+password            : VARCHAR(255) NOT NULL (bcrypt hash)
+name                : VARCHAR(255) NOT NULL
+role                : VARCHAR(50) NOT NULL
+                      Values: 'school', 'catering', 'admin', 'public'
+phone               : VARCHAR(20)
+wallet_address      : VARCHAR(255) (blockchain wallet)
+is_active           : BOOLEAN DEFAULT true
+is_verified         : BOOLEAN DEFAULT false
+last_login          : TIMESTAMP
+created_at          : TIMESTAMP DEFAULT NOW()
+updated_at          : TIMESTAMP DEFAULT NOW()
+
+RINCIAN SEEDING:
+---------------
+
+A. SCHOOL USERS (dari CSV)
+   Jumlah: Semua baris di CSV (~5.000-10.000 sekolah)
+
+   Format Email: school_{NPSN}@mbg.id
+   Contoh: school_60706559@mbg.id
+
+   Password Default: bcrypt hash dari NPSN (untuk testing)
+   Contoh Plain: "60706559" → Hash: $2b$10$...
+
+   Name: Ambil dari kolom "Nama Satuan Pendidikan"
+   Contoh: "MIN 17 JAKARTA"
+
+   Role: 'school'
+
+   Phone: Generate format Indonesia
+   Format: 08XX-XXXX-XXXX
+   Contoh: "0812-3456-7890"
+
+   Wallet Address: NULL (tidak wajib untuk sekolah)
+
+   is_active: true
+   is_verified: true (semua sekolah dianggap terverifikasi)
+
+B. CATERING USERS (simulasi)
+   Jumlah: 50-100 vendor catering
+
+   Format Email: {slug}@catering.mbg.id
+   Contoh: sumber-pangan@catering.mbg.id
+
+   Password Default: "catering123" (semua catering untuk testing)
+
+   Name: Nama perusahaan katering
+   Contoh:
+   - "PT Sumber Pangan Sehat"
+   - "CV Gizi Nusantara"
+   - "PT Boga Rasa Indonesia"
+   - "CV Sehat Selalu Catering"
+   - "PT Cita Rasa Nusantara"
+   - "CV Makan Bergizi"
+   - "PT Nutrisi Prima"
+   - "CV Katering Sehat Mandiri"
+   - "PT Anugrah Boga"
+   - "CV Dapur Sehat"
+   [tambahkan sampai 50-100 nama]
+
+   Role: 'catering'
+
+   Phone: Format bisnis
+   Contoh: "021-5555-1234", "022-8888-5678"
+
+   Wallet Address: Generate Ethereum address (44 chars)
+   Format: 0x + 40 hex chars
+   Contoh: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+
+   is_active: true
+   is_verified: true (80%), false (20% untuk simulasi pending)
+
+C. ADMIN USERS (manual)
+   Jumlah: 5-10 admin
+
+   Email:
+   - admin@mbg.id
+   - admin.finance@mbg.id
+   - admin.operations@mbg.id
+   - admin.support@mbg.id
+   - super.admin@mbg.id
+
+   Password Default: "Admin@MBG2025" (untuk testing)
+
+   Name:
+   - "Super Administrator"
+   - "Admin Keuangan"
+   - "Admin Operasional"
+   - "Admin Support"
+   - "Admin Monitoring"
+
+   Role: 'admin'
+
+   Phone: Office numbers
+
+   Wallet Address: NULL
+
+   is_active: true
+   is_verified: true
+
+TOTAL USERS: ~5.055 - 10.110 users
+
+================================================================================
+                         2. TABEL: schools
+================================================================================
+
+DESKRIPSI: Data profil sekolah lengkap
+SUMBER: CSV file detail_sekolah_dikdas_*.csv
+
+STRUKTUR DATA:
+--------------
+id                  : SERIAL PRIMARY KEY
+user_id             : INTEGER REFERENCES users(id) UNIQUE NOT NULL
+name                : VARCHAR(255) NOT NULL
+npsn                : VARCHAR(20) UNIQUE NOT NULL
+address             : TEXT NOT NULL
+kelurahan           : VARCHAR(100)
+kecamatan           : VARCHAR(100)
+kabupaten           : VARCHAR(100)
+provinsi            : VARCHAR(100)
+kode_kecamatan      : VARCHAR(10)
+jenjang             : VARCHAR(50)
+status              : VARCHAR(20) (NEGERI/SWASTA)
+student_count       : INTEGER
+contact_name        : VARCHAR(255)
+contact_email       : VARCHAR(255)
+contact_phone       : VARCHAR(20)
+npsn_url            : TEXT
+source_url          : TEXT
+kecamatan_url       : TEXT
+wallet_address      : VARCHAR(255)
+latitude            : DECIMAL(10, 8) (opsional, untuk peta)
+longitude           : DECIMAL(11, 8) (opsional, untuk peta)
+created_at          : TIMESTAMP DEFAULT NOW()
+updated_at          : TIMESTAMP DEFAULT NOW()
+
+MAPPING DARI CSV:
+-----------------
+CSV Column                    → Database Column
+--------------------------------------------------
+No                            → (skip, auto id)
+NPSN                          → npsn
+NPSN_URL                      → npsn_url
+Nama Satuan Pendidikan        → name
+Alamat                        → address
+Kelurahan                     → kelurahan
+Status                        → status
+kode_kecamatan                → kode_kecamatan
+provinsi                      → provinsi
+kabupaten                     → kabupaten
+kecamatan                     → kecamatan
+jenjang                       → jenjang
+kecamatan_url                 → kecamatan_url
+source_url                    → source_url
+
+GENERATE DATA:
+--------------
+user_id:
+  Ambil dari users table yang baru dibuat (JOIN by email/NPSN)
+
+student_count:
+  Generate berdasarkan jenjang:
+  - TK/PAUD: 50-150 siswa
+  - SD/MI: 200-600 siswa
+  - SMP/MTs: 300-800 siswa
+  - SMA/MA/SMK: 400-1200 siswa
+  Random dalam range tersebut
+
+contact_name:
+  Format: "Kepala Sekolah {Nama Sekolah Singkat}"
+  Atau gunakan nama generik: "Kepala Sekolah"
+
+contact_email:
+  Sama dengan user email: school_{NPSN}@mbg.id
+
+contact_phone:
+  Generate format: 08XX-XXXX-XXXX
+  Atau format kantor: 021-XXXX-XXXX (untuk Jakarta)
+
+wallet_address:
+  NULL (tidak wajib, bisa ditambahkan nanti)
+
+latitude & longitude:
+  Opsional: Bisa di-geocode dari alamat nanti
+  Untuk seeding awal: NULL
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+user_id: 101
+name: "MIN 17 JAKARTA"
+npsn: "60706559"
+address: "Jl. Madrasah Rt 004/01"
+kelurahan: "Pulau Tidung"
+kecamatan: "Kepulauan Seribu Selatan"
+kabupaten: "Kab. Adm. Kep. Seribu"
+provinsi: "D.K.I. Jakarta"
+kode_kecamatan: "10101"
+jenjang: "dikdas"
+status: "NEGERI"
+student_count: 350
+contact_name: "Kepala Sekolah MIN 17"
+contact_email: "school_60706559@mbg.id"
+contact_phone: "0812-3456-7890"
+npsn_url: "https://referensi.data.kemendikdasmen.go.id/pendidikan/npsn/60706559"
+source_url: "https://referensi.data.kemendikdasmen.go.id/pendidikan/dikdas/010101/3"
+kecamatan_url: "https://referensi.data.kemendikdasmen.go.id/pendidikan/dikdas/010101/3"
+wallet_address: NULL
+created_at: NOW()
+
+TOTAL SCHOOLS: Semua baris dari CSV (~5.000-10.000 sekolah)
+
+================================================================================
+                         3. TABEL: caterings
+================================================================================
+
+DESKRIPSI: Data profil vendor katering
+SUMBER: Generate/simulasi data vendor
+
+STRUKTUR DATA:
+--------------
+id                      : SERIAL PRIMARY KEY
+user_id                 : INTEGER REFERENCES users(id) UNIQUE NOT NULL
+name                    : VARCHAR(255) NOT NULL
+business_license        : VARCHAR(100) UNIQUE
+address                 : TEXT NOT NULL
+city                    : VARCHAR(100)
+province                : VARCHAR(100)
+postal_code             : VARCHAR(10)
+contact_name            : VARCHAR(255)
+contact_email           : VARCHAR(255)
+contact_phone           : VARCHAR(20)
+bank_name               : VARCHAR(100)
+bank_account_number     : VARCHAR(50)
+bank_account_holder     : VARCHAR(255)
+cuisines                : TEXT[] (array)
+business_hours_start    : TIME
+business_hours_end      : TIME
+wallet_address          : VARCHAR(255)
+is_verified             : BOOLEAN DEFAULT false
+rating                  : DECIMAL(3,2) (0.00-5.00)
+total_reviews           : INTEGER DEFAULT 0
+total_deliveries        : INTEGER DEFAULT 0
+created_at              : TIMESTAMP DEFAULT NOW()
+updated_at              : TIMESTAMP DEFAULT NOW()
+
+DATA YANG PERLU DIGENERATE:
+---------------------------
+
+Jumlah Total: 50-100 vendor catering
+
+A. NAMA CATERING (50-100 nama unik)
+   Format: PT/CV + Nama Unik
+
+   Contoh List:
+   1. PT Sumber Pangan Sehat
+   2. CV Gizi Nusantara
+   3. PT Boga Rasa Indonesia
+   4. CV Sehat Selalu Catering
+   5. PT Cita Rasa Nusantara
+   6. CV Makan Bergizi
+   7. PT Nutrisi Prima
+   8. CV Katering Sehat Mandiri
+   9. PT Anugrah Boga
+   10. CV Dapur Sehat
+   11. PT Mitra Gizi Sejahtera
+   12. CV Katering Nusantara
+   13. PT Berkah Food Services
+   14. CV Sari Rasa Catering
+   15. PT Griya Katering Sehat
+   16. CV Dapur Bergizi
+   17. PT Nutrisi Bangsa
+   18. CV Katering Prima
+   19. PT Sumber Gizi Mandiri
+   20. CV Boga Sehat
+   [... lanjutkan sampai 100]
+
+B. BUSINESS LICENSE
+   Format: CATR-{5 digit random}-{tahun}
+   Contoh: "CATR-12345-2024", "CATR-67890-2023"
+
+C. ADDRESS
+   Generate alamat di kota-kota besar Indonesia:
+
+   Kota: Jakarta, Surabaya, Bandung, Medan, Semarang, Makassar,
+         Palembang, Tangerang, Depok, Bekasi, Bogor, Yogyakarta
+
+   Format: "Jl. {Nama Jalan} No. {Nomor}, {Kecamatan}, {Kota}"
+
+   Contoh:
+   - "Jl. Industri Raya No. 45, Pulo Gadung, Jakarta Timur"
+   - "Jl. Raya Katering No. 123, Cilandak, Jakarta Selatan"
+   - "Jl. Gatot Subroto No. 88, Bandung Wetan, Bandung"
+
+D. CITY & PROVINCE
+   Distribusi berdasarkan populasi:
+   - 40% Jakarta (semua wilayah)
+   - 15% Jawa Barat (Bandung, Bekasi, Bogor, Depok)
+   - 10% Jawa Timur (Surabaya, Malang)
+   - 10% Jawa Tengah (Semarang, Solo)
+   - 5% Sumatera (Medan, Palembang)
+   - 5% Sulawesi (Makassar)
+   - 5% Bali (Denpasar)
+   - 10% Lainnya
+
+E. POSTAL CODE
+   5 digit sesuai kota, contoh:
+   - Jakarta: 10000-14000 range
+   - Bandung: 40000-40600 range
+   - Surabaya: 60000-60300 range
+
+F. CONTACT INFO
+   contact_name: Nama PIC (random nama Indonesia)
+   Contoh: "Budi Santoso", "Siti Rahayu", "Ahmad Wijaya", "Dewi Lestari"
+
+   contact_email: sama dengan user email
+
+   contact_phone:
+   - Format Jakarta: 021-XXXX-XXXX
+   - Format Mobile: 08XX-XXXX-XXXX
+
+G. BANK INFO
+   bank_name: BCA, Mandiri, BNI, BRI, CIMB Niaga (random)
+   bank_account_number: 10 digit random
+   bank_account_holder: Sama dengan catering name
+
+H. CUISINES (array)
+   Pilih 2-5 dari list:
+   ["Indonesian", "Western", "Chinese", "Japanese", "Korean", "Italian",
+    "Mexican", "Thai", "Indian", "Mediterranean", "Vegetarian", "Vegan",
+    "Halal", "Seafood", "Fusion"]
+
+   Contoh: ["Indonesian", "Halal", "Vegetarian"]
+
+I. BUSINESS HOURS
+   business_hours_start: Random antara 06:00-09:00
+   business_hours_end: Random antara 16:00-20:00
+
+   Paling umum: 08:00-17:00
+
+J. WALLET ADDRESS
+   Generate Ethereum address (0x + 40 hex chars)
+   Contoh: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+
+K. RATING & REVIEWS
+   rating: Random 3.5-5.0 (weighted ke 4.0-4.8)
+   Format: 2 decimal, contoh: 4.65
+
+   total_reviews: Random 50-500 (weighted ke 100-300)
+
+   total_deliveries: Akan di-update setelah deliveries di-seed
+   Initial: 0
+
+L. IS_VERIFIED
+   80% → true (terverifikasi)
+   20% → false (pending verifikasi)
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+user_id: 5001
+name: "PT Sumber Pangan Sehat"
+business_license: "CATR-12345-2024"
+address: "Jl. Industri Raya No. 45, Pulo Gadung, Jakarta Timur"
+city: "Jakarta Timur"
+province: "DKI Jakarta"
+postal_code: "13260"
+contact_name: "Budi Santoso"
+contact_email: "sumber-pangan@catering.mbg.id"
+contact_phone: "021-4567-8901"
+bank_name: "BCA"
+bank_account_number: "1234567890"
+bank_account_holder: "PT Sumber Pangan Sehat"
+cuisines: ["Indonesian", "Halal", "Vegetarian"]
+business_hours_start: "08:00"
+business_hours_end: "17:00"
+wallet_address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+is_verified: true
+rating: 4.65
+total_reviews: 234
+total_deliveries: 0
+created_at: NOW()
+
+TOTAL CATERINGS: 50-100 vendors
+
+================================================================================
+                         4. TABEL: menu_items
+================================================================================
+
+DESKRIPSI: Katalog menu makanan dari setiap catering
+SUMBER: Generate berdasarkan standar gizi BGM
+
+STRUKTUR DATA:
+--------------
+id                  : SERIAL PRIMARY KEY
+catering_id         : INTEGER REFERENCES caterings(id) NOT NULL
+name                : VARCHAR(255) NOT NULL
+description         : TEXT
+category            : VARCHAR(50) NOT NULL
+price               : DECIMAL(10,2) NOT NULL
+calories            : INTEGER
+protein             : INTEGER (grams)
+carbohydrates       : INTEGER (grams)
+fat                 : INTEGER (grams)
+fiber               : INTEGER (grams)
+vitamins            : TEXT[] (array)
+minerals            : TEXT[] (array)
+allergens           : TEXT[] (array)
+image_url           : TEXT (NULL untuk seeding awal)
+is_available        : BOOLEAN DEFAULT true
+is_halal            : BOOLEAN DEFAULT true
+preparation_time    : INTEGER (minutes)
+serving_size        : VARCHAR(50)
+created_at          : TIMESTAMP DEFAULT NOW()
+updated_at          : TIMESTAMP DEFAULT NOW()
+
+JUMLAH MENU PER CATERING:
+-------------------------
+- Catering Kecil: 10-15 menu
+- Catering Sedang: 16-25 menu
+- Catering Besar: 26-40 menu
+
+Total: 10-20 menu × 50-100 catering = 500-2000 menu items
+
+KATEGORI MENU:
+--------------
+1. main_course (Makanan Utama)
+2. side_dish (Lauk Pendamping)
+3. soup (Sup/Sop)
+4. salad (Salad/Gado-gado)
+5. dessert (Pencuci Mulut)
+6. beverage (Minuman)
+7. snack (Camilan)
+8. complete_meal (Paket Lengkap)
+
+TEMPLATE MENU BERGIZI (Contoh):
+--------------------------------
+
+A. MAIN COURSE / COMPLETE MEAL (40% dari menu)
+
+1. Nasi Kotak Komplit
+   description: "Nasi putih, ayam goreng bumbu kuning, tempe goreng, sayur lodeh, sambal, dan buah pisang"
+   category: "complete_meal"
+   price: 25000
+   calories: 550
+   protein: 30
+   carbohydrates: 65
+   fat: 18
+   fiber: 8
+   vitamins: ["A", "C", "B1", "B12"]
+   minerals: ["Zat Besi", "Kalsium", "Zinc"]
+   allergens: ["Kedelai"]
+   is_halal: true
+   preparation_time: 45
+   serving_size: "1 porsi kotak"
+
+2. Nasi Goreng Ayam Spesial
+   description: "Nasi goreng dengan potongan ayam, telur, sayuran segar, acar, dan kerupuk"
+   category: "main_course"
+   price: 22000
+   calories: 520
+   protein: 28
+   carbohydrates: 68
+   fat: 16
+   fiber: 6
+   vitamins: ["A", "B6", "C", "D"]
+   minerals: ["Zat Besi", "Fosfor"]
+   allergens: ["Telur", "Gluten"]
+   is_halal: true
+   preparation_time: 30
+   serving_size: "1 piring"
+
+3. Nasi Kuning Tumpeng Mini
+   description: "Nasi kuning gurih dengan ayam suwir, telur pindang, tempe orek, kering kentang, dan sambal goreng ati"
+   category: "complete_meal"
+   price: 28000
+   calories: 580
+   protein: 32
+   carbohydrates: 70
+   fat: 20
+   fiber: 7
+   vitamins: ["A", "B1", "B12", "E"]
+   minerals: ["Kalsium", "Zat Besi", "Magnesium"]
+   allergens: ["Kedelai", "Telur"]
+   is_halal: true
+   preparation_time: 60
+   serving_size: "1 porsi"
+
+4. Nasi Uduk Komplit
+   description: "Nasi uduk dengan ayam goreng, telur balado, tempe orek, kering kentang, dan sambal"
+   category: "complete_meal"
+   price: 26000
+   calories: 540
+   protein: 29
+   carbohydrates: 66
+   fat: 19
+   fiber: 6
+   vitamins: ["A", "C", "B12"]
+   minerals: ["Zat Besi", "Zinc"]
+   allergens: ["Kedelai", "Telur"]
+   is_halal: true
+   preparation_time: 50
+   serving_size: "1 porsi"
+
+B. SOUP (15% dari menu)
+
+5. Sop Iga Sapi Bening
+   description: "Sop iga sapi dengan kentang, wortel, tomat, dan daun bawang"
+   category: "soup"
+   price: 35000
+   calories: 450
+   protein: 35
+   carbohydrates: 28
+   fat: 22
+   fiber: 5
+   vitamins: ["A", "C", "B12", "K"]
+   minerals: ["Zat Besi", "Zinc", "Fosfor"]
+   allergens: []
+   is_halal: true
+   preparation_time: 90
+   serving_size: "1 mangkok"
+
+6. Soto Ayam Kuning
+   description: "Soto ayam dengan kuah kuning gurih, suwiran ayam, lontong, telur rebus, dan emping"
+   category: "soup"
+   price: 20000
+   calories: 380
+   protein: 24
+   carbohydrates: 42
+   fat: 14
+   fiber: 4
+   vitamins: ["A", "C", "B6"]
+   minerals: ["Kalsium", "Zat Besi"]
+   allergens: ["Telur"]
+   is_halal: true
+   preparation_time: 60
+   serving_size: "1 mangkok"
+
+7. Sup Sayuran Sehat
+   description: "Sup dengan sayuran segar: wortel, brokoli, kembang kol, jagung manis, dan ayam"
+   category: "soup"
+   price: 18000
+   calories: 280
+   protein: 18
+   carbohydrates: 32
+   fat: 10
+   fiber: 8
+   vitamins: ["A", "C", "K", "B6"]
+   minerals: ["Kalsium", "Kalium"]
+   allergens: []
+   is_halal: true
+   preparation_time: 40
+   serving_size: "1 mangkok"
+
+C. SIDE DISH (20% dari menu)
+
+8. Ayam Goreng Bumbu Kuning
+   description: "Ayam goreng dengan bumbu kuning khas, renyah di luar lembut di dalam"
+   category: "side_dish"
+   price: 15000
+   calories: 280
+   protein: 26
+   carbohydrates: 8
+   fat: 18
+   fiber: 1
+   vitamins: ["B6", "B12"]
+   minerals: ["Zat Besi", "Zinc"]
+   allergens: []
+   is_halal: true
+   preparation_time: 45
+   serving_size: "1 potong"
+
+9. Tempe Goreng Bumbu Kering
+   description: "Tempe goreng dengan taburan bumbu kering pedas manis"
+   category: "side_dish"
+   price: 8000
+   calories: 180
+   protein: 12
+   carbohydrates: 15
+   fat: 10
+   fiber: 4
+   vitamins: ["B2", "B6"]
+   minerals: ["Kalsium", "Magnesium"]
+   allergens: ["Kedelai"]
+   is_halal: true
+   preparation_time: 20
+   serving_size: "3 potong"
+
+10. Perkedel Kentang
+    description: "Perkedel kentang gurih dengan daging cincang"
+    category: "side_dish"
+    price: 10000
+    calories: 220
+    protein: 8
+    carbohydrates: 28
+    fat: 10
+    fiber: 3
+    vitamins: ["C", "B6"]
+    minerals: ["Kalium", "Fosfor"]
+    allergens: ["Telur", "Gluten"]
+    is_halal: true
+    preparation_time: 35
+    serving_size: "3 buah"
+
+D. SALAD & VEGETABLES (10% dari menu)
+
+11. Gado-Gado Betawi
+    description: "Sayuran rebus dengan saus kacang kental, lontong, telur rebus, dan kerupuk"
+    category: "salad"
+    price: 17000
+    calories: 320
+    protein: 15
+    carbohydrates: 38
+    fat: 14
+    fiber: 10
+    vitamins: ["A", "C", "E", "K"]
+    minerals: ["Kalsium", "Zat Besi"]
+    allergens: ["Kacang", "Telur"]
+    is_halal: true
+    preparation_time: 30
+    serving_size: "1 porsi"
+
+12. Sayur Asem Segar
+    description: "Sayur asem dengan kacang panjang, jagung manis, labu siam, dan kacang tanah"
+    category: "side_dish"
+    price: 12000
+    calories: 150
+    protein: 6
+    carbohydrates: 22
+    fat: 5
+    fiber: 8
+    vitamins: ["A", "C", "B1"]
+    minerals: ["Kalium", "Magnesium"]
+    allergens: ["Kacang"]
+    is_halal: true
+    preparation_time: 40
+    serving_size: "1 mangkok"
+
+E. DESSERT (10% dari menu)
+
+13. Buah Potong Segar
+    description: "Campuran buah segar: semangka, melon, pepaya, nanas, dan anggur"
+    category: "dessert"
+    price: 10000
+    calories: 80
+    protein: 1
+    carbohydrates: 20
+    fat: 0
+    fiber: 3
+    vitamins: ["A", "C", "B6"]
+    minerals: ["Kalium"]
+    allergens: []
+    is_halal: true
+    preparation_time: 15
+    serving_size: "1 cup"
+
+14. Pisang Goreng Kipas
+    description: "Pisang goreng renyah dengan taburan gula halus"
+    category: "dessert"
+    price: 8000
+    calories: 180
+    protein: 2
+    carbohydrates: 32
+    fat: 6
+    fiber: 2
+    vitamins: ["B6", "C"]
+    minerals: ["Kalium", "Magnesium"]
+    allergens: ["Gluten"]
+    is_halal: true
+    preparation_time: 20
+    serving_size: "3 buah"
+
+F. BEVERAGE (5% dari menu)
+
+15. Jus Jeruk Segar
+    description: "Jus jeruk asli tanpa gula tambahan"
+    category: "beverage"
+    price: 8000
+    calories: 110
+    protein: 2
+    carbohydrates: 26
+    fat: 0
+    fiber: 1
+    vitamins: ["C", "A"]
+    minerals: ["Kalium"]
+    allergens: []
+    is_halal: true
+    preparation_time: 5
+    serving_size: "1 gelas (250ml)"
+
+16. Teh Manis Hangat
+    description: "Teh manis hangat"
+    category: "beverage"
+    price: 5000
+    calories: 70
+    protein: 0
+    carbohydrates: 18
+    fat: 0
+    fiber: 0
+    vitamins: []
+    minerals: []
+    allergens: []
+    is_halal: true
+    preparation_time: 5
+    serving_size: "1 gelas (200ml)"
+
+[TEMPLATE MENU TAMBAHAN - Duplicate & Variasi dari contoh di atas]
+
+INSTRUKSI GENERATE:
+-------------------
+1. Setiap catering harus punya 10-20 menu unik
+2. Kombinasi kategori sesuai persentase di atas
+3. Variasi harga: 5.000 - 40.000 (sesuai kategori)
+4. Pastikan nilai nutrisi realistis untuk BGM (Bangsa Gizi Mandiri)
+5. Semua menu harus Halal (is_halal: true)
+6. image_url: NULL (akan diupload user nanti ke bucket "mbg")
+7. is_available: 90% true, 10% false (simulasi menu tidak tersedia)
+
+TOTAL MENU ITEMS: 500-2000 items
+
+================================================================================
+                         5. TABEL: deliveries
+================================================================================
+
+DESKRIPSI: Record pengiriman makanan dari catering ke sekolah
+SUMBER: Generate kombinasi school × catering × date
+
+STRUKTUR DATA:
+--------------
+id                  : SERIAL PRIMARY KEY
+school_id           : INTEGER REFERENCES schools(id) NOT NULL
+catering_id         : INTEGER REFERENCES caterings(id) NOT NULL
+allocation_id       : INTEGER REFERENCES allocations(id)
+delivery_date       : DATE NOT NULL
+delivery_time_start : TIME NOT NULL
+delivery_time_end   : TIME NOT NULL
+portions            : INTEGER NOT NULL
+menu_items          : JSONB NOT NULL (array of menu with quantities)
+total_amount        : DECIMAL(12,2) NOT NULL
+status              : VARCHAR(50) NOT NULL
+notes               : TEXT
+qr_code             : TEXT UNIQUE
+driver_name         : VARCHAR(255)
+driver_phone        : VARCHAR(20)
+vehicle_number      : VARCHAR(20)
+delivered_at        : TIMESTAMP
+created_at          : TIMESTAMP DEFAULT NOW()
+updated_at          : TIMESTAMP DEFAULT NOW()
+
+STATUS VALUES:
+--------------
+- pending (5%)       : Baru dibuat, menunggu konfirmasi
+- scheduled (10%)    : Sudah dijadwalkan, akan dikirim
+- in_transit (3%)    : Sedang dalam perjalanan
+- delivered (20%)    : Sudah dikirim, menunggu verifikasi
+- verified (60%)     : Sudah diverifikasi sekolah
+- cancelled (2%)     : Dibatalkan
+
+STRATEGI GENERATE:
+------------------
+Jumlah deliveries per sekolah: 5-10 deliveries (simulasi histori)
+Total deliveries: 5.000 sekolah × 5-10 = 25.000-50.000 deliveries
+
+A. DELIVERY DATE RANGE
+   - 70% deliveries: 3 bulan terakhir (histori)
+   - 20% deliveries: 1 bulan ke depan (scheduled)
+   - 10% deliveries: hari ini / minggu ini (active)
+
+   Generate random dates dalam range tersebut
+
+B. DELIVERY TIME
+   Window waktu umum untuk sekolah:
+   - Sarapan: 07:00-08:30
+   - Snack Pagi: 09:00-10:00
+   - Makan Siang: 11:00-13:00
+   - Snack Sore: 14:00-15:30
+
+   delivery_time_start & delivery_time_end: window 1-2 jam
+   Contoh: start="11:00", end="12:00"
+
+C. PORTIONS
+   Ambil dari school.student_count × factor
+   Factor: 0.80-1.00 (tidak semua siswa makan)
+
+   Contoh: student_count = 500
+   portions = 500 × 0.90 = 450 porsi
+
+D. MENU_ITEMS (JSONB Array)
+   Format:
+   [
+     {
+       "menu_id": 123,
+       "menu_name": "Nasi Kotak Komplit",
+       "quantity": 450,
+       "unit_price": 25000,
+       "subtotal": 11250000
+     },
+     {
+       "menu_id": 124,
+       "menu_name": "Buah Potong Segar",
+       "quantity": 450,
+       "unit_price": 10000,
+       "subtotal": 4500000
+     }
+   ]
+
+   Jumlah menu per delivery: 1-3 items
+   Harus ada minimal 1 main_course/complete_meal
+
+E. TOTAL_AMOUNT
+   Sum dari semua subtotal di menu_items
+   Contoh: 11.250.000 + 4.500.000 = 15.750.000
+
+F. QR_CODE
+   Generate unique string untuk verifikasi
+   Format: MBG-{school_id}-{delivery_id}-{random_hash}
+   Contoh: "MBG-1001-5432-a8f7d3e2"
+
+G. DRIVER INFO (untuk delivered/verified status)
+   driver_name: Random nama Indonesia
+   Contoh: "Agus Setiawan", "Rina Wati"
+
+   driver_phone: 08XX-XXXX-XXXX
+
+   vehicle_number: Format Indonesia
+   Contoh: "B 1234 ABC", "D 5678 XYZ"
+
+H. DELIVERED_AT
+   Untuk status "delivered" atau "verified":
+   delivered_at = delivery_date + delivery_time_start + random(0-2 jam)
+
+I. NOTES (Optional)
+   Random dari:
+   - "Mohon diantar tepat waktu"
+   - "Parkir di halaman belakang"
+   - "Hubungi petugas keamanan"
+   - NULL (50% kosong)
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+school_id: 1 (MIN 17 JAKARTA)
+catering_id: 1 (PT Sumber Pangan Sehat)
+allocation_id: 1 (akan diisi setelah allocation dibuat)
+delivery_date: "2025-11-15"
+delivery_time_start: "11:00"
+delivery_time_end: "12:00"
+portions: 350
+menu_items: [
+  {
+    "menu_id": 1,
+    "menu_name": "Nasi Kotak Komplit",
+    "quantity": 350,
+    "unit_price": 25000,
+    "subtotal": 8750000
+  }
+]
+total_amount: 8750000
+status: "verified"
+notes: "Mohon diantar tepat waktu"
+qr_code: "MBG-1-1-a8f7d3e2"
+driver_name: "Agus Setiawan"
+driver_phone: "0812-3456-7890"
+vehicle_number: "B 1234 ABC"
+delivered_at: "2025-11-15 11:30:00"
+created_at: "2025-11-10 10:00:00"
+updated_at: "2025-11-15 11:30:00"
+
+DISTRIBUSI PER CATERING:
+------------------------
+Agar realistis, setiap catering harus handle 200-500 deliveries
+Distribusi:
+- Top 20% catering (big vendors): 400-500 deliveries each
+- Middle 50% catering (medium): 200-350 deliveries each
+- Bottom 30% catering (small): 100-200 deliveries each
+
+TOTAL DELIVERIES: 25.000-50.000 records
+
+================================================================================
+                         6. TABEL: verifications
+================================================================================
+
+DESKRIPSI: Verifikasi penerimaan makanan oleh sekolah
+SUMBER: Generate untuk deliveries dengan status "verified"
+
+STRUKTUR DATA:
+--------------
+id                      : SERIAL PRIMARY KEY
+delivery_id             : INTEGER REFERENCES deliveries(id) UNIQUE NOT NULL
+school_id               : INTEGER REFERENCES schools(id) NOT NULL
+verified_by             : INTEGER REFERENCES users(id) NOT NULL
+portions_received       : INTEGER NOT NULL
+portions_expected       : INTEGER NOT NULL
+quality_rating          : INTEGER NOT NULL (1-5)
+status_kualitas         : VARCHAR(50)
+food_condition          : VARCHAR(50)
+temperature_check       : VARCHAR(50)
+packaging_condition     : VARCHAR(50)
+hygiene_rating          : INTEGER (1-5)
+taste_rating            : INTEGER (1-5)
+portion_adequate        : BOOLEAN
+notes                   : TEXT
+photo_urls              : JSONB (array, NULL untuk seeding)
+verification_method     : VARCHAR(50) (manual/qr_code)
+gps_latitude            : DECIMAL(10, 8)
+gps_longitude           : DECIMAL(11, 8)
+verified_at             : TIMESTAMP NOT NULL
+created_at              : TIMESTAMP DEFAULT NOW()
+
+GENERATE RULES:
+---------------
+Jumlah: Setiap delivery dengan status "verified" harus punya 1 verification
+Estimasi: 60% dari total deliveries = 15.000-30.000 verifications
+
+A. DELIVERY_ID & SCHOOL_ID
+   Ambil dari deliveries table WHERE status = 'verified'
+   school_id harus match dengan delivery.school_id
+
+B. VERIFIED_BY
+   User ID dari school users (role='school')
+   Ambil dari users table yang sesuai school_id
+
+C. PORTIONS
+   portions_expected: Sama dengan delivery.portions
+
+   portions_received:
+   - 85% kasus: sama dengan expected (perfect match)
+   - 10% kasus: -1 sampai -5 dari expected (slight shortage)
+   - 5% kasus: -6 sampai -20 dari expected (significant shortage)
+
+   Contoh:
+   expected = 350
+   received = 350 (85%) atau 345-349 (10%) atau 330-344 (5%)
+
+D. QUALITY RATING (1-5 stars)
+   Distribusi weighted:
+   - 5 stars (Sangat Baik): 50%
+   - 4 stars (Baik): 35%
+   - 3 stars (Cukup): 10%
+   - 2 stars (Kurang): 4%
+   - 1 star (Buruk): 1%
+
+E. STATUS_KUALITAS (berdasarkan quality_rating)
+   5 → "Sangat Baik"
+   4 → "Baik"
+   3 → "Cukup"
+   2 → "Kurang"
+   1 → "Buruk"
+
+F. FOOD_CONDITION
+   Distribusi:
+   - "Sangat Fresh" (40%)
+   - "Fresh" (40%)
+   - "Cukup Fresh" (15%)
+   - "Kurang Fresh" (4%)
+   - "Tidak Fresh" (1%)
+
+G. TEMPERATURE_CHECK
+   - "Hangat" (70%)
+   - "Suam-suam kuku" (20%)
+   - "Dingin" (8%)
+   - "Terlalu Panas" (2%)
+
+H. PACKAGING_CONDITION
+   - "Sempurna" (80%)
+   - "Baik" (15%)
+   - "Sedikit Rusak" (4%)
+   - "Rusak" (1%)
+
+I. HYGIENE_RATING (1-5)
+   Similar distribution dengan quality_rating:
+   5 (50%), 4 (35%), 3 (10%), 2 (4%), 1 (1%)
+
+J. TASTE_RATING (1-5)
+   Similar distribution:
+   5 (45%), 4 (35%), 3 (15%), 2 (4%), 1 (1%)
+
+K. PORTION_ADEQUATE
+   true: 90% kasus
+   false: 10% kasus (ada kekurangan porsi)
+
+L. NOTES
+   Generate based on ratings:
+
+   Rating 5:
+   - "Makanan sangat enak dan bergizi"
+   - "Porsi pas, siswa puas"
+   - "Kualitas sangat baik"
+   - NULL (30%)
+
+   Rating 4:
+   - "Makanan enak, siswa suka"
+   - "Kualitas baik secara keseluruhan"
+   - NULL (40%)
+
+   Rating 3:
+   - "Rasa cukup, bisa ditingkatkan"
+   - "Porsi pas tapi rasa standar"
+   - NULL (30%)
+
+   Rating 1-2:
+   - "Makanan kurang fresh"
+   - "Ada komplain dari siswa"
+   - "Porsi kurang dari yang dijanjikan"
+   - "Packaging rusak, ada yang tumpah"
+
+M. PHOTO_URLS
+   NULL untuk seeding awal
+   Nanti bisa diupload user ke bucket "mbg"
+
+   Format kalau ada: ["https://...storage.../photo1.jpg"]
+
+N. VERIFICATION_METHOD
+   Distribusi:
+   - "qr_code" (70%) - Scan QR dari delivery
+   - "manual" (30%) - Input manual tanpa QR
+
+O. GPS COORDINATES
+   Optional: NULL untuk seeding awal
+   Bisa diisi koordinat sekolah kalau ada
+
+P. VERIFIED_AT
+   = delivery.delivered_at + random(10 minutes - 4 hours)
+   Harus setelah delivered tapi di hari yang sama
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+delivery_id: 1
+school_id: 1
+verified_by: 101 (user_id dari school)
+portions_received: 350
+portions_expected: 350
+quality_rating: 5
+status_kualitas: "Sangat Baik"
+food_condition: "Sangat Fresh"
+temperature_check: "Hangat"
+packaging_condition: "Sempurna"
+hygiene_rating: 5
+taste_rating: 5
+portion_adequate: true
+notes: "Makanan sangat enak dan bergizi, siswa sangat puas"
+photo_urls: NULL
+verification_method: "qr_code"
+gps_latitude: NULL
+gps_longitude: NULL
+verified_at: "2025-11-15 11:45:00"
+created_at: "2025-11-15 11:45:00"
+
+TOTAL VERIFICATIONS: 15.000-30.000 records
+
+================================================================================
+                         7. TABEL: allocations
+================================================================================
+
+DESKRIPSI: Dana yang di-lock untuk pembayaran ke catering
+SUMBER: Generate untuk setiap delivery yang sudah verified
+
+STRUKTUR DATA:
+--------------
+id                      : SERIAL PRIMARY KEY
+school_id               : INTEGER REFERENCES schools(id) NOT NULL
+catering_id             : INTEGER REFERENCES caterings(id) NOT NULL
+allocation_id           : VARCHAR(255) UNIQUE NOT NULL
+amount                  : DECIMAL(15,2) NOT NULL
+currency                : VARCHAR(3) DEFAULT 'IDR'
+status                  : VARCHAR(50) NOT NULL
+tx_hash_lock            : VARCHAR(255)
+tx_hash_release         : VARCHAR(255)
+blockchain_confirmed    : BOOLEAN DEFAULT false
+metadata                : JSONB
+locked_at               : TIMESTAMP
+released_at             : TIMESTAMP
+created_at              : TIMESTAMP DEFAULT NOW()
+updated_at              : TIMESTAMP DEFAULT NOW()
+
+STATUS VALUES:
+--------------
+- PLANNED (0%)       : Allocation baru (skip untuk seeding)
+- LOCKING (0%)       : Sedang proses lock (skip untuk seeding)
+- LOCKED (30%)       : Dana sudah di-lock, menunggu verifikasi
+- RELEASING (2%)     : Sedang proses release
+- RELEASED (65%)     : Dana sudah di-release ke katering
+- ON_HOLD (2%)       : Ada masalah
+- CANCELLED (1%)     : Dibatalkan
+
+GENERATE RULES:
+---------------
+Jumlah: 1 allocation per delivery yang verified
+Total: 15.000-30.000 allocations
+
+A. SCHOOL_ID & CATERING_ID
+   Ambil dari delivery yang corresponding
+
+B. ALLOCATION_ID (unique string)
+   Format: hash dari schoolId-cateringId-deliveryDate
+
+   Generate dengan:
+   SHA256(schoolId + cateringId + deliveryDate).substring(0, 32)
+
+   Contoh: "a7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1"
+
+C. AMOUNT
+   Sama dengan delivery.total_amount
+   Contoh: 8750000 (8.75 juta)
+
+D. CURRENCY
+   Semua: "IDR"
+
+E. STATUS
+   Distribusi berdasarkan delivery.status:
+   - delivery.status = "verified" → allocation.status = "RELEASED" (65%)
+   - delivery.status = "verified" → allocation.status = "LOCKED" (30%)
+   - delivery.status = "verified" → allocation.status = "RELEASING" (2%)
+   - delivery.status = "verified" dengan issue → allocation.status = "ON_HOLD" (2%)
+   - delivery.status = "cancelled" → allocation.status = "CANCELLED" (1%)
+
+F. TX_HASH_LOCK (Blockchain Transaction Hash)
+   Generate dummy Ethereum TX hash (66 chars: 0x + 64 hex)
+
+   Format: 0x + [64 random hex chars]
+   Contoh: "0x7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1a7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1"
+
+   Untuk status LOCKED & RELEASED: harus ada
+   Untuk status lainnya: NULL
+
+G. TX_HASH_RELEASE
+   Similar dengan tx_hash_lock tapi berbeda value
+   Only untuk status RELEASED
+   Untuk status lainnya: NULL
+
+H. BLOCKCHAIN_CONFIRMED
+   true: untuk status LOCKED & RELEASED
+   false: untuk status lainnya
+
+I. METADATA (JSONB)
+   {
+     "deliveryDate": "2025-11-15",
+     "portions": 350,
+     "deliveryId": 1,
+     "notes": "Pembayaran untuk pengiriman tanggal 15 Nov 2025",
+     "schoolName": "MIN 17 JAKARTA",
+     "cateringName": "PT Sumber Pangan Sehat"
+   }
+
+J. LOCKED_AT
+   = delivery.created_at + random(0-2 days)
+   Harus sebelum delivery_date
+
+K. RELEASED_AT
+   = verification.verified_at + random(1-48 hours)
+   Only untuk status RELEASED
+   Untuk status lainnya: NULL
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+school_id: 1
+catering_id: 1
+allocation_id: "a7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1"
+amount: 8750000.00
+currency: "IDR"
+status: "RELEASED"
+tx_hash_lock: "0x7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1a7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1"
+tx_hash_release: "0x8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2b8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2"
+blockchain_confirmed: true
+metadata: {
+  "deliveryDate": "2025-11-15",
+  "portions": 350,
+  "deliveryId": 1,
+  "notes": "Pembayaran untuk pengiriman tanggal 15 Nov 2025",
+  "schoolName": "MIN 17 JAKARTA",
+  "cateringName": "PT Sumber Pangan Sehat"
+}
+locked_at: "2025-11-13 10:00:00"
+released_at: "2025-11-16 14:30:00"
+created_at: "2025-11-13 10:00:00"
+updated_at: "2025-11-16 14:30:00"
+
+TOTAL ALLOCATIONS: 15.000-30.000 records
+
+================================================================================
+                         8. TABEL: payments
+================================================================================
+
+DESKRIPSI: Tracking pembayaran untuk setiap delivery
+SUMBER: Generate untuk setiap allocation
+
+STRUKTUR DATA:
+--------------
+id                          : SERIAL PRIMARY KEY
+allocation_id               : INTEGER UNIQUE REFERENCES allocations(id)
+delivery_id                 : INTEGER REFERENCES deliveries(id)
+school_id                   : INTEGER REFERENCES schools(id)
+catering_id                 : INTEGER REFERENCES caterings(id)
+amount                      : DECIMAL(15,2) NOT NULL
+currency                    : VARCHAR(3) DEFAULT 'IDR'
+status                      : VARCHAR(50) NOT NULL
+blockchain_tx_hash          : VARCHAR(255)
+blockchain_block_number     : BIGINT
+xendit_invoice_id           : VARCHAR(255)
+xendit_payment_id           : VARCHAR(255)
+paid_at                     : TIMESTAMP
+confirmed_by_school_at      : TIMESTAMP
+released_to_catering_at     : TIMESTAMP
+created_at                  : TIMESTAMP DEFAULT NOW()
+updated_at                  : TIMESTAMP DEFAULT NOW()
+
+STATUS VALUES:
+--------------
+- PENDING (5%)       : Menunggu lock
+- LOCKED (25%)       : Dana di-lock
+- CONFIRMED (5%)     : Sekolah konfirmasi
+- RELEASING (2%)     : Proses release
+- COMPLETED (60%)    : Selesai
+- FAILED (2%)        : Error
+- REFUNDED (1%)      : Di-refund
+
+GENERATE RULES:
+---------------
+Jumlah: 1 payment per allocation
+Total: 15.000-30.000 payments
+
+A. FOREIGN KEYS
+   allocation_id: dari allocations table
+   delivery_id: dari corresponding delivery
+   school_id, catering_id: dari corresponding delivery
+
+B. AMOUNT & CURRENCY
+   Sama dengan allocation.amount
+   currency: "IDR"
+
+C. STATUS
+   Map dari allocation.status:
+   - allocation.RELEASED → payment.COMPLETED (60%)
+   - allocation.LOCKED → payment.LOCKED (25%)
+   - allocation.RELEASING → payment.RELEASING (2%)
+   - allocation.ON_HOLD → payment.CONFIRMED (5%)
+   - allocation.CANCELLED → payment.REFUNDED (1%)
+   - Sisanya → payment.PENDING (5%)
+
+D. BLOCKCHAIN_TX_HASH
+   Sama dengan allocation.tx_hash_release (jika COMPLETED)
+   Atau allocation.tx_hash_lock (jika LOCKED)
+   NULL untuk status lainnya
+
+E. BLOCKCHAIN_BLOCK_NUMBER
+   Generate random number: 10000000 - 20000000
+   (Simulasi block number Ethereum/Polygon)
+   Only untuk status LOCKED & COMPLETED
+
+F. XENDIT_INVOICE_ID & XENDIT_PAYMENT_ID
+   NULL untuk seeding (future integration)
+   Format kalau ada: "inv_xxxxxxxxxxxxx", "pmt_xxxxxxxxxxxxx"
+
+G. TIMESTAMPS
+   paid_at:
+   - Untuk COMPLETED: sama dengan allocation.locked_at
+   - Untuk LOCKED: sama dengan allocation.locked_at
+   - Untuk lainnya: NULL
+
+   confirmed_by_school_at:
+   - Untuk COMPLETED: sama dengan verification.verified_at
+   - Untuk CONFIRMED: sama dengan verification.verified_at
+   - Untuk lainnya: NULL
+
+   released_to_catering_at:
+   - Untuk COMPLETED: sama dengan allocation.released_at
+   - Untuk lainnya: NULL
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+allocation_id: 1
+delivery_id: 1
+school_id: 1
+catering_id: 1
+amount: 8750000.00
+currency: "IDR"
+status: "COMPLETED"
+blockchain_tx_hash: "0x8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2b8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2"
+blockchain_block_number: 15234567
+xendit_invoice_id: NULL
+xendit_payment_id: NULL
+paid_at: "2025-11-13 10:00:00"
+confirmed_by_school_at: "2025-11-15 11:45:00"
+released_to_catering_at: "2025-11-16 14:30:00"
+created_at: "2025-11-13 10:00:00"
+updated_at: "2025-11-16 14:30:00"
+
+TOTAL PAYMENTS: 15.000-30.000 records
+
+================================================================================
+                         9. TABEL: issues
+================================================================================
+
+DESKRIPSI: Laporan masalah dari sekolah terkait delivery
+SUMBER: Generate untuk ~5-10% dari total deliveries
+
+STRUKTUR DATA:
+--------------
+id                  : SERIAL PRIMARY KEY
+delivery_id         : INTEGER REFERENCES deliveries(id)
+school_id           : INTEGER REFERENCES schools(id) NOT NULL
+catering_id         : INTEGER REFERENCES caterings(id)
+reported_by         : INTEGER REFERENCES users(id) NOT NULL
+issue_type          : VARCHAR(100) NOT NULL
+priority            : VARCHAR(20) NOT NULL
+title               : VARCHAR(255) NOT NULL
+description         : TEXT NOT NULL
+photo_urls          : JSONB (array, NULL untuk seeding)
+status              : VARCHAR(50) NOT NULL
+resolution_notes    : TEXT
+resolved_by         : INTEGER REFERENCES users(id)
+resolved_at         : TIMESTAMP
+created_at          : TIMESTAMP DEFAULT NOW()
+updated_at          : TIMESTAMP DEFAULT NOW()
+
+ISSUE_TYPE VALUES:
+------------------
+- late_delivery (30%)
+- quality_issue (25%)
+- portion_mismatch (20%)
+- packaging_damage (15%)
+- incomplete_items (5%)
+- wrong_menu (3%)
+- other (2%)
+
+PRIORITY VALUES:
+----------------
+- low (40%)
+- medium (35%)
+- high (20%)
+- critical (5%)
+
+STATUS VALUES:
+--------------
+- open (10%)
+- in_progress (15%)
+- resolved (70%)
+- closed (5%)
+
+GENERATE RULES:
+---------------
+Jumlah: 5-10% dari total deliveries = 1.250-5.000 issues
+Distribusi: Lebih banyak untuk deliveries yang rating rendah
+
+A. DELIVERY_ID & RELATED IDS
+   Pilih dari deliveries dengan:
+   - Verifications yang rating 1-3 (lebih likely ada issue)
+   - Random 3-5% dari deliveries rating 4-5
+
+   school_id, catering_id: dari delivery
+   reported_by: user_id dari school
+
+B. ISSUE_TYPE & PRIORITY MAPPING
+   issue_type → suggested priority:
+
+   late_delivery:
+   - < 30 min late → low
+   - 30-60 min late → medium
+   - 1-2 hours late → high
+   - > 2 hours late → critical
+
+   quality_issue:
+   - Taste not good → low/medium
+   - Food not fresh → medium/high
+   - Food spoiled → critical
+
+   portion_mismatch:
+   - -1 to -5 portions → low
+   - -6 to -20 portions → medium
+   - -21 to -50 portions → high
+   - > 50 portions → critical
+
+   packaging_damage:
+   - Minor damage → low
+   - Some spillage → medium
+   - Major spillage → high
+   - Contamination risk → critical
+
+   incomplete_items:
+   - Missing 1 item → low
+   - Missing 2-3 items → medium/high
+
+   wrong_menu:
+   - Different menu → medium/high
+
+C. TITLE & DESCRIPTION TEMPLATES
+
+   LATE_DELIVERY:
+   Title: "Keterlambatan Pengiriman - {duration} menit"
+   Description:
+   - "Pengiriman terlambat {duration} menit dari jadwal. Jadwal: {time}, Tiba: {actual_time}"
+   - "Makanan datang terlambat sehingga mengganggu jadwal makan siswa"
+
+   QUALITY_ISSUE:
+   Title: "Kualitas Makanan Tidak Sesuai Standar"
+   Description:
+   - "Makanan kurang segar, ada beberapa sayur yang layu"
+   - "Rasa makanan terlalu asin/tawar"
+   - "Nasi sudah agak keras, tidak hangat"
+   - "Ada komplain dari siswa tentang rasa"
+
+   PORTION_MISMATCH:
+   Title: "Kekurangan Porsi Makanan"
+   Description:
+   - "Porsi yang diterima {received} tidak sesuai pesanan {expected}"
+   - "Kekurangan {difference} porsi dari yang dijanjikan"
+
+   PACKAGING_DAMAGE:
+   Title: "Kemasan Rusak/Bocor"
+   Description:
+   - "Beberapa kemasan bocor, makanan tumpah"
+   - "Packaging tidak rapi, ada yang penyok"
+   - "Kotak makanan robek/rusak"
+
+   INCOMPLETE_ITEMS:
+   Title: "Menu Tidak Lengkap"
+   Description:
+   - "Lauk pauk tidak sesuai menu yang dijanjikan"
+   - "Tidak ada buah yang seharusnya termasuk paket"
+   - "Porsi sayur kurang dari standar"
+
+   WRONG_MENU:
+   Title: "Menu Tidak Sesuai Pesanan"
+   Description:
+   - "Menu yang dikirim berbeda dengan pesanan"
+   - "Seharusnya ayam goreng tapi dikirim ikan"
+
+D. PHOTO_URLS
+   NULL untuk seeding awal
+   Nanti bisa upload bukti foto ke bucket "mbg"
+
+E. STATUS & RESOLUTION
+   Status distribution:
+   - resolved (70%): Sudah ditangani
+   - in_progress (15%): Sedang ditangani
+   - open (10%): Baru dilaporkan
+   - closed (5%): Ditutup tanpa action
+
+   resolution_notes (untuk resolved/closed):
+   - "Telah dikomunikasikan dengan pihak katering, akan diperbaiki di pengiriman berikutnya"
+   - "Katering memberikan kompensasi berupa tambahan porsi gratis"
+   - "Masalah sudah ditindaklanjuti, katering berjanji meningkatkan QC"
+   - "Issue diselesaikan dengan refund parsial"
+   - "Telah dilakukan koordinasi, masalah tidak akan terulang"
+
+F. RESOLVED_BY & RESOLVED_AT
+   resolved_by: admin user_id (untuk resolved/closed)
+   resolved_at: created_at + random(1-72 hours) untuk resolved
+
+G. CREATED_AT
+   = delivery.delivered_at + random(1-48 hours)
+   Harus setelah delivery
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+delivery_id: 150
+school_id: 25
+catering_id: 3
+reported_by: 125
+issue_type: "late_delivery"
+priority: "medium"
+title: "Keterlambatan Pengiriman - 45 menit"
+description: "Pengiriman terlambat 45 menit dari jadwal. Jadwal: 11:00, Tiba: 11:45. Makanan datang terlambat sehingga mengganggu jadwal makan siswa."
+photo_urls: NULL
+status: "resolved"
+resolution_notes: "Telah dikomunikasikan dengan pihak katering. Mereka mengalami kendala lalu lintas. Berjanji akan lebih awal berangkat di pengiriman berikutnya."
+resolved_by: 5001 (admin)
+resolved_at: "2025-11-16 14:00:00"
+created_at: "2025-11-15 13:00:00"
+updated_at: "2025-11-16 14:00:00"
+
+DISTRIBUTION BY CATERING:
+-------------------------
+Catering dengan rating rendah: lebih banyak issues
+Catering dengan rating tinggi: lebih sedikit issues
+
+Good catering (rating 4.5-5.0): 2-3% delivery have issues
+Medium catering (rating 3.5-4.4): 5-8% delivery have issues
+Poor catering (rating < 3.5): 10-15% delivery have issues
+
+TOTAL ISSUES: 1.250-5.000 records
+
+================================================================================
+                         10. TABEL: ai_food_analyses
+================================================================================
+
+DESKRIPSI: Hasil analisis AI untuk verifikasi makanan
+SUMBER: Generate untuk 30-50% dari verifications (simulasi AI)
+
+STRUKTUR DATA:
+--------------
+id                      : SERIAL PRIMARY KEY
+verification_id         : INTEGER REFERENCES verifications(id)
+delivery_id             : INTEGER REFERENCES deliveries(id)
+detected_items          : TEXT[] (array)
+portion_estimate        : INTEGER
+portion_confidence      : DECIMAL(3,2)
+quality_score           : INTEGER (0-100)
+freshness_score         : INTEGER (0-100)
+presentation_score      : INTEGER (0-100)
+hygiene_score           : INTEGER (0-100)
+estimated_calories      : INTEGER
+estimated_protein       : INTEGER
+estimated_carbs         : INTEGER
+has_vegetables          : BOOLEAN
+menu_match              : BOOLEAN
+portion_match           : BOOLEAN
+quality_acceptable      : BOOLEAN
+meets_bgn_standards     : BOOLEAN
+confidence              : DECIMAL(3,2) (0-1)
+reasoning               : TEXT
+issues                  : TEXT[] (array)
+warnings                : TEXT[] (array)
+recommendations         : TEXT[] (array)
+needs_manual_review     : BOOLEAN
+manual_review_status    : VARCHAR(20)
+reviewed_by             : INTEGER REFERENCES users(id)
+reviewed_at             : TIMESTAMP
+analyzed_at             : TIMESTAMP DEFAULT NOW()
+created_at              : TIMESTAMP DEFAULT NOW()
+
+GENERATE RULES:
+---------------
+Jumlah: 30-50% dari verifications = 7.500-15.000 analyses
+Fokus pada: Deliveries dengan foto (meski foto NULL di seeding)
+
+A. VERIFICATION_ID & DELIVERY_ID
+   Pilih dari verifications secara random (30-50%)
+   delivery_id: ambil dari verification.delivery_id
+
+B. DETECTED_ITEMS (array of food items)
+   Ekstrak dari delivery.menu_items
+
+   Contoh menu: "Nasi Kotak Komplit"
+   detected_items: ["Nasi Putih", "Ayam Goreng", "Tempe Goreng", "Sayur Lodeh", "Sambal", "Pisang"]
+
+   Akurasi deteksi:
+   - 90% kasus: detect semua items correctly
+   - 8% kasus: miss 1 item
+   - 2% kasus: detect wrong item
+
+C. PORTION_ESTIMATE
+   Estimate dari AI berapa porsi dalam foto
+
+   portion_estimate: verification.portions_received ± random(-5 to +5)
+   Contoh: actual 350, AI estimate 345-355
+
+D. PORTION_CONFIDENCE
+   Confidence level dari AI (0.00-1.00)
+
+   Distribusi:
+   - High confidence (0.85-0.95): 60%
+   - Medium confidence (0.70-0.84): 30%
+   - Low confidence (0.50-0.69): 10%
+
+E. QUALITY SCORES (0-100)
+
+   quality_score:
+   - Map dari verification.quality_rating:
+   - Rating 5 → score 85-95
+   - Rating 4 → score 75-84
+   - Rating 3 → score 60-74
+   - Rating 2 → score 45-59
+   - Rating 1 → score 30-44
+
+   freshness_score:
+   - Similar mapping dari verification.food_condition
+   - "Sangat Fresh" → 85-95
+   - "Fresh" → 75-84
+   - "Cukup Fresh" → 60-74
+   - "Kurang Fresh" → 40-59
+   - "Tidak Fresh" → 20-39
+
+   presentation_score:
+   - Random 70-95 (weighted ke 80-90)
+
+   hygiene_score:
+   - Map dari verification.hygiene_rating
+   - Similar dengan quality_score mapping
+
+F. ESTIMATED NUTRITION (per porsi)
+   Ambil dari menu_items.calories/protein/carbs
+   Add random variance ±10%
+
+   Contoh menu calories: 550
+   estimated_calories: 495-605
+
+G. HAS_VEGETABLES
+   Check detected_items contains vegetable keywords
+   Keywords: sayur, kangkung, bayam, brokoli, wortel, etc.
+
+   true: jika ada minimal 1 sayuran
+   false: jika tidak ada
+
+H. COMPLIANCE CHECKS
+
+   menu_match:
+   - true (85%): Menu detected sesuai dengan pesanan
+   - false (15%): Ada perbedaan
+
+   portion_match:
+   - true (80%): Portion estimate close to expected (±5%)
+   - false (20%): Significant difference
+
+   quality_acceptable:
+   - true: jika quality_score >= 70
+   - false: jika quality_score < 70
+
+   meets_bgn_standards:
+   - true: jika all of:
+     - quality_score >= 70
+     - hygiene_score >= 70
+     - has_vegetables = true
+     - estimated_calories >= 400
+     - estimated_protein >= 15g
+   - false: otherwise
+
+I. CONFIDENCE (overall)
+   Average dari portion_confidence dan detection confidence
+   Range: 0.70-0.95
+
+J. REASONING (AI explanation)
+   Generate berdasarkan scores:
+
+   High quality (score >= 85):
+   "Makanan terdeteksi dalam kondisi sangat baik. Semua komponen menu teridentifikasi dengan jelas. Presentasi makanan rapi dan higienis. Porsi sesuai dengan standar. Memenuhi semua kriteria BGN."
+
+   Good quality (score 70-84):
+   "Makanan dalam kondisi baik. Menu sesuai dengan pesanan. Presentasi cukup baik. Ada beberapa area yang bisa ditingkatkan dalam hal penyajian."
+
+   Medium quality (score 60-69):
+   "Kualitas makanan cukup memadai. Terdeteksi beberapa kekurangan dalam presentasi. Porsi mendekati standar tapi tidak sempurna."
+
+   Low quality (score < 60):
+   "Kualitas makanan di bawah standar. Terdeteksi beberapa masalah signifikan yang perlu ditindaklanjuti."
+
+K. ISSUES, WARNINGS, RECOMMENDATIONS (arrays)
+
+   Generate berdasarkan scores dan compliance:
+
+   issues (untuk score < 70 atau tidak comply):
+   - "Porsi tidak sesuai dengan pesanan (selisih {diff})"
+   - "Kualitas makanan di bawah standar (score: {score})"
+   - "Menu tidak lengkap, missing: {item}"
+   - "Packaging tidak higienis"
+
+   warnings (untuk score 70-80):
+   - "Presentasi bisa ditingkatkan"
+   - "Beberapa item terdeteksi kurang fresh"
+   - "Porsi mendekati minimum"
+
+   recommendations:
+   - "Tingkatkan quality control sebelum pengiriman"
+   - "Pastikan packaging lebih rapi dan aman"
+   - "Perbaiki presentasi makanan"
+   - "Tambahkan porsi sayuran"
+   - "Pastikan makanan dikirim dalam kondisi hangat"
+
+L. MANUAL REVIEW
+
+   needs_manual_review:
+   - true: jika confidence < 0.75 OR quality_score < 60 OR any major issue
+   - false: otherwise
+
+   Distribution: 10-15% need manual review
+
+   manual_review_status:
+   - "pending" (50% dari yang needs_manual_review)
+   - "approved" (40%)
+   - "rejected" (10%)
+
+   reviewed_by: admin user_id (untuk approved/rejected)
+   reviewed_at: analyzed_at + random(1-48 hours)
+
+M. ANALYZED_AT
+   = verification.verified_at + random(1-10 seconds)
+   (AI analysis happens quickly after verification)
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+verification_id: 1
+delivery_id: 1
+detected_items: ["Nasi Putih", "Ayam Goreng", "Tempe Goreng", "Sayur Lodeh", "Sambal", "Pisang"]
+portion_estimate: 348
+portion_confidence: 0.89
+quality_score: 92
+freshness_score: 90
+presentation_score: 88
+hygiene_score: 94
+estimated_calories: 545
+estimated_protein: 29
+estimated_carbs: 63
+has_vegetables: true
+menu_match: true
+portion_match: true
+quality_acceptable: true
+meets_bgn_standards: true
+confidence: 0.91
+reasoning: "Makanan terdeteksi dalam kondisi sangat baik. Semua komponen menu teridentifikasi dengan jelas (nasi putih, ayam goreng, tempe goreng, sayur lodeh, sambal, dan buah). Presentasi makanan rapi dan higienis. Porsi sesuai dengan standar (348 dari 350 yang dijanjikan). Memenuhi semua kriteria Bangsa Gizi Nusantara dengan kualitas score 92/100."
+issues: []
+warnings: []
+recommendations: ["Pertahankan standar kualitas ini", "Presentasi sudah sangat baik"]
+needs_manual_review: false
+manual_review_status: "approved"
+reviewed_by: NULL
+reviewed_at: NULL
+analyzed_at: "2025-11-15 11:45:15"
+created_at: "2025-11-15 11:45:15"
+
+TOTAL AI ANALYSES: 7.500-15.000 records
+
+================================================================================
+                    11. TABEL: vendor_risk_assessments
+================================================================================
+
+DESKRIPSI: Penilaian risiko vendor katering oleh AI
+SUMBER: Generate 1 assessment per catering (latest)
+
+STRUKTUR DATA:
+--------------
+id                          : SERIAL PRIMARY KEY
+catering_id                 : INTEGER REFERENCES caterings(id)
+risk_score                  : INTEGER (0-100, higher = worse)
+risk_level                  : VARCHAR(20)
+late_delivery_rate          : DECIMAL(5,4) (0-1)
+quality_issue_rate          : DECIMAL(5,4) (0-1)
+compliance_rate             : DECIMAL(5,4) (0-1)
+avg_quality_score           : DECIMAL(5,2) (0-100)
+likely_to_default           : DECIMAL(3,2) (0-1)
+recommended_action          : TEXT
+total_deliveries            : INTEGER
+successful_deliveries       : INTEGER
+issues_reported             : INTEGER
+assessment_period_start     : DATE
+assessment_period_end       : DATE
+assessed_at                 : TIMESTAMP DEFAULT NOW()
+created_at                  : TIMESTAMP DEFAULT NOW()
+
+RISK_LEVEL VALUES:
+------------------
+- low (risk_score 0-30): 60% caterings
+- medium (risk_score 31-60): 30% caterings
+- high (risk_score 61-80): 8% caterings
+- critical (risk_score 81-100): 2% caterings
+
+GENERATE RULES:
+---------------
+Jumlah: 1 per catering = 50-100 assessments
+
+A. CATERING_ID
+   Semua caterings harus punya risk assessment
+
+B. CALCULATE METRICS FROM DATA
+
+   total_deliveries: COUNT dari deliveries table
+
+   successful_deliveries: COUNT deliveries dengan status='verified'
+                          AND verification.quality_rating >= 4
+
+   issues_reported: COUNT dari issues table untuk catering ini
+
+   late_delivery_rate:
+   = (COUNT deliveries terlambat) / total_deliveries
+
+   quality_issue_rate:
+   = (COUNT issues dengan type='quality_issue') / total_deliveries
+
+   compliance_rate:
+   = successful_deliveries / total_deliveries
+
+   avg_quality_score:
+   = AVG(verification.quality_rating) × 20
+   (convert rating 1-5 to score 0-100)
+
+C. RISK_SCORE CALCULATION
+   Formula weighted:
+   risk_score = (
+     (late_delivery_rate × 30) +
+     (quality_issue_rate × 35) +
+     ((1 - compliance_rate) × 25) +
+     ((100 - avg_quality_score) × 0.10)
+   )
+
+   Result: 0-100 (higher = worse)
+
+D. RISK_LEVEL
+   Based on risk_score:
+   - 0-30: "low"
+   - 31-60: "medium"
+   - 61-80: "high"
+   - 81-100: "critical"
+
+E. LIKELY_TO_DEFAULT
+   Probability catering akan default (0.00-1.00)
+
+   Formula:
+   - risk_score 0-30: 0.01-0.10
+   - risk_score 31-60: 0.11-0.30
+   - risk_score 61-80: 0.31-0.60
+   - risk_score 81-100: 0.61-0.95
+
+F. RECOMMENDED_ACTION
+   Based on risk_level:
+
+   low:
+   "Vendor berkinerja baik. Lanjutkan monitoring rutin. Pertahankan kerjasama."
+
+   medium:
+   "Vendor memerlukan perhatian. Lakukan review kinerja bulanan. Berikan peringatan jika ada penurunan."
+
+   high:
+   "Vendor berisiko tinggi. Lakukan audit mendalam. Pertimbangkan penggantian jika tidak ada perbaikan dalam 1 bulan."
+
+   critical:
+   "Vendor sangat berisiko. HENTIKAN kontrak baru. Selesaikan kontrak existing. Cari pengganti segera."
+
+G. ASSESSMENT PERIOD
+   assessment_period_start: 3 bulan yang lalu
+   assessment_period_end: hari ini
+
+   assessed_at: NOW() - random(0-7 days)
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+catering_id: 1
+risk_score: 15
+risk_level: "low"
+late_delivery_rate: 0.0200 (2%)
+quality_issue_rate: 0.0150 (1.5%)
+compliance_rate: 0.9650 (96.5%)
+avg_quality_score: 88.50
+likely_to_default: 0.05
+recommended_action: "Vendor berkinerja sangat baik dengan compliance rate 96.5% dan rata-rata quality score 88.5/100. Lanjutkan monitoring rutin. Pertahankan kerjasama dan berikan insentif untuk performa excellent."
+total_deliveries: 450
+successful_deliveries: 434
+issues_reported: 7
+assessment_period_start: "2025-08-19"
+assessment_period_end: "2025-11-19"
+assessed_at: "2025-11-17 10:00:00"
+created_at: "2025-11-17 10:00:00"
+
+UPDATE CATERINGS TABLE:
+-----------------------
+Setelah generate risk assessments, update caterings table:
+
+UPDATE caterings SET
+  latest_risk_assessment_id = {assessment_id},
+  risk_level = {assessment.risk_level}
+WHERE id = {catering_id}
+
+TOTAL VENDOR RISK ASSESSMENTS: 50-100 records (1 per catering)
+
+================================================================================
+                         12. TABEL: anomaly_alerts
+================================================================================
+
+DESKRIPSI: Alert anomali yang terdeteksi AI
+SUMBER: Generate 10-30 sample alerts
+
+STRUKTUR DATA:
+--------------
+id                      : SERIAL PRIMARY KEY
+type                    : VARCHAR(50) NOT NULL
+severity                : VARCHAR(20) NOT NULL
+title                   : VARCHAR(255) NOT NULL
+description             : TEXT
+suspicious_patterns     : TEXT[] (array)
+school_id               : INTEGER REFERENCES schools(id)
+catering_id             : INTEGER REFERENCES caterings(id)
+confidence_score        : DECIMAL(3,2) (0-1)
+recommendation          : VARCHAR(50)
+data_points             : JSONB
+status                  : VARCHAR(20)
+investigated_by         : INTEGER REFERENCES users(id)
+investigated_at         : TIMESTAMP
+resolution_notes        : TEXT
+detected_at             : TIMESTAMP DEFAULT NOW()
+created_at              : TIMESTAMP DEFAULT NOW()
+
+TYPE VALUES:
+------------
+- collusion (10%)
+- fake_verification (15%)
+- late_delivery_pattern (25%)
+- quality_decline_pattern (20%)
+- unusual_pricing (10%)
+- suspicious_frequency (10%)
+- data_manipulation (5%)
+- other (5%)
+
+SEVERITY VALUES:
+----------------
+- low (40%)
+- medium (35%)
+- high (20%)
+- critical (5%)
+
+STATUS VALUES:
+--------------
+- new (10%)
+- investigating (20%)
+- resolved (60%)
+- dismissed (10%)
+
+RECOMMENDATION VALUES:
+----------------------
+- monitor
+- investigate
+- alert_admin
+- block
+
+GENERATE RULES:
+---------------
+Jumlah: 10-30 anomaly alerts (sample)
+
+TEMPLATES BY TYPE:
+------------------
+
+A. COLLUSION (School + Catering)
+   title: "Potensi Kolusi: Pola Transaksi Mencurigakan"
+   description: "Terdeteksi pola transaksi berulang antara {school} dan {catering} dengan frekuensi tidak wajar dan harga di atas rata-rata pasar."
+   suspicious_patterns: [
+     "Frekuensi transaksi 5x lebih tinggi dari rata-rata",
+     "Harga 20% lebih tinggi dari vendor lain",
+     "Selalu memilih vendor yang sama tanpa tender"
+   ]
+   severity: "high" / "critical"
+   confidence_score: 0.75-0.90
+   recommendation: "investigate"
+   data_points: {
+     "school_id": X,
+     "catering_id": Y,
+     "transaction_count": 45,
+     "avg_price_markup": 0.22,
+     "period_days": 90
+   }
+
+B. FAKE_VERIFICATION
+   title: "Verifikasi Mencurigakan: Pola Tidak Wajar"
+   description: "Terdeteksi pola verifikasi yang tidak wajar pada {school}. Semua verifikasi dilakukan dalam waktu sangat singkat dengan rating sempurna."
+   suspicious_patterns: [
+     "Verifikasi selalu 5 bintang (100% rating)",
+     "Waktu verifikasi < 1 menit setelah delivery",
+     "Tidak ada variasi dalam catatan verifikasi"
+   ]
+   severity: "medium" / "high"
+   confidence_score: 0.70-0.85
+   recommendation: "investigate"
+
+C. LATE_DELIVERY_PATTERN
+   title: "Pola Keterlambatan Berulang"
+   description: "Vendor {catering} memiliki pola keterlambatan konsisten dalam 30 hari terakhir."
+   suspicious_patterns: [
+     "85% pengiriman terlambat > 30 menit",
+     "Tidak ada perbaikan dalam 1 bulan",
+     "Banyak komplain dari sekolah"
+   ]
+   severity: "medium" / "high"
+   confidence_score: 0.80-0.95
+   recommendation: "alert_admin"
+
+D. QUALITY_DECLINE_PATTERN
+   title: "Penurunan Kualitas Signifikan"
+   description: "Kualitas makanan dari {catering} menurun drastis dalam 2 bulan terakhir."
+   suspicious_patterns: [
+     "Rating turun dari 4.5 menjadi 3.2",
+     "Peningkatan komplain 300%",
+     "Multiple quality issues reported"
+   ]
+   severity: "high"
+   confidence_score: 0.85-0.95
+   recommendation: "investigate"
+
+E. UNUSUAL_PRICING
+   title: "Harga Tidak Wajar"
+   description: "Harga menu dari {catering} jauh di atas/bawah harga pasar."
+   suspicious_patterns: [
+     "Harga 40% lebih tinggi dari median",
+     "Tidak ada justifikasi kualitas premium",
+     "Potensi markup berlebihan"
+   ]
+   severity: "medium"
+   confidence_score: 0.65-0.80
+   recommendation: "monitor"
+
+SAMPLE DATA GENERATION:
+-----------------------
+Generate 10-30 alerts dengan distribusi:
+- 60% resolved (sudah ditangani)
+- 20% investigating (sedang diteliti)
+- 10% new (baru terdeteksi)
+- 10% dismissed (false alarm)
+
+Investigation & Resolution:
+- investigated_by: admin user_id
+- investigated_at: detected_at + 1-72 hours
+- resolution_notes:
+  - "Setelah investigasi, tidak ditemukan bukti kuat. Pola dianggap wajar."
+  - "Vendor telah diperingatkan dan berjanji memperbaiki. Monitoring diperlanjutkan."
+  - "False alarm, pola terdeteksi karena peak season."
+  - "Kasus ditindaklanjuti, vendor diberi sanksi warning."
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+type: "late_delivery_pattern"
+severity: "high"
+title: "Pola Keterlambatan Berulang - PT Sumber Pangan"
+description: "Vendor PT Sumber Pangan memiliki pola keterlambatan konsisten dalam 30 hari terakhir dengan 17 dari 20 pengiriman terlambat lebih dari 30 menit."
+suspicious_patterns: [
+  "85% pengiriman terlambat > 30 menit",
+  "Rata-rata keterlambatan 45 menit",
+  "12 komplain dari berbagai sekolah",
+  "Tidak ada tren perbaikan"
+]
+school_id: NULL (multiple schools affected)
+catering_id: 1
+confidence_score: 0.88
+recommendation: "investigate"
+data_points: {
+  "period_days": 30,
+  "total_deliveries": 20,
+  "late_deliveries": 17,
+  "avg_delay_minutes": 45,
+  "affected_schools": 12,
+  "complaints_filed": 12
+}
+status: "resolved"
+investigated_by: 5001
+investigated_at: "2025-11-18 14:00:00"
+resolution_notes: "Vendor dihubungi dan melakukan audit internal. Masalah teridentifikasi pada manajemen logistik. Vendor telah menambah armada dan memperbaiki routing. Monitoring akan dilanjutkan 30 hari ke depan."
+detected_at: "2025-11-16 09:00:00"
+created_at: "2025-11-16 09:00:00"
+
+TOTAL ANOMALY ALERTS: 10-30 records (sample untuk demo)
+
+================================================================================
+                         13. TABEL: poverty_data_cache
+================================================================================
+
+DESKRIPSI: Cache data kemiskinan per provinsi dari BPS
+SUMBER: Sudah di-seed di migration 003
+
+STATUS: ✓ SUDAH ADA DATA DI MIGRATION
+Tidak perlu seeding tambahan, data sudah lengkap untuk semua provinsi.
+
+Data yang sudah ada:
+- 34 provinsi Indonesia
+- Year: 2024
+- poverty_rate: 7.8% - 35.3%
+- gini_ratio: ~0.350
+- source: 'simulated'
+
+================================================================================
+                         14. TABEL: stunting_data_cache
+================================================================================
+
+DESKRIPSI: Cache data stunting per provinsi
+SUMBER: Sudah di-seed di migration 003
+
+STATUS: ✓ SUDAH ADA DATA DI MIGRATION
+Tidak perlu seeding tambahan, data sudah lengkap untuk semua provinsi.
+
+Data yang sudah ada:
+- 34 provinsi Indonesia
+- Year: 2024
+- stunting_rate: 7.8% - 35.3%
+- source: 'simulated'
+
+================================================================================
+                         15. TABEL: delivery_confirmations
+================================================================================
+
+DESKRIPSI: Konfirmasi penerimaan delivery oleh sekolah
+SUMBER: Generate untuk setiap delivery yang status >= 'delivered'
+
+STRUKTUR DATA:
+--------------
+id                  : SERIAL PRIMARY KEY
+delivery_id         : INTEGER UNIQUE REFERENCES deliveries(id) NOT NULL
+allocation_id       : INTEGER REFERENCES allocations(id)
+school_id           : INTEGER REFERENCES schools(id) NOT NULL
+verified_by         : INTEGER REFERENCES users(id)
+status              : VARCHAR(50) NOT NULL
+portions_received   : INTEGER
+quality_rating      : INTEGER (1-5)
+notes               : TEXT
+photo_urls          : JSONB (array)
+confirmed_at        : TIMESTAMP
+created_at          : TIMESTAMP DEFAULT NOW()
+updated_at          : TIMESTAMP DEFAULT NOW()
+
+STATUS VALUES:
+--------------
+- PENDING (20%)
+- APPROVED (75%)
+- REJECTED (3%)
+- ON_HOLD (2%)
+
+GENERATE RULES:
+---------------
+Jumlah: Setiap delivery dengan status 'delivered' atau 'verified'
+Total: ~20.000-40.000 confirmations
+
+A. LINK TO VERIFICATION
+   Jika ada verification untuk delivery:
+   - Ambil data dari verification table
+   - status: APPROVED
+   - portions_received: sama dengan verification
+   - quality_rating: sama dengan verification
+   - notes: sama dengan verification
+   - confirmed_at: sama dengan verification.verified_at
+
+   Jika tidak ada verification (status='delivered' tanpa verification):
+   - status: PENDING
+   - portions_received: NULL
+   - quality_rating: NULL
+   - confirmed_at: NULL
+
+B. ALLOCATION_ID
+   Dari allocations table jika ada
+
+C. VERIFIED_BY
+   User ID dari school
+
+D. PHOTO_URLS
+   NULL untuk seeding
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+delivery_id: 1
+allocation_id: 1
+school_id: 1
+verified_by: 101
+status: "APPROVED"
+portions_received: 350
+quality_rating: 5
+notes: "Makanan sangat enak dan bergizi, siswa sangat puas"
+photo_urls: NULL
+confirmed_at: "2025-11-15 11:45:00"
+created_at: "2025-11-15 11:45:00"
+updated_at: "2025-11-15 11:45:00"
+
+TOTAL DELIVERY CONFIRMATIONS: 20.000-40.000 records
+
+================================================================================
+                         16. TABEL: payment_events
+================================================================================
+
+DESKRIPSI: Log events untuk payment lifecycle
+SUMBER: Generate events untuk setiap payment
+
+STRUKTUR DATA:
+--------------
+id                          : SERIAL PRIMARY KEY
+payment_id                  : INTEGER REFERENCES payments(id)
+allocation_id               : INTEGER REFERENCES allocations(id)
+event_type                  : VARCHAR(100) NOT NULL
+blockchain_event_signature  : VARCHAR(255)
+blockchain_tx_hash          : VARCHAR(255)
+blockchain_block_number     : BIGINT
+event_data                  : JSONB
+processed                   : BOOLEAN DEFAULT false
+processed_at                : TIMESTAMP
+created_at                  : TIMESTAMP DEFAULT NOW()
+
+EVENT_TYPE VALUES:
+------------------
+- ALLOCATION_CREATED
+- FUND_LOCKED
+- DELIVERY_CONFIRMED
+- PAYMENT_RELEASING
+- PAYMENT_RELEASED
+- PAYMENT_FAILED
+- REFUND_INITIATED
+
+GENERATE RULES:
+---------------
+Setiap payment akan generate 2-5 events tergantung lifecycle
+
+A. ALLOCATION_CREATED
+   Event pertama saat allocation dibuat
+   event_data: {
+     "allocation_id": "xxx",
+     "school_id": X,
+     "catering_id": Y,
+     "amount": 8750000,
+     "currency": "IDR"
+   }
+   created_at: allocation.created_at
+
+B. FUND_LOCKED
+   Saat dana di-lock di smart contract
+   blockchain_tx_hash: allocation.tx_hash_lock
+   blockchain_block_number: random
+   event_data: {
+     "allocation_id": "xxx",
+     "payer": "0xSchoolAddress",
+     "amount": 8750000,
+     "timestamp": locked_at
+   }
+   created_at: allocation.locked_at
+
+C. DELIVERY_CONFIRMED
+   Saat sekolah konfirmasi delivery
+   event_data: {
+     "delivery_id": X,
+     "verified_by": user_id,
+     "quality_rating": 5,
+     "portions_received": 350
+   }
+   created_at: verification.verified_at
+
+D. PAYMENT_RELEASED
+   Saat dana di-release ke catering
+   blockchain_tx_hash: allocation.tx_hash_release
+   event_data: {
+     "allocation_id": "xxx",
+     "payee": "0xCateringAddress",
+     "amount": 8750000,
+     "released_at": timestamp
+   }
+   created_at: allocation.released_at
+
+Generate events sesuai payment status:
+- COMPLETED: semua 4 events (CREATED → LOCKED → CONFIRMED → RELEASED)
+- LOCKED: 2 events (CREATED → LOCKED)
+- FAILED: 2-3 events dengan PAYMENT_FAILED
+- REFUNDED: tambahan REFUND_INITIATED
+
+processed: true untuk semua events lama, false untuk recent
+
+TOTAL PAYMENT EVENTS: 45.000-90.000 events (3 per payment average)
+
+================================================================================
+                         17. TABEL: public_payment_feed
+================================================================================
+
+DESKRIPSI: Feed public untuk transparency dashboard
+SUMBER: Generate dari payments yang COMPLETED
+
+STRUKTUR DATA:
+--------------
+id                          : SERIAL PRIMARY KEY
+payment_id                  : INTEGER REFERENCES payments(id)
+allocation_id               : INTEGER REFERENCES allocations(id)
+school_name                 : VARCHAR(255)
+school_region               : VARCHAR(100)
+catering_name               : VARCHAR(255)
+amount                      : DECIMAL(15,2)
+currency                    : VARCHAR(3)
+portions_count              : INTEGER
+delivery_date               : DATE
+status                      : VARCHAR(50)
+blockchain_tx_hash          : VARCHAR(255)
+blockchain_block_number     : BIGINT
+locked_at                   : TIMESTAMP
+released_at                 : TIMESTAMP
+created_at                  : TIMESTAMP DEFAULT NOW()
+
+GENERATE RULES:
+---------------
+Jumlah: Setiap payment dengan status COMPLETED
+Total: ~18.000-27.000 records
+
+Data is PUBLIC, so remove sensitive info:
+- Gunakan school.name (public info)
+- Gunakan catering.name (public info)
+- NO personal data like emails, phones, etc.
+
+Map from payments:
+- payment_id, allocation_id: direct reference
+- school_name: dari schools table
+- school_region: dari schools.kabupaten + provinsi
+- catering_name: dari caterings table
+- amount, currency: dari payment
+- portions_count: dari delivery
+- delivery_date: dari delivery
+- status: dari payment
+- blockchain_tx_hash, blockchain_block_number: dari payment
+- locked_at: dari allocation
+- released_at: dari allocation
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+payment_id: 1
+allocation_id: 1
+school_name: "MIN 17 JAKARTA"
+school_region: "Kab. Adm. Kep. Seribu, D.K.I. Jakarta"
+catering_name: "PT Sumber Pangan Sehat"
+amount: 8750000.00
+currency: "IDR"
+portions_count: 350
+delivery_date: "2025-11-15"
+status: "COMPLETED"
+blockchain_tx_hash: "0x8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2..."
+blockchain_block_number: 15234567
+locked_at: "2025-11-13 10:00:00"
+released_at: "2025-11-16 14:30:00"
+created_at: "2025-11-16 14:30:00"
+
+TOTAL PUBLIC PAYMENT FEED: 18.000-27.000 records
+
+================================================================================
+                         18. TABEL: payment_methods
+================================================================================
+
+DESKRIPSI: Metode pembayaran catering
+SUMBER: Generate 1-2 methods per catering
+
+STRUKTUR DATA:
+--------------
+id                      : SERIAL PRIMARY KEY
+catering_id             : INTEGER REFERENCES caterings(id) NOT NULL
+method_type             : VARCHAR(50) NOT NULL
+bank_code               : VARCHAR(20)
+account_number          : VARCHAR(50)
+account_holder_name     : VARCHAR(255)
+ewallet_provider        : VARCHAR(50)
+ewallet_identifier      : VARCHAR(255)
+wallet_address          : VARCHAR(255)
+xendit_bank_account_id  : VARCHAR(255)
+is_active               : BOOLEAN DEFAULT true
+is_verified             : BOOLEAN DEFAULT false
+created_at              : TIMESTAMP DEFAULT NOW()
+updated_at              : TIMESTAMP DEFAULT NOW()
+
+METHOD_TYPE VALUES:
+-------------------
+- BANK_TRANSFER (80%)
+- EWALLET (15%)
+- CRYPTOCURRENCY (5%)
+
+GENERATE RULES:
+---------------
+Jumlah: 1-2 methods per catering
+Total: 60-150 payment methods
+
+A. BANK_TRANSFER (most common)
+   method_type: "BANK_TRANSFER"
+   bank_code: BCA (008), Mandiri (008), BNI (009), BRI (002)
+   account_number: 10 digit random
+   account_holder_name: sama dengan catering.name
+   is_verified: true
+
+   Contoh:
+   bank_code: "008" (BCA)
+   account_number: "1234567890"
+   account_holder_name: "PT Sumber Pangan Sehat"
+
+B. EWALLET (secondary option)
+   method_type: "EWALLET"
+   ewallet_provider: "OVO", "DANA", "GoPay", "LinkAja", "ShopeePay"
+   ewallet_identifier: phone number or email
+   is_verified: true
+
+   Contoh:
+   ewallet_provider: "OVO"
+   ewallet_identifier: "081234567890"
+
+C. CRYPTOCURRENCY (rare, untuk vendor tertentu)
+   method_type: "CRYPTOCURRENCY"
+   wallet_address: Ethereum address
+   is_verified: false (most unverified)
+
+   Contoh:
+   wallet_address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+
+Distribution per catering:
+- 100% have BANK_TRANSFER
+- 20% also have EWALLET
+- 5% also have CRYPTOCURRENCY
+
+CONTOH DATA LENGKAP:
+--------------------
+id: 1
+catering_id: 1
+method_type: "BANK_TRANSFER"
+bank_code: "008"
+account_number: "1234567890"
+account_holder_name: "PT Sumber Pangan Sehat"
+ewallet_provider: NULL
+ewallet_identifier: NULL
+wallet_address: NULL
+xendit_bank_account_id: NULL
+is_active: true
+is_verified: true
+created_at: NOW()
+updated_at: NOW()
+
+TOTAL PAYMENT METHODS: 60-150 records
+
+================================================================================
+                         19. TABEL: escrow_transactions
+================================================================================
+
+DESKRIPSI: Record transaksi escrow dari smart contract blockchain
+SUMBER: Generate untuk setiap allocation yang LOCKED atau RELEASED
+PURPOSE: Tracking detailed escrow operations untuk transparency dan audit
+
+STRUKTUR DATA:
+--------------
+id                          : SERIAL PRIMARY KEY
+allocation_id               : INTEGER REFERENCES allocations(id) NOT NULL
+transaction_type            : VARCHAR(50) NOT NULL
+amount                      : DECIMAL(15,2) NOT NULL
+currency                    : VARCHAR(3) DEFAULT 'IDR'
+blockchain_tx_hash          : VARCHAR(255) UNIQUE NOT NULL
+blockchain_block_number     : BIGINT NOT NULL
+blockchain_confirmed        : BOOLEAN DEFAULT false
+gas_used                    : BIGINT
+gas_price_gwei              : DECIMAL(10,2)
+from_address                : VARCHAR(255)
+to_address                  : VARCHAR(255)
+smart_contract_address      : VARCHAR(255)
+status                      : VARCHAR(20) NOT NULL
+retry_count                 : INTEGER DEFAULT 0
+error_message               : TEXT
+metadata                    : JSONB
+executed_at                 : TIMESTAMP NOT NULL
+confirmed_at                : TIMESTAMP
+created_at                  : TIMESTAMP DEFAULT NOW()
+
+TRANSACTION_TYPE VALUES:
+------------------------
+- LOCK (50%)        : Lock dana di escrow
+- RELEASE (45%)     : Release dana ke catering
+- FAILED (5%)       : Transaksi gagal
+
+STATUS VALUES:
+--------------
+- PENDING (5%)      : Menunggu konfirmasi
+- CONFIRMED (90%)   : Sudah dikonfirmasi blockchain
+- FAILED (5%)       : Gagal eksekusi
+
+GENERATE RULES:
+---------------
+Jumlah: 80 escrow transactions
+Total: ~80 records (mix of LOCK and RELEASE)
+
+A. ALLOCATION_ID
+   Reference ke allocations table
+   - LOCK transactions: untuk allocation dengan status LOCKED atau RELEASED
+   - RELEASE transactions: untuk allocation dengan status RELEASED
+
+B. TRANSACTION_TYPE
+   Distribution:
+   - LOCK: 50% (40 records)
+   - RELEASE: 45% (36 records)
+   - FAILED: 5% (4 records)
+
+C. AMOUNT
+   Sama dengan allocation.amount
+   Range: Rp 5.000.000 - Rp 50.000.000
+
+D. BLOCKCHAIN_TX_HASH
+   Generate unique Ethereum-style transaction hash
+   Format: 0x + [64 random hex chars]
+
+   Example:
+   "0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t1u2v3w4x5y6z7a8b9c0d1e2f"
+
+   Must be UNIQUE across all escrow_transactions
+
+E. BLOCKCHAIN_BLOCK_NUMBER
+   Random block number in recent range
+   Range: 15000000 - 15500000 (recent Ethereum blocks)
+
+F. BLOCKCHAIN_CONFIRMED
+   - true: 95% (status = CONFIRMED)
+   - false: 5% (status = PENDING or FAILED)
+
+G. GAS_USED
+   Gas consumed for transaction (in units)
+   Range for LOCK: 65000 - 85000
+   Range for RELEASE: 45000 - 65000
+   Range for FAILED: 21000 - 30000
+
+H. GAS_PRICE_GWEI
+   Gas price in Gwei
+   Range: 15.5 - 150.0 (realistic Ethereum gas prices)
+
+I. FROM_ADDRESS
+   Ethereum address yang mengirim (system/government wallet)
+   Format: 0x + [40 random hex chars]
+
+   Example: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
+
+J. TO_ADDRESS
+   - For LOCK: Smart contract address
+   - For RELEASE: Catering wallet address
+   Format: same as from_address
+
+K. SMART_CONTRACT_ADDRESS
+   Address dari escrow smart contract
+   Use consistent address untuk semua:
+   "0xA1B2C3D4E5F6789012345678901234567890ABCD"
+
+L. STATUS
+   Based on transaction_type:
+   - LOCK transactions: 95% CONFIRMED, 5% PENDING
+   - RELEASE transactions: 95% CONFIRMED, 5% PENDING
+   - FAILED transactions: 100% FAILED
+
+M. RETRY_COUNT
+   - 0: untuk successful transactions (95%)
+   - 1-2: untuk transactions yang di-retry (4%)
+   - 3-5: untuk failed transactions (1%)
+
+N. ERROR_MESSAGE
+   Only untuk status = FAILED
+   Examples:
+   - "Insufficient gas"
+   - "Transaction reverted"
+   - "Nonce too low"
+   - "Timeout waiting for confirmation"
+   NULL untuk successful transactions
+
+O. METADATA (JSONB)
+   {
+     "schoolId": 123,
+     "cateringId": 45,
+     "deliveryId": 789,
+     "deliveryDate": "2025-11-15",
+     "portions": 350,
+     "pricePerPortion": 25000,
+     "notes": "Escrow lock untuk delivery MIN 17 JAKARTA"
+   }
+
+P. EXECUTED_AT
+   = allocation.locked_at (untuk LOCK)
+   = allocation.released_at (untuk RELEASE)
+
+Q. CONFIRMED_AT
+   = executed_at + random(15-600 seconds) untuk CONFIRMED
+   NULL untuk PENDING or FAILED
+
+CONTOH DATA LENGKAP (LOCK):
+----------------------------
+id: 1
+allocation_id: 1
+transaction_type: "LOCK"
+amount: 8750000.00
+currency: "IDR"
+blockchain_tx_hash: "0x7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1a7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1"
+blockchain_block_number: 15234567
+blockchain_confirmed: true
+gas_used: 75432
+gas_price_gwei: 45.5
+from_address: "0x1234567890AbCdEf1234567890AbCdEf12345678"
+to_address: "0xA1B2C3D4E5F6789012345678901234567890ABCD"
+smart_contract_address: "0xA1B2C3D4E5F6789012345678901234567890ABCD"
+status: "CONFIRMED"
+retry_count: 0
+error_message: NULL
+metadata: {
+  "schoolId": 1,
+  "cateringId": 1,
+  "deliveryId": 1,
+  "deliveryDate": "2025-11-15",
+  "portions": 350,
+  "pricePerPortion": 25000,
+  "notes": "Escrow lock untuk delivery MIN 17 JAKARTA"
+}
+executed_at: "2025-11-13 10:00:00"
+confirmed_at: "2025-11-13 10:02:30"
+created_at: "2025-11-13 10:00:00"
+
+CONTOH DATA LENGKAP (RELEASE):
+-------------------------------
+id: 2
+allocation_id: 1
+transaction_type: "RELEASE"
+amount: 8750000.00
+currency: "IDR"
+blockchain_tx_hash: "0x8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2b8e4d9f3c6b2g0a7e5f9d3c6b8f4a0e2"
+blockchain_block_number: 15235890
+blockchain_confirmed: true
+gas_used: 52341
+gas_price_gwei: 38.2
+from_address: "0xA1B2C3D4E5F6789012345678901234567890ABCD"
+to_address: "0x9876543210FeDcBa9876543210FeDcBa98765432"
+smart_contract_address: "0xA1B2C3D4E5F6789012345678901234567890ABCD"
+status: "CONFIRMED"
+retry_count: 0
+error_message: NULL
+metadata: {
+  "schoolId": 1,
+  "cateringId": 1,
+  "deliveryId": 1,
+  "verificationId": 1,
+  "qualityRating": 5,
+  "notes": "Release funds after successful verification"
+}
+executed_at: "2025-11-16 14:30:00"
+confirmed_at: "2025-11-16 14:35:45"
+created_at: "2025-11-16 14:30:00"
+
+TOTAL ESCROW TRANSACTIONS: 80 records
+
+================================================================================
+                         20. TABEL: blockchain_sync_log
+================================================================================
+
+DESKRIPSI: Log sinkronisasi event dari blockchain ke database
+SUMBER: Generate sample sync events untuk audit trail
+PURPOSE: Tracking blockchain monitoring dan event processing
+
+STRUKTUR DATA:
+--------------
+id                          : SERIAL PRIMARY KEY
+event_type                  : VARCHAR(50) NOT NULL
+blockchain_event_signature  : VARCHAR(255)
+blockchain_tx_hash          : VARCHAR(255)
+blockchain_block_number     : BIGINT
+block_timestamp             : TIMESTAMP
+entity_type                 : VARCHAR(50)
+entity_id                   : INTEGER
+sync_status                 : VARCHAR(20) NOT NULL
+processing_time_ms          : INTEGER
+retry_count                 : INTEGER DEFAULT 0
+error_message               : TEXT
+metadata                    : JSONB
+synced_at                   : TIMESTAMP NOT NULL
+processed_at                : TIMESTAMP
+created_at                  : TIMESTAMP DEFAULT NOW()
+
+EVENT_TYPE VALUES:
+------------------
+- FundLocked (30%)
+- FundReleased (28%)
+- AllocationCreated (20%)
+- PaymentCompleted (15%)
+- EscrowTimeout (2%)
+- RefundIssued (2%)
+- ContractUpgraded (1%)
+- AdminAction (2%)
+
+SYNC_STATUS VALUES:
+-------------------
+- PROCESSED (85%)   : Event berhasil diproses
+- PENDING (5%)      : Menunggu processing
+- FAILED (7%)       : Gagal diproses
+- RETRY (3%)        : Akan di-retry
+
+GENERATE RULES:
+---------------
+Jumlah: 150 sync log entries
+Total: ~150 records
+
+A. EVENT_TYPE
+   Distribution sesuai persentase di atas
+   Generate realistic mix of blockchain events
+
+B. BLOCKCHAIN_EVENT_SIGNATURE
+   Event signature dari smart contract
+
+   Examples:
+   - "FundLocked(address,uint256,bytes32)"
+   - "FundReleased(address,uint256,bytes32,uint256)"
+   - "AllocationCreated(bytes32,address,address,uint256)"
+   - "PaymentCompleted(bytes32,uint256)"
+
+C. BLOCKCHAIN_TX_HASH
+   Reference ke escrow_transactions.blockchain_tx_hash
+   Atau generate new untuk events tanpa transaction
+
+D. BLOCKCHAIN_BLOCK_NUMBER
+   Same block number dari transaction
+   Range: 15000000 - 15500000
+
+E. BLOCK_TIMESTAMP
+   Timestamp dari blockchain block
+   Range: last 3 months
+
+F. ENTITY_TYPE & ENTITY_ID
+   Reference ke entity yang affected:
+
+   - entity_type: "allocation" → entity_id: allocation.id
+   - entity_type: "payment" → entity_id: payment.id
+   - entity_type: "escrow" → entity_id: escrow_transaction.id
+
+G. SYNC_STATUS
+   - PROCESSED: 85% (event successfully synced to DB)
+   - PENDING: 5% (waiting to process)
+   - FAILED: 7% (error during sync)
+   - RETRY: 3% (scheduled for retry)
+
+H. PROCESSING_TIME_MS
+   Time taken to process event (milliseconds)
+   - PROCESSED: 50-500 ms
+   - PENDING: NULL
+   - FAILED: 100-2000 ms
+   - RETRY: 200-1000 ms
+
+I. RETRY_COUNT
+   - 0: first attempt (92%)
+   - 1-2: retried events (6%)
+   - 3-5: multiple retries (2%)
+
+J. ERROR_MESSAGE
+   Only untuk FAILED status
+   Examples:
+   - "Database connection timeout"
+   - "Foreign key constraint violation"
+   - "Invalid event data format"
+   - "Duplicate event detected"
+   NULL untuk successful sync
+
+K. METADATA (JSONB)
+   Additional context tentang event
+
+   Example:
+   {
+     "blockHash": "0xabc123...",
+     "transactionIndex": 45,
+     "logIndex": 2,
+     "removed": false,
+     "contractVersion": "1.2.0",
+     "syncAttempts": 1
+   }
+
+L. SYNCED_AT
+   Timestamp ketika event detected dari blockchain
+   Range: last 3 months
+
+M. PROCESSED_AT
+   = synced_at + random(1-30 seconds) untuk PROCESSED
+   NULL untuk PENDING or FAILED
+
+CONTOH DATA LENGKAP (PROCESSED):
+---------------------------------
+id: 1
+event_type: "FundLocked"
+blockchain_event_signature: "FundLocked(address,uint256,bytes32)"
+blockchain_tx_hash: "0x7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1a7f3d8e2c5b1f9a6d4e8c2b5f7a3d9e1"
+blockchain_block_number: 15234567
+block_timestamp: "2025-11-13 10:00:00"
+entity_type: "allocation"
+entity_id: 1
+sync_status: "PROCESSED"
+processing_time_ms: 234
+retry_count: 0
+error_message: NULL
+metadata: {
+  "blockHash": "0xabc123def456789...",
+  "transactionIndex": 12,
+  "logIndex": 0,
+  "removed": false,
+  "contractVersion": "1.2.0",
+  "syncAttempts": 1,
+  "schoolId": 1,
+  "cateringId": 1,
+  "amount": "8750000"
+}
+synced_at: "2025-11-13 10:02:30"
+processed_at: "2025-11-13 10:02:35"
+created_at: "2025-11-13 10:02:30"
+
+CONTOH DATA LENGKAP (FAILED):
+------------------------------
+id: 2
+event_type: "FundReleased"
+blockchain_event_signature: "FundReleased(address,uint256,bytes32,uint256)"
+blockchain_tx_hash: "0x9876543210abcdef..."
+blockchain_block_number: 15234890
+block_timestamp: "2025-11-13 14:30:00"
+entity_type: "payment"
+entity_id: 1
+sync_status: "FAILED"
+processing_time_ms: 1523
+retry_count: 2
+error_message: "Foreign key constraint violation: allocation_id does not exist"
+metadata: {
+  "blockHash": "0xdef789abc123...",
+  "transactionIndex": 45,
+  "logIndex": 3,
+  "removed": false,
+  "contractVersion": "1.2.0",
+  "syncAttempts": 3,
+  "lastError": "FK violation",
+  "willRetry": true
+}
+synced_at: "2025-11-13 14:35:00"
+processed_at: NULL
+created_at: "2025-11-13 14:35:00"
+
+TOTAL BLOCKCHAIN SYNC LOG: 150 records
+
+================================================================================
+                    21. TABEL TAMBAHAN (OPTIONAL - LOW PRIORITY)
+================================================================================
+
+Tabel-tabel berikut bisa di-seed nanti jika diperlukan (low priority):
+
+A. refunds
+   - Refund transactions
+   - Generate untuk ~1% dari payments yang CANCELLED
+   - Total: ~200-500 refunds
+
+B. settings / user_settings
+   - User preferences
+   - Generate default settings untuk setiap user
+
+C. notifications
+   - Notification history
+   - Generate sample notifications untuk users
+
+D. audit_logs
+   - Audit trail untuk admin actions
+   - Generate logs untuk admin activities
+
+================================================================================
+                    PRIORITAS EKSEKUSI SEEDING
+================================================================================
+
+ORDER OF EXECUTION (IMPORTANT - Follow this sequence!):
+--------------------------------------------------------
+
+PHASE 1 - FOUNDATION (Users & Entities):
+1. users (school + catering + admin)
+2. schools (dari CSV)
+3. caterings (generate)
+
+PHASE 2 - CATALOGS:
+4. menu_items (untuk setiap catering)
+
+PHASE 3 - TRANSACTIONS:
+5. deliveries (school × catering × dates)
+6. verifications (untuk deliveries yang verified)
+
+PHASE 4 - FINANCIAL:
+7. allocations (untuk verified deliveries)
+8. payments (untuk setiap allocation)
+9. payment_events (untuk setiap payment)
+10. delivery_confirmations (untuk deliveries)
+11. public_payment_feed (untuk completed payments)
+12. payment_methods (untuk caterings)
+
+PHASE 5 - BLOCKCHAIN & ESCROW:
+13. escrow_transactions (untuk allocations yang LOCKED/RELEASED)
+14. blockchain_sync_log (blockchain event monitoring)
+
+PHASE 6 - ISSUES & AI:
+15. issues (untuk problematic deliveries)
+16. ai_food_analyses (untuk sebagian verifications)
+17. vendor_risk_assessments (untuk caterings)
+18. anomaly_alerts (sample alerts)
+
+PHASE 7 - CACHING & ANALYTICS:
+19. poverty_data_cache (regional poverty data)
+20. stunting_data_cache (regional stunting data)
+
+PHASE 8 - OPTIONAL (LOW PRIORITY):
+21. refunds (jika ada cancelled payments)
+22. notifications (sample)
+23. audit_logs (sample)
+
+NOTES ON DEPENDENCIES:
+- Jangan seed child records sebelum parent!
+- Foreign keys harus valid
+- Timestamps harus konsisten (created < updated, locked < released, etc.)
+
+================================================================================
+                         TECHNICAL NOTES
+================================================================================
+
+A. PASSWORD HASHING
+   Gunakan bcrypt dengan salt rounds: 10
+   Library: bcrypt.js atau bcrypt (Node.js)
+
+   Example:
+   const bcrypt = require('bcrypt');
+   const hash = await bcrypt.hash('password', 10);
+
+B. UUID & HASH GENERATION
+   - allocation_id: SHA256 hash
+   - qr_code: Unique string generator
+   - blockchain tx_hash: 0x + 64 random hex chars
+
+   Example:
+   const crypto = require('crypto');
+   const hash = crypto.createHash('sha256')
+     .update(data).digest('hex').substring(0, 32);
+
+C. DATE GENERATION
+   -Gunakan library seperti date-fns atau moment.js
+   - Random dates dalam range yang ditentukan
+   - Pastikan urutan timestamps logis
+
+D. REALISTIC DATA
+   - Gunakan library Faker.js untuk generate:
+     - Nama Indonesia
+     - Alamat
+     - Phone numbers
+   - Atau buat list manual untuk data Indonesia-specific
+
+E. BATCH INSERT
+   - Jangan insert satu-satu (sangat lambat!)
+   - Gunakan batch insert (1000-5000 records per batch)
+   - Handle foreign keys dengan baik
+
+   Example (Supabase):
+   const { data, error } = await supabase
+     .from('table_name')
+     .insert(batchArray);
+
+F. DATA VALIDATION
+   - Validate foreign keys exist
+   - Check constraints (rating 1-5, score 0-100, etc.)
+   - Ensure UNIQUE constraints (email, npsn, allocation_id)
+
+G. PERFORMANCE
+   - Disable triggers sementara saat seeding (jika ada)
+   - Create indexes AFTER seeding (faster)
+   - Use transactions untuk consistency
+
+H. ERROR HANDLING
+   - Log errors untuk debugging
+   - Skip records yang error (jangan stop semua)
+   - Generate summary report setelah seeding
+
+================================================================================
+                         IMAGE HANDLING
+================================================================================
+
+STORAGE: Supabase Storage Bucket "mbg" (public)
+
+POLICY UNTUK SEEDING:
+- Semua image_url dan photo_urls: NULL di seeding awal
+- User akan upload nanti via aplikasi
+- Format URL kalau ada: https://{supabase-project}.supabase.co/storage/v1/object/public/mbg/{path}
+
+BUCKET STRUCTURE:
+/mbg
+  /menus          → foto menu items
+  /verifications  → foto verifikasi
+  /issues         → foto laporan masalah
+  /profiles       → foto profil users/caterings
+
+UPLOAD FLOW (untuk referensi, tidak di seeding):
+1. User upload via API
+2. File disimpan di bucket mbg
+3. URL disimpan di database
+4. Public access untuk display
+
+================================================================================
+                         VALIDATION CHECKLIST
+================================================================================
+
+Setelah seeding, validate:
+
+☑ Total records sesuai estimasi
+☑ No orphaned foreign keys
+☑ All UNIQUE constraints satisfied
+☑ Timestamps dalam urutan logis
+☑ Ratings dan scores dalam range valid
+☑ Status values sesuai enum
+☑ Distribution sesuai persentase (verified 60%, dll)
+☑ No NULL di required fields
+☑ Calculation fields correct (total_amount = sum of menu_items)
+☑ Cross-table consistency (delivery.portions = verification.portions_expected)
+
+================================================================================
+                         SAMPLE QUERIES
+================================================================================
+
+Untuk testing setelah seeding:
+
+-- Check total records
+SELECT
+  'users' as table_name, COUNT(*) FROM users
+UNION ALL
+SELECT 'schools', COUNT(*) FROM schools
+UNION ALL
+SELECT 'caterings', COUNT(*) FROM caterings
+UNION ALL
+SELECT 'deliveries', COUNT(*) FROM deliveries
+UNION ALL
+SELECT 'verifications', COUNT(*) FROM verifications
+UNION ALL
+SELECT 'allocations', COUNT(*) FROM allocations
+UNION ALL
+SELECT 'payments', COUNT(*) FROM payments;
+
+-- Check delivery status distribution
+SELECT status, COUNT(*),
+       ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) as percentage
+FROM deliveries
+GROUP BY status
+ORDER BY COUNT(*) DESC;
+
+-- Check quality rating distribution
+SELECT quality_rating, COUNT(*),
+       ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) as percentage
+FROM verifications
+GROUP BY quality_rating
+ORDER BY quality_rating DESC;
+
+-- Check payment flow
+SELECT
+  d.id as delivery_id,
+  d.status as delivery_status,
+  v.id as verification_id,
+  a.id as allocation_id,
+  a.status as allocation_status,
+  p.id as payment_id,
+  p.status as payment_status
+FROM deliveries d
+LEFT JOIN verifications v ON v.delivery_id = d.id
+LEFT JOIN allocations a ON a.id = d.allocation_id
+LEFT JOIN payments p ON p.allocation_id = a.id
+LIMIT 10;
+
+-- Top caterings by deliveries
+SELECT
+  c.name,
+  COUNT(d.id) as total_deliveries,
+  AVG(v.quality_rating) as avg_rating,
+  SUM(d.total_amount) as total_revenue
+FROM caterings c
+JOIN deliveries d ON d.catering_id = c.id
+LEFT JOIN verifications v ON v.delivery_id = d.id
+GROUP BY c.id, c.name
+ORDER BY total_deliveries DESC
+LIMIT 10;
+
+-- Schools with most issues
+SELECT
+  s.name,
+  s.provinsi,
+  COUNT(i.id) as issue_count
+FROM schools s
+JOIN issues i ON i.school_id = s.id
+GROUP BY s.id, s.name, s.provinsi
+ORDER BY issue_count DESC
+LIMIT 10;
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
+
+Total Pages: This document
+Created: 2025-11-19
+Last Updated: 2025-11-19
+
+For questions or clarifications, refer to:
+- Database migration files: /database/migrations/
+- Supabase schema: /supabase/migrations/
+- Frontend models: /frontend/app/
+- API endpoints: /backend/src/
+
+READY FOR IMPLEMENTATION!

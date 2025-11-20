@@ -1,0 +1,2583 @@
+================================================================================
+           RENCANA REFACTORING: CRUD KE SUPABASE & AI INTEGRATION
+                      Sistem Makanan Bergizi Gratis
+================================================================================
+
+Dibuat: 2025-11-19
+Versi: 1.0
+Tujuan: Merombak CRUD localStorage/mockup menjadi Supabase real-time database
+        + Integrasi AI dengan Supabase Vector & Langchain (Cohere + Claude)
+
+================================================================================
+                          PART 1: CRUD REFACTORING
+                    LOCAL STORAGE → SUPABASE DATABASE
+================================================================================
+
+## 🎯 OVERVIEW REFACTORING
+
+CURRENT STATE (MASALAH):
+- ❌ Data disimpan di localStorage (browser-specific, tidak persist)
+- ❌ Menggunakan dummy/mock data hardcoded
+- ❌ Tidak ada real-time sync
+- ❌ Tidak ada server-side validation
+- ❌ Data hilang saat clear cache/ganti browser
+
+TARGET STATE (SOLUSI):
+- ✅ Data disimpan di Supabase PostgreSQL (cloud, persistent)
+- ✅ Real-time sync antar device/users
+- ✅ Server-side validation via Supabase RLS (Row Level Security)
+- ✅ Optimistic updates untuk UX yang smooth
+- ✅ Offline-first dengan Supabase cache
+
+================================================================================
+                    SECTION 1: SCHOOL ROLE - CRUD OPERATIONS
+================================================================================
+
+### 1.1 DELIVERY VERIFICATION (School Side)
+
+CURRENT IMPLEMENTATION:
+File: frontend/app/hooks/useDeliveries.ts
+Status: Menggunakan API backend (✅ sudah benar)
+
+YANG PERLU DIROMBAK:
+❌ TIDAK ADA - Sudah menggunakan API backend yang benar
+
+RECOMMENDATION:
+✅ Backend API harus connect ke Supabase (bukan PostgreSQL lokal)
+✅ Pastikan endpoint /api/deliveries/* sudah terintegrasi Supabase
+
+
+FILE: frontend/app/hooks/useVerifications.ts
+CURRENT: Menggunakan API backend
+ACTION: Pastikan backend connect ke Supabase
+
+```typescript
+// BEFORE (jika masih lokal):
+const pool = new Pool({
+  host: 'localhost',
+  database: 'mbg_db'
+});
+
+// AFTER (Supabase):
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_KEY!
+)
+
+// Query example
+const { data, error } = await supabase
+  .from('verifications')
+  .select('*')
+  .eq('school_id', schoolId)
+  .order('verified_at', { ascending: false })
+```
+
+CRUD OPERATIONS YANG PERLU SUPABASE:
+
+A. READ DELIVERIES (School Dashboard)
+   Endpoint: GET /api/deliveries?school_id={id}
+
+   Current: Backend → PostgreSQL Local
+   Target: Backend → Supabase
+
+   Query Supabase:
+   ```typescript
+   const { data: deliveries, error } = await supabase
+     .from('deliveries')
+     .select(`
+       *,
+       catering:caterings(name, contact_phone),
+       verification:verifications(*)
+     `)
+     .eq('school_id', schoolId)
+     .gte('delivery_date', startDate)
+     .lte('delivery_date', endDate)
+     .order('delivery_date', { ascending: false })
+   ```
+
+B. CREATE VERIFICATION
+   Endpoint: POST /api/verifications
+
+   Target: Supabase RLS untuk security
+
+   Insert to Supabase:
+   ```typescript
+   const { data, error } = await supabase
+     .from('verifications')
+     .insert([{
+       delivery_id: deliveryId,
+       school_id: schoolId,
+       verified_by: userId,
+       portions_received: portions,
+       quality_rating: rating,
+       status_kualitas: statusKualitas,
+       food_condition: condition,
+       notes: notes,
+       verification_method: 'manual', // or 'qr_code'
+       verified_at: new Date().toISOString()
+     }])
+     .select()
+     .single()
+
+   // Update delivery status
+   await supabase
+     .from('deliveries')
+     .update({ status: 'verified' })
+     .eq('id', deliveryId)
+   ```
+
+C. UPDATE VERIFICATION (Edit)
+   Endpoint: PATCH /api/verifications/:id
+
+   ```typescript
+   const { data, error } = await supabase
+     .from('verifications')
+     .update({
+       quality_rating: newRating,
+       notes: newNotes,
+       updated_at: new Date().toISOString()
+     })
+     .eq('id', verificationId)
+     .eq('school_id', schoolId) // RLS: hanya bisa update milik sendiri
+     .select()
+     .single()
+   ```
+
+D. UPLOAD PHOTO VERIFICATION
+   Target: Supabase Storage bucket "mbg"
+
+   ```typescript
+   // Upload photo
+   const { data: uploadData, error: uploadError } = await supabase
+     .storage
+     .from('mbg')
+     .upload(`verifications/${verificationId}/${fileName}`, file, {
+       cacheControl: '3600',
+       upsert: false
+     })
+
+   // Get public URL
+   const { data: urlData } = supabase
+     .storage
+     .from('mbg')
+     .getPublicUrl(`verifications/${verificationId}/${fileName}`)
+
+   // Update verification with photo URL
+   await supabase
+     .from('verifications')
+     .update({
+       photo_urls: [...existingPhotos, urlData.publicUrl]
+     })
+     .eq('id', verificationId)
+   ```
+
+
+### 1.2 ISSUE REPORTING (School Side)
+
+FILE: frontend/app/hooks/useIssues.ts
+CURRENT: Menggunakan API backend
+STATUS: ✅ Sudah benar (pakai API)
+
+CRUD OPERATIONS YANG PERLU SUPABASE:
+
+A. READ ISSUES
+   ```typescript
+   const { data: issues, error } = await supabase
+     .from('issues')
+     .select(`
+       *,
+       delivery:deliveries(
+         delivery_date,
+         catering:caterings(name)
+       ),
+       reporter:users(name, email)
+     `)
+     .eq('school_id', schoolId)
+     .order('created_at', { ascending: false })
+   ```
+
+B. CREATE ISSUE
+   ```typescript
+   const { data, error } = await supabase
+     .from('issues')
+     .insert([{
+       delivery_id: deliveryId,
+       school_id: schoolId,
+       catering_id: cateringId,
+       reported_by: userId,
+       issue_type: issueType,
+       priority: priority,
+       title: title,
+       description: description,
+       status: 'open'
+     }])
+     .select()
+     .single()
+
+   // Upload photos if any
+   for (const file of photoFiles) {
+     await supabase.storage
+       .from('mbg')
+       .upload(`issues/${data.id}/${file.name}`, file)
+   }
+   ```
+
+C. UPDATE ISSUE STATUS
+   ```typescript
+   const { data, error } = await supabase
+     .from('issues')
+     .update({
+       status: newStatus,
+       updated_at: new Date().toISOString()
+     })
+     .eq('id', issueId)
+     .eq('school_id', schoolId)
+   ```
+
+
+### 1.3 DELIVERY HISTORY (School Side)
+
+FILE: frontend/app/hooks/useDeliveries.ts
+CURRENT: ✅ Sudah pakai API
+
+ADDITIONAL FEATURE - REAL-TIME SUBSCRIPTION:
+```typescript
+// Real-time updates untuk delivery baru
+const subscription = supabase
+  .channel('deliveries_channel')
+  .on(
+    'postgres_changes',
+    {
+      event: '*', // INSERT, UPDATE, DELETE
+      schema: 'public',
+      table: 'deliveries',
+      filter: `school_id=eq.${schoolId}`
+    },
+    (payload) => {
+      console.log('Delivery updated:', payload)
+      // Update state React
+      setDeliveries(prev => {
+        // Handle INSERT/UPDATE/DELETE
+        if (payload.eventType === 'INSERT') {
+          return [payload.new, ...prev]
+        }
+        // ... handle lainnya
+      })
+    }
+  )
+  .subscribe()
+
+// Cleanup
+return () => {
+  subscription.unsubscribe()
+}
+```
+
+
+### 1.4 SCHOOL SETTINGS
+
+FILE: frontend/app/school/settings/page.tsx
+CURRENT: ❌ Menggunakan hardcoded default values
+
+REFACTOR TO SUPABASE:
+
+A. READ SCHOOL PROFILE
+   ```typescript
+   const { data: school, error } = await supabase
+     .from('schools')
+     .select(`
+       *,
+       user:users(email, phone)
+     `)
+     .eq('id', schoolId)
+     .single()
+   ```
+
+B. UPDATE SCHOOL PROFILE
+   ```typescript
+   const { data, error } = await supabase
+     .from('schools')
+     .update({
+       contact_name: contactName,
+       contact_phone: contactPhone,
+       student_count: studentCount,
+       updated_at: new Date().toISOString()
+     })
+     .eq('id', schoolId)
+     .select()
+     .single()
+   ```
+
+C. NOTIFICATION SETTINGS (New Table)
+   Create table: school_settings
+   ```sql
+   CREATE TABLE school_settings (
+     id SERIAL PRIMARY KEY,
+     school_id INTEGER REFERENCES schools(id) UNIQUE,
+     delivery_reminder BOOLEAN DEFAULT true,
+     issue_update_notification BOOLEAN DEFAULT true,
+     payment_status_notification BOOLEAN DEFAULT false,
+     notification_time TIME DEFAULT '08:00',
+     reminder_minutes_before INTEGER DEFAULT 30,
+     created_at TIMESTAMP DEFAULT NOW(),
+     updated_at TIMESTAMP DEFAULT NOW()
+   );
+   ```
+
+   CRUD:
+   ```typescript
+   // READ
+   const { data: settings } = await supabase
+     .from('school_settings')
+     .select('*')
+     .eq('school_id', schoolId)
+     .single()
+
+   // UPDATE or INSERT (UPSERT)
+   const { data, error } = await supabase
+     .from('school_settings')
+     .upsert({
+       school_id: schoolId,
+       delivery_reminder: true,
+       notification_time: '08:00',
+       ...otherSettings
+     })
+     .select()
+     .single()
+   ```
+
+
+### 1.5 QR CODE VERIFICATION
+
+FILE: frontend/app/school/verify-qr/page.tsx
+CURRENT: ✅ Frontend sudah ada logic
+
+INTEGRATION WITH SUPABASE:
+
+A. VERIFY QR CODE
+   ```typescript
+   // Scan QR code → get delivery_id
+   const qrData = JSON.parse(scannedText) // {delivery_id: 123}
+
+   // Fetch delivery details
+   const { data: delivery, error } = await supabase
+     .from('deliveries')
+     .select(`
+       *,
+       catering:caterings(name, contact_phone),
+       menu_items
+     `)
+     .eq('qr_code', scannedText) // or .eq('id', qrData.delivery_id)
+     .eq('school_id', schoolId) // Security: hanya bisa verify milik sendiri
+     .single()
+
+   if (!delivery) {
+     throw new Error('QR code tidak valid atau bukan untuk sekolah ini')
+   }
+
+   // Lanjut ke verification form
+   ```
+
+B. SUBMIT VERIFICATION FROM QR
+   Same as CREATE VERIFICATION di section 1.1.B
+   Tambahan field: verification_method = 'qr_code'
+
+
+================================================================================
+                   SECTION 2: CATERING ROLE - CRUD OPERATIONS
+================================================================================
+
+### 2.1 CATERING DASHBOARD
+
+FILE: frontend/app/hooks/useCateringDashboard.ts
+CURRENT: ❌ Menggunakan defaultDeliveries (hardcoded)
+         ❌ Menggunakan localStorage untuk cache
+
+REFACTOR TO SUPABASE:
+
+A. READ DASHBOARD STATS
+   ```typescript
+   const { data: stats, error } = await supabase
+     .rpc('get_catering_dashboard_stats', {
+       catering_id_param: cateringId
+     })
+
+   // Backend function (PostgreSQL):
+   CREATE OR REPLACE FUNCTION get_catering_dashboard_stats(catering_id_param INTEGER)
+   RETURNS JSON AS $$
+   DECLARE
+     result JSON;
+   BEGIN
+     SELECT json_build_object(
+       'locked_funds', (
+         SELECT COALESCE(SUM(amount), 0)
+         FROM allocations
+         WHERE catering_id = catering_id_param
+           AND status IN ('LOCKED', 'RELEASING')
+       ),
+       'today_distribution', json_build_object(
+         'schools', (
+           SELECT COUNT(DISTINCT school_id)
+           FROM deliveries
+           WHERE catering_id = catering_id_param
+             AND delivery_date = CURRENT_DATE
+         ),
+         'portions', (
+           SELECT COALESCE(SUM(portions), 0)
+           FROM deliveries
+           WHERE catering_id = catering_id_param
+             AND delivery_date = CURRENT_DATE
+         )
+       ),
+       'upcoming_deliveries', (
+         SELECT COUNT(*)
+         FROM deliveries
+         WHERE catering_id = catering_id_param
+           AND delivery_date >= CURRENT_DATE
+           AND status IN ('scheduled', 'pending')
+       )
+     ) INTO result;
+
+     RETURN result;
+   END;
+   $$ LANGUAGE plpgsql;
+   ```
+
+B. READ TODAY'S DELIVERIES
+   ```typescript
+   const { data: deliveries, error } = await supabase
+     .from('deliveries')
+     .select(`
+       *,
+       school:schools(name, address, contact_phone)
+     `)
+     .eq('catering_id', cateringId)
+     .eq('delivery_date', today)
+     .in('status', ['pending', 'scheduled', 'in_transit'])
+     .order('delivery_time_start', { ascending: true })
+   ```
+
+C. UPDATE DELIVERY STATUS (Catering marks as "in_transit" or "delivered")
+   ```typescript
+   const { data, error } = await supabase
+     .from('deliveries')
+     .update({
+       status: 'in_transit', // or 'delivered'
+       driver_name: driverName,
+       driver_phone: driverPhone,
+       vehicle_number: vehicleNumber,
+       updated_at: new Date().toISOString()
+     })
+     .eq('id', deliveryId)
+     .eq('catering_id', cateringId) // RLS: hanya update milik sendiri
+   ```
+
+D. REAL-TIME SUBSCRIPTION (Catering Dashboard)
+   ```typescript
+   const subscription = supabase
+     .channel('catering_deliveries')
+     .on(
+       'postgres_changes',
+       {
+         event: 'UPDATE',
+         schema: 'public',
+         table: 'deliveries',
+         filter: `catering_id=eq.${cateringId}`
+       },
+       (payload) => {
+         // Update delivery ketika school verify
+         if (payload.new.status === 'verified') {
+           showNotification('Delivery verified by school!')
+           updateDeliveriesList(payload.new)
+         }
+       }
+     )
+     .subscribe()
+   ```
+
+
+### 2.2 SCHEDULE MANAGEMENT
+
+FILE: frontend/app/hooks/useScheduleData.ts
+CURRENT: ❌ Menggunakan defaultSchedules (hardcoded)
+
+REFACTOR TO SUPABASE:
+
+A. READ SCHEDULES (Upcoming Deliveries)
+   ```typescript
+   const { data: schedules, error } = await supabase
+     .from('deliveries')
+     .select(`
+       *,
+       school:schools(name, address, contact_phone, kelurahan, kecamatan)
+     `)
+     .eq('catering_id', cateringId)
+     .gte('delivery_date', today)
+     .order('delivery_date', { ascending: true })
+     .order('delivery_time_start', { ascending: true })
+   ```
+
+B. FILTER BY STATUS
+   ```typescript
+   let query = supabase
+     .from('deliveries')
+     .select('*, school:schools(*)')
+     .eq('catering_id', cateringId)
+
+   if (statusFilter !== 'all') {
+     query = query.eq('status', statusFilter)
+   }
+
+   if (dateFilter === 'today') {
+     query = query.eq('delivery_date', today)
+   } else if (dateFilter === 'week') {
+     query = query
+       .gte('delivery_date', startOfWeek)
+       .lte('delivery_date', endOfWeek)
+   }
+
+   const { data, error } = await query
+   ```
+
+C. MARK DELIVERY AS COMPLETED
+   ```typescript
+   const { data, error } = await supabase
+     .from('deliveries')
+     .update({
+       status: 'delivered',
+       delivered_at: new Date().toISOString()
+     })
+     .eq('id', deliveryId)
+   ```
+
+
+### 2.3 MENU MANAGEMENT
+
+FILE: frontend/app/hooks/useMenuData.ts
+CURRENT: ❌ Menggunakan dummyData (hardcoded)
+
+REFACTOR TO SUPABASE:
+
+A. READ MENUS
+   ```typescript
+   const { data: menus, error } = await supabase
+     .from('menu_items')
+     .select('*')
+     .eq('catering_id', cateringId)
+     .order('created_at', { ascending: false })
+   ```
+
+B. CREATE MENU
+   ```typescript
+   const { data, error } = await supabase
+     .from('menu_items')
+     .insert([{
+       catering_id: cateringId,
+       name: menuName,
+       description: description,
+       category: category,
+       price: price,
+       calories: calories,
+       protein: protein,
+       carbohydrates: carbs,
+       vitamins: vitaminsArray,
+       is_available: true,
+       is_halal: true
+     }])
+     .select()
+     .single()
+   ```
+
+C. UPLOAD MENU IMAGE
+   ```typescript
+   // Upload image to Supabase Storage
+   const { data: uploadData, error: uploadError } = await supabase
+     .storage
+     .from('mbg')
+     .upload(`menus/${cateringId}/${menuId}/${fileName}`, file, {
+       cacheControl: '3600',
+       upsert: false
+     })
+
+   // Get public URL
+   const { data: urlData } = supabase
+     .storage
+     .from('mbg')
+     .getPublicUrl(`menus/${cateringId}/${menuId}/${fileName}`)
+
+   // Update menu with image URL
+   await supabase
+     .from('menu_items')
+     .update({ image_url: urlData.publicUrl })
+     .eq('id', menuId)
+   ```
+
+D. UPDATE MENU
+   ```typescript
+   const { data, error } = await supabase
+     .from('menu_items')
+     .update({
+       name: newName,
+       price: newPrice,
+       is_available: isAvailable,
+       updated_at: new Date().toISOString()
+     })
+     .eq('id', menuId)
+     .eq('catering_id', cateringId)
+   ```
+
+E. DELETE MENU
+   ```typescript
+   // Soft delete (preferred)
+   const { data, error } = await supabase
+     .from('menu_items')
+     .update({ is_available: false, deleted_at: new Date().toISOString() })
+     .eq('id', menuId)
+
+   // Or hard delete
+   const { data, error } = await supabase
+     .from('menu_items')
+     .delete()
+     .eq('id', menuId)
+     .eq('catering_id', cateringId)
+   ```
+
+
+### 2.4 PAYMENT DASHBOARD
+
+FILE: frontend/app/hooks/usePaymentsData.ts
+CURRENT: ❌ Menggunakan getDummyData() (hardcoded)
+
+REFACTOR TO SUPABASE:
+
+A. READ FUND STATUS
+   ```typescript
+   const { data: fundStatus, error } = await supabase
+     .rpc('get_catering_fund_status', {
+       catering_id_param: cateringId
+     })
+
+   // Backend function:
+   CREATE OR REPLACE FUNCTION get_catering_fund_status(catering_id_param INTEGER)
+   RETURNS JSON AS $$
+   BEGIN
+     RETURN json_build_object(
+       'locked', (
+         SELECT COALESCE(SUM(amount), 0)
+         FROM allocations
+         WHERE catering_id = catering_id_param
+           AND status = 'LOCKED'
+       ),
+       'pending_verification', (
+         SELECT COALESCE(SUM(amount), 0)
+         FROM allocations
+         WHERE catering_id = catering_id_param
+           AND status = 'RELEASING'
+       ),
+       'released', (
+         SELECT COALESCE(SUM(amount), 0)
+         FROM allocations
+         WHERE catering_id = catering_id_param
+           AND status = 'RELEASED'
+           AND DATE(released_at) >= CURRENT_DATE - INTERVAL '30 days'
+       ),
+       'total', (
+         SELECT COALESCE(SUM(amount), 0)
+         FROM allocations
+         WHERE catering_id = catering_id_param
+       )
+     );
+   END;
+   $$ LANGUAGE plpgsql;
+   ```
+
+B. READ TRANSACTION HISTORY
+   ```typescript
+   const { data: transactions, error } = await supabase
+     .from('payments')
+     .select(`
+       *,
+       allocation:allocations(allocation_id, metadata),
+       school:schools(name)
+     `)
+     .eq('catering_id', cateringId)
+     .order('created_at', { ascending: false })
+     .limit(50)
+   ```
+
+C. READ CASH FLOW DATA (for chart)
+   ```typescript
+   const { data: cashFlow, error } = await supabase
+     .rpc('get_catering_cash_flow', {
+       catering_id_param: cateringId,
+       months: 6
+     })
+
+   // Backend function:
+   CREATE OR REPLACE FUNCTION get_catering_cash_flow(
+     catering_id_param INTEGER,
+     months INTEGER DEFAULT 6
+   )
+   RETURNS TABLE(month TEXT, income NUMERIC, expense NUMERIC) AS $$
+   BEGIN
+     RETURN QUERY
+     SELECT
+       TO_CHAR(DATE_TRUNC('month', released_at), 'Mon') as month,
+       SUM(amount) as income,
+       0::NUMERIC as expense -- Expense data from other source
+     FROM allocations
+     WHERE catering_id = catering_id_param
+       AND status = 'RELEASED'
+       AND released_at >= CURRENT_DATE - (months || ' months')::INTERVAL
+     GROUP BY DATE_TRUNC('month', released_at)
+     ORDER BY DATE_TRUNC('month', released_at);
+   END;
+   $$ LANGUAGE plpgsql;
+   ```
+
+
+### 2.5 DELIVERY HISTORY (Catering Side)
+
+FILE: frontend/app/hooks/useHistoryData.ts
+CURRENT: ❌ Menggunakan dummyData (hardcoded)
+
+REFACTOR TO SUPABASE:
+
+A. READ HISTORY
+   ```typescript
+   const { data: history, error } = await supabase
+     .from('deliveries')
+     .select(`
+       *,
+       school:schools(name, address),
+       verification:verifications(quality_rating, status_kualitas, photo_urls)
+     `)
+     .eq('catering_id', cateringId)
+     .in('status', ['delivered', 'verified', 'issue'])
+     .order('delivery_date', { ascending: false })
+     .limit(50)
+   ```
+
+B. FILTER BY STATUS
+   ```typescript
+   let query = supabase
+     .from('deliveries')
+     .select('*, school:schools(*), verification:verifications(*)')
+     .eq('catering_id', cateringId)
+
+   if (statusFilter !== 'all') {
+     query = query.eq('status', statusFilter)
+   }
+
+   const { data, error } = await query
+   ```
+
+
+### 2.6 ISSUES DASHBOARD (Catering Side)
+
+FILE: frontend/app/hooks/useIssuesDashboard.ts
+CURRENT: ❌ Menggunakan defaultData (hardcoded)
+
+REFACTOR TO SUPABASE:
+
+A. READ ISSUES
+   ```typescript
+   const { data: issues, error } = await supabase
+     .from('issues')
+     .select(`
+       *,
+       school:schools(name),
+       delivery:deliveries(delivery_date, portions)
+     `)
+     .eq('catering_id', cateringId)
+     .order('created_at', { ascending: false })
+   ```
+
+B. READ QUALITY METRICS
+   ```typescript
+   const { data: metrics, error } = await supabase
+     .rpc('get_catering_quality_metrics', {
+       catering_id_param: cateringId
+     })
+
+   // Backend function:
+   CREATE OR REPLACE FUNCTION get_catering_quality_metrics(catering_id_param INTEGER)
+   RETURNS JSON AS $$
+   BEGIN
+     RETURN json_build_object(
+       'on_time_percentage', (
+         SELECT ROUND(
+           COUNT(CASE WHEN delivered_at <= (delivery_date || ' ' || delivery_time_end)::TIMESTAMP THEN 1 END) * 100.0 /
+           NULLIF(COUNT(*), 0),
+           2
+         )
+         FROM deliveries
+         WHERE catering_id = catering_id_param
+           AND status IN ('delivered', 'verified')
+           AND delivered_at IS NOT NULL
+       ),
+       'quality_score', (
+         SELECT ROUND(AVG(quality_rating) * 2, 2) -- Convert 1-5 to 0-10
+         FROM verifications v
+         JOIN deliveries d ON d.id = v.delivery_id
+         WHERE d.catering_id = catering_id_param
+       ),
+       'rating', (
+         SELECT COALESCE(rating, 0)
+         FROM caterings
+         WHERE id = catering_id_param
+       ),
+       'total_reviews', (
+         SELECT COALESCE(total_reviews, 0)
+         FROM caterings
+         WHERE id = catering_id_param
+       )
+     );
+   END;
+   $$ LANGUAGE plpgsql;
+   ```
+
+C. READ QUALITY TREND (last 6 months)
+   ```typescript
+   const { data: trend, error } = await supabase
+     .rpc('get_quality_trend', {
+       catering_id_param: cateringId,
+       months: 6
+     })
+
+   // Returns: [{month: 'Jan', score: 96.5}, ...]
+   ```
+
+
+### 2.7 CATERING SETTINGS
+
+FILE: frontend/app/catering/settings/page.tsx
+CURRENT: ❌ Menggunakan hardcoded initial values
+
+REFACTOR TO SUPABASE:
+
+A. READ CATERING PROFILE
+   ```typescript
+   const { data: catering, error } = await supabase
+     .from('caterings')
+     .select(`
+       *,
+       user:users(email),
+       payment_methods:payment_methods(*)
+     `)
+     .eq('id', cateringId)
+     .single()
+   ```
+
+B. UPDATE CATERING PROFILE
+   ```typescript
+   const { data, error } = await supabase
+     .from('caterings')
+     .update({
+       name: businessName,
+       address: address,
+       contact_phone: phone,
+       contact_name: contactName,
+       business_hours_start: startTime,
+       business_hours_end: endTime,
+       cuisines: cuisinesArray,
+       updated_at: new Date().toISOString()
+     })
+     .eq('id', cateringId)
+   ```
+
+C. UPDATE PAYMENT METHOD
+   ```typescript
+   // UPSERT payment method
+   const { data, error } = await supabase
+     .from('payment_methods')
+     .upsert({
+       catering_id: cateringId,
+       method_type: 'BANK_TRANSFER',
+       bank_code: bankCode,
+       account_number: accountNumber,
+       account_holder_name: holderName,
+       is_active: true
+     })
+     .select()
+   ```
+
+
+================================================================================
+                    SECTION 3: ROW LEVEL SECURITY (RLS)
+================================================================================
+
+Supabase memiliki fitur Row Level Security (RLS) untuk keamanan data.
+Setiap user hanya bisa akses data milik mereka sendiri.
+
+### 3.1 ENABLE RLS
+
+```sql
+-- Enable RLS untuk semua tabel
+ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
+ALTER TABLE caterings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE deliveries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE issues ENABLE ROW LEVEL SECURITY;
+ALTER TABLE menu_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE allocations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+```
+
+### 3.2 RLS POLICIES - SCHOOLS
+
+```sql
+-- Schools: SELECT policy (read own data)
+CREATE POLICY "Schools can view own data"
+ON schools FOR SELECT
+USING (user_id = auth.uid());
+
+-- Schools: UPDATE policy (update own data)
+CREATE POLICY "Schools can update own data"
+ON schools FOR UPDATE
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
+-- Deliveries: SELECT policy (schools can view own deliveries)
+CREATE POLICY "Schools can view own deliveries"
+ON deliveries FOR SELECT
+USING (school_id IN (
+  SELECT id FROM schools WHERE user_id = auth.uid()
+));
+
+-- Verifications: INSERT policy (schools can create verifications for own deliveries)
+CREATE POLICY "Schools can create verifications"
+ON verifications FOR INSERT
+WITH CHECK (
+  school_id IN (SELECT id FROM schools WHERE user_id = auth.uid())
+  AND
+  delivery_id IN (
+    SELECT d.id FROM deliveries d
+    WHERE d.school_id IN (SELECT id FROM schools WHERE user_id = auth.uid())
+  )
+);
+
+-- Verifications: SELECT policy
+CREATE POLICY "Schools can view own verifications"
+ON verifications FOR SELECT
+USING (school_id IN (
+  SELECT id FROM schools WHERE user_id = auth.uid()
+));
+
+-- Issues: INSERT policy
+CREATE POLICY "Schools can create issues"
+ON issues FOR INSERT
+WITH CHECK (school_id IN (
+  SELECT id FROM schools WHERE user_id = auth.uid()
+));
+
+-- Issues: SELECT policy
+CREATE POLICY "Schools can view own issues"
+ON issues FOR SELECT
+USING (school_id IN (
+  SELECT id FROM schools WHERE user_id = auth.uid()
+));
+```
+
+### 3.3 RLS POLICIES - CATERINGS
+
+```sql
+-- Caterings: SELECT policy
+CREATE POLICY "Caterings can view own data"
+ON caterings FOR SELECT
+USING (user_id = auth.uid());
+
+-- Caterings: UPDATE policy
+CREATE POLICY "Caterings can update own data"
+ON caterings FOR UPDATE
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
+
+-- Deliveries: SELECT policy (caterings can view own deliveries)
+CREATE POLICY "Caterings can view own deliveries"
+ON deliveries FOR SELECT
+USING (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+));
+
+-- Deliveries: UPDATE policy (caterings can update status)
+CREATE POLICY "Caterings can update own deliveries"
+ON deliveries FOR UPDATE
+USING (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+))
+WITH CHECK (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+));
+
+-- Menu Items: Full CRUD for own menus
+CREATE POLICY "Caterings can manage own menus"
+ON menu_items FOR ALL
+USING (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+))
+WITH CHECK (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+));
+
+-- Allocations: SELECT policy
+CREATE POLICY "Caterings can view own allocations"
+ON allocations FOR SELECT
+USING (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+));
+
+-- Payments: SELECT policy
+CREATE POLICY "Caterings can view own payments"
+ON payments FOR SELECT
+USING (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+));
+
+-- Issues: SELECT policy (caterings can view issues about them)
+CREATE POLICY "Caterings can view related issues"
+ON issues FOR SELECT
+USING (catering_id IN (
+  SELECT id FROM caterings WHERE user_id = auth.uid()
+));
+```
+
+### 3.4 RLS POLICIES - ADMIN
+
+```sql
+-- Admin dapat akses semua data
+CREATE POLICY "Admin can view all data"
+ON schools FOR ALL
+USING (
+  EXISTS (
+    SELECT 1 FROM users
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+
+-- Repeat untuk semua tabel dengan kondisi yang sama
+```
+
+
+================================================================================
+                    SECTION 4: BACKEND API REFACTORING
+================================================================================
+
+### 4.1 SUPABASE CLIENT SETUP
+
+FILE: backend/src/config/supabase.ts (NEW FILE)
+
+```typescript
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+// Service role client (bypass RLS, untuk admin operations)
+export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
+
+// Anon client (dengan RLS, untuk user operations)
+export const supabaseAnon = createClient(
+  supabaseUrl,
+  process.env.SUPABASE_ANON_KEY!
+)
+
+// Helper: Get client with user context
+export function getSupabaseWithAuth(accessToken: string) {
+  return createClient(supabaseUrl, process.env.SUPABASE_ANON_KEY!, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
+    }
+  })
+}
+```
+
+### 4.2 ENVIRONMENT VARIABLES
+
+FILE: backend/.env
+
+```env
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# Remove old PostgreSQL config (optional, untuk backward compatibility)
+# DB_HOST=localhost
+# DB_PORT=5432
+# DB_NAME=mbg_db
+# DB_USER=postgres
+# DB_PASSWORD=postgres
+```
+
+### 4.3 MIGRATION DARI PostgreSQL POOL KE SUPABASE
+
+BEFORE:
+```typescript
+// backend/src/config/database.ts
+import { Pool } from 'pg';
+
+export const pool = new Pool({
+  host: process.env.DB_HOST,
+  port: parseInt(process.env.DB_PORT || '5432'),
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+});
+```
+
+AFTER:
+```typescript
+// backend/src/config/database.ts
+import { supabaseAdmin } from './supabase';
+
+// Keep pool for backward compatibility if needed
+// But use supabaseAdmin for new queries
+
+export { supabaseAdmin as db };
+```
+
+### 4.4 CONTOH REFACTOR API ENDPOINT
+
+BEFORE (PostgreSQL Pool):
+```typescript
+// backend/src/routes/deliveries.ts
+import { pool } from '../config/database';
+
+router.get('/deliveries', async (req, res) => {
+  const { school_id } = req.query;
+
+  const result = await pool.query(
+    'SELECT * FROM deliveries WHERE school_id = $1',
+    [school_id]
+  );
+
+  res.json({ data: result.rows });
+});
+```
+
+AFTER (Supabase):
+```typescript
+// backend/src/routes/deliveries.ts
+import { supabaseAdmin } from '../config/supabase';
+
+router.get('/deliveries', async (req, res) => {
+  const { school_id } = req.query;
+
+  const { data, error } = await supabaseAdmin
+    .from('deliveries')
+    .select(`
+      *,
+      catering:caterings(name, contact_phone),
+      verification:verifications(*)
+    `)
+    .eq('school_id', school_id)
+    .order('delivery_date', { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json({ data });
+});
+```
+
+
+================================================================================
+                   SECTION 5: FRONTEND CLIENT SETUP
+================================================================================
+
+### 5.1 INSTALL SUPABASE CLIENT
+
+```bash
+cd frontend
+npm install @supabase/supabase-js
+```
+
+### 5.2 CREATE SUPABASE CLIENT
+
+FILE: frontend/lib/supabase.ts (NEW FILE)
+
+```typescript
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+})
+
+// Helper: Get authenticated user
+export async function getCurrentUser() {
+  const { data: { user }, error } = await supabase.auth.getUser()
+  return user
+}
+
+// Helper: Get user session
+export async function getSession() {
+  const { data: { session }, error } = await supabase.auth.getSession()
+  return session
+}
+```
+
+### 5.3 ENVIRONMENT VARIABLES
+
+FILE: frontend/.env.local
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### 5.4 UPDATE AUTH CONTEXT
+
+FILE: frontend/app/context/AuthContext.tsx
+
+```typescript
+import { supabase } from '@/lib/supabase'
+import { User } from '@supabase/supabase-js'
+
+// ... existing code ...
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // Check active sessions
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Login function
+  const login = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+
+    if (error) throw error
+
+    // Fetch user profile (school or catering)
+    const { data: profile } = await supabase
+      .from(data.user.user_metadata.role === 'school' ? 'schools' : 'caterings')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single()
+
+    return { user: data.user, profile }
+  }
+
+  // ... other auth functions ...
+}
+```
+
+
+================================================================================
+                  SECTION 6: OPTIMISTIC UPDATES & CACHING
+================================================================================
+
+### 6.1 REACT QUERY SETUP (RECOMMENDED)
+
+Install:
+```bash
+npm install @tanstack/react-query
+```
+
+Setup:
+```typescript
+// frontend/app/providers/QueryProvider.tsx
+'use client'
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { useState } from 'react'
+
+export function QueryProvider({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000, // 1 minute
+        cacheTime: 5 * 60 * 1000, // 5 minutes
+        refetchOnWindowFocus: false
+      }
+    }
+  }))
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+  )
+}
+```
+
+### 6.2 EXAMPLE: DELIVERIES WITH REACT QUERY
+
+```typescript
+// frontend/app/hooks/useDeliveries.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
+
+export function useDeliveries(schoolId: number) {
+  const queryClient = useQueryClient()
+
+  // Query: Fetch deliveries
+  const deliveriesQuery = useQuery({
+    queryKey: ['deliveries', schoolId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('deliveries')
+        .select(`
+          *,
+          catering:caterings(name, contact_phone),
+          verification:verifications(*)
+        `)
+        .eq('school_id', schoolId)
+        .order('delivery_date', { ascending: false })
+
+      if (error) throw error
+      return data
+    }
+  })
+
+  // Mutation: Create verification
+  const verifyMutation = useMutation({
+    mutationFn: async (verificationData: any) => {
+      const { data, error } = await supabase
+        .from('verifications')
+        .insert([verificationData])
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onMutate: async (newVerification) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['deliveries', schoolId] })
+
+      // Snapshot previous value
+      const previousDeliveries = queryClient.getQueryData(['deliveries', schoolId])
+
+      // Optimistically update UI
+      queryClient.setQueryData(['deliveries', schoolId], (old: any[]) => {
+        return old.map(delivery =>
+          delivery.id === newVerification.delivery_id
+            ? { ...delivery, status: 'verified', verification: newVerification }
+            : delivery
+        )
+      })
+
+      return { previousDeliveries }
+    },
+    onError: (err, newVerification, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['deliveries', schoolId], context?.previousDeliveries)
+    },
+    onSettled: () => {
+      // Refetch after error or success
+      queryClient.invalidateQueries({ queryKey: ['deliveries', schoolId] })
+    }
+  })
+
+  return {
+    deliveries: deliveriesQuery.data,
+    isLoading: deliveriesQuery.isLoading,
+    error: deliveriesQuery.error,
+    verifyDelivery: verifyMutation.mutate
+  }
+}
+```
+
+### 6.3 REAL-TIME SUBSCRIPTION WITH REACT QUERY
+
+```typescript
+// frontend/app/hooks/useRealtimeDeliveries.ts
+import { useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase'
+
+export function useRealtimeDeliveries(schoolId: number) {
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    const subscription = supabase
+      .channel(`deliveries_${schoolId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'deliveries',
+          filter: `school_id=eq.${schoolId}`
+        },
+        (payload) => {
+          console.log('Delivery changed:', payload)
+
+          // Invalidate queries to refetch
+          queryClient.invalidateQueries({ queryKey: ['deliveries', schoolId] })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [schoolId, queryClient])
+}
+
+// Usage in component:
+function SchoolDashboard() {
+  const { deliveries, isLoading } = useDeliveries(schoolId)
+  useRealtimeDeliveries(schoolId) // Enable real-time updates
+
+  // ... render ...
+}
+```
+
+
+================================================================================
+                           PART 2: AI INTEGRATION
+                     SUPABASE VECTOR + LANGCHAIN
+================================================================================
+
+## 🤖 OVERVIEW AI INTEGRATION
+
+CURRENT STATE:
+- ❌ AI features tidak terintegrasi dengan database
+- ❌ Tidak ada vector search
+- ❌ Analisis AI tidak persistent
+
+TARGET STATE:
+- ✅ Supabase pgvector untuk semantic search
+- ✅ Langchain orchestration (Cohere + Claude)
+- ✅ AI analysis results disimpan di database
+- ✅ RAG (Retrieval Augmented Generation) untuk context
+
+================================================================================
+                    SECTION 1: SUPABASE VECTOR SETUP
+================================================================================
+
+### 1.1 ENABLE PGVECTOR EXTENSION
+
+```sql
+-- Run in Supabase SQL Editor
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+### 1.2 CREATE VECTOR TABLES
+
+```sql
+-- Table: food_embeddings
+-- Purpose: Store embeddings untuk menu items, verifications, dll
+CREATE TABLE food_embeddings (
+  id BIGSERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  embedding vector(1536), -- OpenAI/Cohere embedding dimension
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Index for fast vector search
+CREATE INDEX ON food_embeddings USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+
+-- Table: verification_embeddings
+-- Purpose: Embeddings dari catatan verifikasi untuk similarity search
+CREATE TABLE verification_embeddings (
+  id BIGSERIAL PRIMARY KEY,
+  verification_id INTEGER REFERENCES verifications(id),
+  content TEXT NOT NULL,
+  embedding vector(1536),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX ON verification_embeddings USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+
+-- Table: issue_embeddings
+-- Purpose: Embeddings dari deskripsi issues untuk pattern detection
+CREATE TABLE issue_embeddings (
+  id BIGSERIAL PRIMARY KEY,
+  issue_id INTEGER REFERENCES issues(id),
+  content TEXT NOT NULL,
+  embedding vector(1536),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX ON issue_embeddings USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+
+-- Table: ai_conversation_history
+-- Purpose: Store conversation history untuk context continuity
+CREATE TABLE ai_conversation_history (
+  id BIGSERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  role VARCHAR(20) NOT NULL, -- 'user' or 'assistant'
+  content TEXT NOT NULL,
+  embedding vector(1536),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX ON ai_conversation_history USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);
+```
+
+### 1.3 VECTOR SEARCH FUNCTIONS
+
+```sql
+-- Function: Search similar food items
+CREATE OR REPLACE FUNCTION search_similar_foods(
+  query_embedding vector(1536),
+  match_threshold FLOAT DEFAULT 0.7,
+  match_count INT DEFAULT 5
+)
+RETURNS TABLE (
+  id BIGINT,
+  content TEXT,
+  similarity FLOAT,
+  metadata JSONB
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    food_embeddings.id,
+    food_embeddings.content,
+    1 - (food_embeddings.embedding <=> query_embedding) AS similarity,
+    food_embeddings.metadata
+  FROM food_embeddings
+  WHERE 1 - (food_embeddings.embedding <=> query_embedding) > match_threshold
+  ORDER BY food_embeddings.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function: Search similar verification notes
+CREATE OR REPLACE FUNCTION search_similar_verifications(
+  query_embedding vector(1536),
+  match_threshold FLOAT DEFAULT 0.7,
+  match_count INT DEFAULT 10
+)
+RETURNS TABLE (
+  verification_id INTEGER,
+  content TEXT,
+  similarity FLOAT,
+  metadata JSONB
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ve.verification_id,
+    ve.content,
+    1 - (ve.embedding <=> query_embedding) AS similarity,
+    ve.metadata
+  FROM verification_embeddings ve
+  WHERE 1 - (ve.embedding <=> query_embedding) > match_threshold
+  ORDER BY ve.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function: Search similar issues (for pattern detection)
+CREATE OR REPLACE FUNCTION search_similar_issues(
+  query_embedding vector(1536),
+  match_threshold FLOAT DEFAULT 0.75,
+  match_count INT DEFAULT 10
+)
+RETURNS TABLE (
+  issue_id INTEGER,
+  content TEXT,
+  similarity FLOAT,
+  metadata JSONB
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    ie.issue_id,
+    ie.content,
+    1 - (ie.embedding <=> query_embedding) AS similarity,
+    ie.metadata
+  FROM issue_embeddings ie
+  WHERE 1 - (ie.embedding <=> query_embedding) > match_threshold
+  ORDER BY ie.embedding <=> query_embedding
+  LIMIT match_count;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+
+================================================================================
+                    SECTION 2: LANGCHAIN SETUP
+================================================================================
+
+### 2.1 INSTALL DEPENDENCIES
+
+```bash
+cd backend
+npm install langchain @langchain/cohere @langchain/anthropic
+npm install @supabase/supabase-js
+```
+
+### 2.2 LANGCHAIN ARCHITECTURE
+
+```
+USER INPUT
+    ↓
+LANGCHAIN ORCHESTRATOR
+    ↓
+    ├─→ COHERE (Embeddings & Initial Analysis)
+    │   - Generate embeddings
+    │   - Quick classification
+    │   - Extract key entities
+    │
+    ├─→ SUPABASE VECTOR (Retrieval)
+    │   - Semantic search
+    │   - Find similar cases
+    │   - Get relevant context
+    │
+    ├─→ CLAUDE (Advanced Reasoning)
+    │   - Deep analysis with context
+    │   - Generate recommendations
+    │   - Quality assessment
+    │
+    └─→ STORE RESULTS
+        - Save to ai_food_analyses
+        - Store embeddings
+        - Update statistics
+```
+
+### 2.3 LANGCHAIN CONFIG
+
+FILE: backend/src/ai/langchain-config.ts
+
+```typescript
+import { ChatCohere } from '@langchain/cohere'
+import { ChatAnthropic } from '@langchain/anthropic'
+import { CohereEmbeddings } from '@langchain/cohere'
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
+import { supabaseAdmin } from '../config/supabase'
+
+// Cohere for embeddings & quick analysis
+export const cohereEmbeddings = new CohereEmbeddings({
+  apiKey: process.env.COHERE_API_KEY!,
+  model: 'embed-multilingual-v3.0' // Supports Indonesian
+})
+
+export const cohereChat = new ChatCohere({
+  apiKey: process.env.COHERE_API_KEY!,
+  model: 'command-r-plus', // Latest Cohere model
+  temperature: 0.3
+})
+
+// Claude for advanced reasoning
+export const claudeChat = new ChatAnthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY!,
+  model: 'claude-3-5-sonnet-20241022', // Latest Claude
+  temperature: 0.5,
+  maxTokens: 4096
+})
+
+// Supabase Vector Store
+export const vectorStore = new SupabaseVectorStore(cohereEmbeddings, {
+  client: supabaseAdmin,
+  tableName: 'food_embeddings',
+  queryName: 'match_documents' // Custom function name
+})
+```
+
+### 2.4 ENVIRONMENT VARIABLES
+
+```env
+# AI Configuration
+COHERE_API_KEY=your_cohere_api_key
+ANTHROPIC_API_KEY=sk-ant-your_anthropic_api_key
+```
+
+
+================================================================================
+                    SECTION 3: AI FOOD ANALYSIS PIPELINE
+================================================================================
+
+### 3.1 WORKFLOW DIAGRAM
+
+```
+PHOTO VERIFICATION
+    ↓
+STEP 1: COHERE - Image Analysis (via API)
+    - Detect food items
+    - Extract colors, textures
+    - Initial quality assessment
+    ↓
+STEP 2: GENERATE EMBEDDINGS (Cohere)
+    - Create vector representation
+    - Store in verification_embeddings
+    ↓
+STEP 3: VECTOR SEARCH (Supabase)
+    - Find similar past verifications
+    - Get historical quality data
+    - Retrieve relevant context
+    ↓
+STEP 4: CLAUDE - Deep Analysis
+    - Analyze with context from vector search
+    - Compare with menu specifications
+    - Generate detailed quality report
+    - Provide recommendations
+    ↓
+STEP 5: STORE RESULTS
+    - Save to ai_food_analyses table
+    - Update verification record
+    - Trigger notifications if issues detected
+```
+
+### 3.2 IMPLEMENTATION: AI ANALYSIS SERVICE
+
+FILE: backend/src/ai/food-analysis.service.ts
+
+```typescript
+import { ChatCohere } from '@langchain/cohere'
+import { ChatAnthropic } from '@langchain/anthropic'
+import { CohereEmbeddings } from '@langchain/cohere'
+import { PromptTemplate } from '@langchain/core/prompts'
+import { RunnableSequence } from '@langchain/core/runnables'
+import { supabaseAdmin } from '../config/supabase'
+
+export class FoodAnalysisService {
+  private cohereChat: ChatCohere
+  private claudeChat: ChatAnthropic
+  private embeddings: CohereEmbeddings
+
+  constructor() {
+    this.cohereChat = new ChatCohere({
+      apiKey: process.env.COHERE_API_KEY!,
+      model: 'command-r-plus',
+      temperature: 0.3
+    })
+
+    this.claudeChat = new ChatAnthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY!,
+      model: 'claude-3-5-sonnet-20241022',
+      temperature: 0.5
+    })
+
+    this.embeddings = new CohereEmbeddings({
+      apiKey: process.env.COHERE_API_KEY!,
+      model: 'embed-multilingual-v3.0'
+    })
+  }
+
+  /**
+   * STEP 1: Initial analysis with Cohere
+   */
+  async analyzeImageWithCohere(imageUrl: string, menuItems: any[]) {
+    const prompt = PromptTemplate.fromTemplate(`
+Kamu adalah AI Food Quality Analyst untuk program Makanan Bergizi Gratis.
+
+TUGAS:
+Analisis gambar makanan berikut dan berikan penilaian awal.
+
+MENU YANG SEHARUSNYA:
+{menuItems}
+
+IMAGE URL: {imageUrl}
+
+BERIKAN OUTPUT DALAM FORMAT JSON:
+{{
+  "detected_items": ["item1", "item2", ...],
+  "portion_estimate": number,
+  "initial_quality_score": 0-100,
+  "visual_observations": [
+    "observasi1",
+    "observasi2"
+  ],
+  "menu_compliance": {{
+    "matches": true/false,
+    "missing_items": [],
+    "extra_items": []
+  }}
+}}
+    `)
+
+    const chain = RunnableSequence.from([
+      prompt,
+      this.cohereChat
+    ])
+
+    const result = await chain.invoke({
+      imageUrl,
+      menuItems: JSON.stringify(menuItems, null, 2)
+    })
+
+    return JSON.parse(result.content as string)
+  }
+
+  /**
+   * STEP 2: Generate embedding dan search similar cases
+   */
+  async findSimilarVerifications(description: string, limit = 5) {
+    // Generate embedding untuk deskripsi
+    const embedding = await this.embeddings.embedQuery(description)
+
+    // Search di Supabase vector
+    const { data: similarCases, error } = await supabaseAdmin
+      .rpc('search_similar_verifications', {
+        query_embedding: embedding,
+        match_threshold: 0.7,
+        match_count: limit
+      })
+
+    if (error) {
+      console.error('Vector search error:', error)
+      return []
+    }
+
+    return similarCases
+  }
+
+  /**
+   * STEP 3: Deep analysis dengan Claude (dengan context dari vector search)
+   */
+  async analyzeWithClaude(
+    initialAnalysis: any,
+    similarCases: any[],
+    verificationData: any
+  ) {
+    const prompt = PromptTemplate.fromTemplate(`
+Kamu adalah Claude, AI Expert untuk Quality Assurance program Makanan Bergizi Gratis Indonesia.
+
+DATA VERIFIKASI:
+- Sekolah: {schoolName}
+- Katering: {cateringName}
+- Menu: {menuItems}
+- Porsi: {portions} porsi
+- Tanggal: {deliveryDate}
+
+ANALISIS AWAL (dari Cohere):
+{initialAnalysis}
+
+HISTORICAL CONTEXT (Kasus Serupa):
+{similarCases}
+
+DATA VERIFIKASI MANUAL:
+- Porsi Diterima: {portionsReceived}
+- Rating Kualitas: {qualityRating}/5
+- Kondisi Makanan: {foodCondition}
+- Catatan: {notes}
+
+TUGAS:
+1. Analisis mendalam kualitas makanan berdasarkan semua data di atas
+2. Bandingkan dengan standar BGN (Bangsa Gizi Nusantara)
+3. Identifikasi potensi masalah
+4. Berikan rekomendasi
+
+BERIKAN OUTPUT DALAM FORMAT JSON:
+{{
+  "quality_score": 0-100,
+  "freshness_score": 0-100,
+  "presentation_score": 0-100,
+  "hygiene_score": 0-100,
+  "nutrition_assessment": {{
+    "estimated_calories": number,
+    "estimated_protein": number,
+    "estimated_carbs": number,
+    "has_vegetables": boolean,
+    "meets_bgn_standards": boolean
+  }},
+  "compliance_checks": {{
+    "menu_match": boolean,
+    "portion_match": boolean,
+    "quality_acceptable": boolean,
+    "temperature_appropriate": boolean
+  }},
+  "confidence": 0.0-1.0,
+  "reasoning": "Penjelasan detail analisis...",
+  "issues": ["masalah1", "masalah2", ...],
+  "warnings": ["warning1", "warning2", ...],
+  "recommendations": ["rekomendasi1", "rekomendasi2", ...],
+  "needs_manual_review": boolean,
+  "comparison_with_history": "Bagaimana performa katering ini dibanding histori..."
+}}
+    `)
+
+    const chain = RunnableSequence.from([
+      prompt,
+      this.claudeChat
+    ])
+
+    const result = await chain.invoke({
+      schoolName: verificationData.school_name,
+      cateringName: verificationData.catering_name,
+      menuItems: JSON.stringify(verificationData.menu_items, null, 2),
+      portions: verificationData.portions,
+      deliveryDate: verificationData.delivery_date,
+      initialAnalysis: JSON.stringify(initialAnalysis, null, 2),
+      similarCases: JSON.stringify(similarCases, null, 2),
+      portionsReceived: verificationData.portions_received,
+      qualityRating: verificationData.quality_rating,
+      foodCondition: verificationData.food_condition,
+      notes: verificationData.notes || 'Tidak ada catatan'
+    })
+
+    return JSON.parse(result.content as string)
+  }
+
+  /**
+   * MAIN PIPELINE: Complete AI analysis
+   */
+  async analyzeVerification(verificationId: number) {
+    console.log(`Starting AI analysis for verification ${verificationId}`)
+
+    // 1. Fetch verification data
+    const { data: verification, error: fetchError } = await supabaseAdmin
+      .from('verifications')
+      .select(`
+        *,
+        delivery:deliveries(
+          *,
+          catering:caterings(name),
+          school:schools(name)
+        )
+      `)
+      .eq('id', verificationId)
+      .single()
+
+    if (fetchError || !verification) {
+      throw new Error('Verification not found')
+    }
+
+    // 2. Initial analysis dengan Cohere (if image exists)
+    let initialAnalysis = null
+    if (verification.photo_urls && verification.photo_urls.length > 0) {
+      initialAnalysis = await this.analyzeImageWithCohere(
+        verification.photo_urls[0],
+        verification.delivery.menu_items
+      )
+    }
+
+    // 3. Generate embedding dan find similar cases
+    const description = `
+      ${verification.delivery.catering.name}
+      Menu: ${JSON.stringify(verification.delivery.menu_items)}
+      Rating: ${verification.quality_rating}/5
+      Kondisi: ${verification.food_condition}
+      Catatan: ${verification.notes || ''}
+    `
+
+    const embedding = await this.embeddings.embedQuery(description)
+    const similarCases = await this.findSimilarVerifications(description, 5)
+
+    // 4. Deep analysis dengan Claude
+    const claudeAnalysis = await this.analyzeWithClaude(
+      initialAnalysis,
+      similarCases,
+      {
+        school_name: verification.delivery.school.name,
+        catering_name: verification.delivery.catering.name,
+        menu_items: verification.delivery.menu_items,
+        portions: verification.portions_expected,
+        delivery_date: verification.delivery.delivery_date,
+        portions_received: verification.portions_received,
+        quality_rating: verification.quality_rating,
+        food_condition: verification.food_condition,
+        notes: verification.notes
+      }
+    )
+
+    // 5. Save results to database
+    const { data: aiAnalysis, error: saveError } = await supabaseAdmin
+      .from('ai_food_analyses')
+      .insert([{
+        verification_id: verificationId,
+        delivery_id: verification.delivery_id,
+        detected_items: initialAnalysis?.detected_items || [],
+        portion_estimate: initialAnalysis?.portion_estimate || verification.portions_expected,
+        portion_confidence: initialAnalysis ? 0.85 : 0.5,
+        quality_score: claudeAnalysis.quality_score,
+        freshness_score: claudeAnalysis.freshness_score,
+        presentation_score: claudeAnalysis.presentation_score,
+        hygiene_score: claudeAnalysis.hygiene_score,
+        estimated_calories: claudeAnalysis.nutrition_assessment.estimated_calories,
+        estimated_protein: claudeAnalysis.nutrition_assessment.estimated_protein,
+        estimated_carbs: claudeAnalysis.nutrition_assessment.estimated_carbs,
+        has_vegetables: claudeAnalysis.nutrition_assessment.has_vegetables,
+        menu_match: claudeAnalysis.compliance_checks.menu_match,
+        portion_match: claudeAnalysis.compliance_checks.portion_match,
+        quality_acceptable: claudeAnalysis.compliance_checks.quality_acceptable,
+        meets_bgn_standards: claudeAnalysis.nutrition_assessment.meets_bgn_standards,
+        confidence: claudeAnalysis.confidence,
+        reasoning: claudeAnalysis.reasoning,
+        issues: claudeAnalysis.issues,
+        warnings: claudeAnalysis.warnings,
+        recommendations: claudeAnalysis.recommendations,
+        needs_manual_review: claudeAnalysis.needs_manual_review,
+        manual_review_status: claudeAnalysis.needs_manual_review ? 'pending' : 'approved',
+        analyzed_at: new Date().toISOString()
+      }])
+      .select()
+      .single()
+
+    // 6. Store embedding
+    await supabaseAdmin
+      .from('verification_embeddings')
+      .insert([{
+        verification_id: verificationId,
+        content: description,
+        embedding: embedding,
+        metadata: {
+          quality_score: claudeAnalysis.quality_score,
+          catering_id: verification.delivery.catering_id,
+          school_id: verification.delivery.school_id
+        }
+      }])
+
+    // 7. Update verification with AI analysis reference
+    await supabaseAdmin
+      .from('verifications')
+      .update({ ai_analysis_id: aiAnalysis.id })
+      .eq('id', verificationId)
+
+    console.log(`AI analysis completed for verification ${verificationId}`)
+
+    return aiAnalysis
+  }
+}
+
+// Export singleton instance
+export const foodAnalysisService = new FoodAnalysisService()
+```
+
+### 3.3 API ENDPOINT FOR AI ANALYSIS
+
+FILE: backend/src/routes/ai-analysis.ts
+
+```typescript
+import express from 'express'
+import { foodAnalysisService } from '../ai/food-analysis.service'
+import { authenticateToken } from '../middleware/auth'
+
+const router = express.Router()
+
+// POST /api/ai/analyze-verification/:id
+router.post('/analyze-verification/:id', authenticateToken, async (req, res) => {
+  try {
+    const verificationId = parseInt(req.params.id)
+
+    // Start async analysis (don't await, return immediately)
+    foodAnalysisService.analyzeVerification(verificationId)
+      .catch(error => {
+        console.error('AI analysis error:', error)
+      })
+
+    res.json({
+      message: 'AI analysis started',
+      verification_id: verificationId,
+      status: 'processing'
+    })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// GET /api/ai/analysis/:verificationId
+router.get('/analysis/:verificationId', authenticateToken, async (req, res) => {
+  try {
+    const verificationId = parseInt(req.params.verificationId)
+
+    const { data, error } = await supabaseAdmin
+      .from('ai_food_analyses')
+      .select('*')
+      .eq('verification_id', verificationId)
+      .single()
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Analysis not found' })
+    }
+
+    res.json({ data })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+export default router
+```
+
+
+================================================================================
+                    SECTION 4: AI ANOMALY DETECTION
+================================================================================
+
+### 4.1 ANOMALY DETECTION SERVICE
+
+FILE: backend/src/ai/anomaly-detection.service.ts
+
+```typescript
+import { RunnableSequence } from '@langchain/core/runnables'
+import { PromptTemplate } from '@langchain/core/prompts'
+import { claudeChat, cohereEmbeddings } from './langchain-config'
+import { supabaseAdmin } from '../config/supabase'
+
+export class AnomalyDetectionService {
+
+  /**
+   * Detect collusion patterns
+   */
+  async detectCollusion(schoolId: number, cateringId: number) {
+    // Fetch transaction history
+    const { data: deliveries } = await supabaseAdmin
+      .from('deliveries')
+      .select('*')
+      .eq('school_id', schoolId)
+      .eq('catering_id', cateringId)
+      .order('delivery_date', { ascending: false })
+      .limit(50)
+
+    if (!deliveries || deliveries.length < 10) {
+      return null // Not enough data
+    }
+
+    // Calculate statistics
+    const stats = {
+      total_deliveries: deliveries.length,
+      avg_amount: deliveries.reduce((sum, d) => sum + d.total_amount, 0) / deliveries.length,
+      always_same_vendor: true, // This school only uses this catering
+      frequency: deliveries.length / 90, // deliveries per day in last 3 months
+    }
+
+    // Get market average price
+    const { data: marketData } = await supabaseAdmin
+      .rpc('get_market_average_price', {
+        portions_param: Math.round(stats.avg_amount / deliveries[0].total_amount * deliveries[0].portions)
+      })
+
+    const priceMarkup = (stats.avg_amount - marketData.avg_price) / marketData.avg_price
+
+    // Analyze with Claude
+    const prompt = PromptTemplate.fromTemplate(`
+Kamu adalah AI Fraud Detection untuk program Makanan Bergizi Gratis.
+
+ANALISIS POLA TRANSAKSI:
+- Total transaksi 90 hari terakhir: {totalDeliveries}
+- Frekuensi harian: {frequency} transaksi/hari
+- Rata-rata harga: Rp {avgAmount}
+- Markup dibanding pasar: {priceMarkup}%
+- Selalu vendor yang sama: {alwaysSameVendor}
+
+TUGAS:
+Deteksi apakah ada indikasi kolusi atau fraud.
+
+OUTPUT FORMAT JSON:
+{{
+  "is_suspicious": boolean,
+  "confidence_score": 0.0-1.0,
+  "anomaly_type": "collusion" | "none",
+  "severity": "low" | "medium" | "high" | "critical",
+  "suspicious_patterns": ["pattern1", "pattern2", ...],
+  "reasoning": "Penjelasan detail...",
+  "recommendation": "investigate" | "monitor" | "alert_admin" | "none"
+}}
+    `)
+
+    const chain = RunnableSequence.from([prompt, claudeChat])
+
+    const result = await chain.invoke({
+      totalDeliveries: stats.total_deliveries,
+      frequency: stats.frequency.toFixed(2),
+      avgAmount: stats.avg_amount.toLocaleString('id-ID'),
+      priceMarkup: (priceMarkup * 100).toFixed(1),
+      alwaysSameVendor: stats.always_same_vendor ? 'Ya' : 'Tidak'
+    })
+
+    const analysis = JSON.parse(result.content as string)
+
+    // Save if suspicious
+    if (analysis.is_suspicious) {
+      await supabaseAdmin
+        .from('anomaly_alerts')
+        .insert([{
+          type: 'collusion',
+          severity: analysis.severity,
+          title: `Potensi Kolusi: ${schoolId} - ${cateringId}`,
+          description: analysis.reasoning,
+          suspicious_patterns: analysis.suspicious_patterns,
+          school_id: schoolId,
+          catering_id: cateringId,
+          confidence_score: analysis.confidence_score,
+          recommendation: analysis.recommendation,
+          data_points: stats,
+          status: 'new'
+        }])
+    }
+
+    return analysis
+  }
+
+  /**
+   * Detect fake verifications
+   */
+  async detectFakeVerifications(schoolId: number) {
+    // Fetch recent verifications
+    const { data: verifications } = await supabaseAdmin
+      .from('verifications')
+      .select('*')
+      .eq('school_id', schoolId)
+      .order('verified_at', { ascending: false })
+      .limit(30)
+
+    if (!verifications || verifications.length < 10) {
+      return null
+    }
+
+    // Calculate patterns
+    const patterns = {
+      all_perfect_rating: verifications.every(v => v.quality_rating === 5),
+      avg_verification_time: verifications.reduce((sum, v) => {
+        const deliveredAt = new Date(v.delivery?.delivered_at || 0)
+        const verifiedAt = new Date(v.verified_at)
+        return sum + (verifiedAt.getTime() - deliveredAt.getTime()) / 1000 / 60
+      }, 0) / verifications.length,
+      no_variation_in_notes: new Set(verifications.map(v => v.notes)).size === 1
+    }
+
+    // Analyze with Claude
+    const prompt = PromptTemplate.fromTemplate(`
+Deteksi pola verifikasi yang tidak wajar.
+
+DATA:
+- Total verifikasi: {totalVerifications}
+- Semua rating sempurna (5/5): {allPerfect}
+- Rata-rata waktu verifikasi: {avgTime} menit setelah delivery
+- Variasi catatan: {noteVariation}
+
+Berikan analisis dalam JSON:
+{{
+  "is_suspicious": boolean,
+  "confidence_score": 0.0-1.0,
+  "suspicious_patterns": [],
+  "severity": "low" | "medium" | "high",
+  "recommendation": string
+}}
+    `)
+
+    // ... similar to collusion detection ...
+  }
+
+  /**
+   * Run all anomaly detection
+   */
+  async runAnomalyDetection() {
+    console.log('Running anomaly detection...')
+
+    // Get all active school-catering pairs
+    const { data: pairs } = await supabaseAdmin
+      .rpc('get_active_school_catering_pairs')
+
+    for (const pair of pairs || []) {
+      await this.detectCollusion(pair.school_id, pair.catering_id)
+      await this.detectFakeVerifications(pair.school_id)
+    }
+
+    console.log('Anomaly detection completed')
+  }
+}
+
+export const anomalyDetectionService = new AnomalyDetectionService()
+```
+
+### 4.2 SCHEDULED ANOMALY DETECTION
+
+FILE: backend/src/cron/anomaly-detection-cron.ts
+
+```typescript
+import cron from 'node-cron'
+import { anomalyDetectionService } from '../ai/anomaly-detection.service'
+
+// Run every day at 2 AM
+export function startAnomalyDetectionCron() {
+  cron.schedule('0 2 * * *', async () => {
+    console.log('Starting scheduled anomaly detection...')
+    try {
+      await anomalyDetectionService.runAnomalyDetection()
+    } catch (error) {
+      console.error('Anomaly detection cron error:', error)
+    }
+  })
+
+  console.log('Anomaly detection cron job started')
+}
+```
+
+
+================================================================================
+                    SECTION 5: AI CHATBOT (OPTIONAL)
+================================================================================
+
+### 5.1 CONVERSATIONAL AI WITH CONTEXT
+
+FILE: backend/src/ai/chatbot.service.ts
+
+```typescript
+import { RunnableSequence } from '@langchain/core/runnables'
+import { PromptTemplate } from '@langchain/core/prompts'
+import { BufferMemory } from 'langchain/memory'
+import { ConversationChain } from 'langchain/chains'
+import { claudeChat, cohereEmbeddings } from './langchain-config'
+import { supabaseAdmin } from '../config/supabase'
+
+export class ChatbotService {
+  private memory: Map<number, BufferMemory> = new Map()
+
+  /**
+   * Get or create memory for user
+   */
+  private getMemory(userId: number): BufferMemory {
+    if (!this.memory.has(userId)) {
+      this.memory.set(userId, new BufferMemory({
+        returnMessages: true,
+        memoryKey: 'chat_history'
+      }))
+    }
+    return this.memory.get(userId)!
+  }
+
+  /**
+   * Chat with AI assistant
+   */
+  async chat(userId: number, message: string, userRole: string) {
+    const memory = this.getMemory(userId)
+
+    // Get relevant context from vector search
+    const embedding = await cohereEmbeddings.embedQuery(message)
+
+    const { data: relevantDocs } = await supabaseAdmin
+      .rpc('search_similar_verifications', {
+        query_embedding: embedding,
+        match_threshold: 0.7,
+        match_count: 3
+      })
+
+    const context = relevantDocs?.map(doc => doc.content).join('\n\n') || ''
+
+    // Create conversation chain
+    const prompt = PromptTemplate.fromTemplate(`
+Kamu adalah AI Assistant untuk sistem Makanan Bergizi Gratis.
+User role: {userRole}
+
+CONTEXT RELEVAN:
+{context}
+
+CHAT HISTORY:
+{chat_history}
+
+USER: {input}
+
+ASSISTANT:
+    `)
+
+    const chain = new ConversationChain({
+      llm: claudeChat,
+      memory: memory,
+      prompt: prompt
+    })
+
+    const response = await chain.call({
+      input: message,
+      userRole: userRole,
+      context: context
+    })
+
+    // Save conversation to database
+    await supabaseAdmin
+      .from('ai_conversation_history')
+      .insert([
+        {
+          user_id: userId,
+          role: 'user',
+          content: message,
+          embedding: embedding
+        },
+        {
+          user_id: userId,
+          role: 'assistant',
+          content: response.response,
+          embedding: await cohereEmbeddings.embedQuery(response.response)
+        }
+      ])
+
+    return response.response
+  }
+}
+
+export const chatbotService = new ChatbotService()
+```
+
+### 5.2 CHATBOT API ENDPOINT
+
+```typescript
+// POST /api/ai/chat
+router.post('/chat', authenticateToken, async (req, res) => {
+  try {
+    const { message } = req.body
+    const userId = req.user.id
+    const userRole = req.user.role
+
+    const response = await chatbotService.chat(userId, message, userRole)
+
+    res.json({ response })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+```
+
+
+================================================================================
+                    SECTION 6: SUMMARY & NEXT STEPS
+================================================================================
+
+## ✅ CHECKLIST REFACTORING CRUD
+
+SCHOOL ROLE:
+☐ Refactor useDeliveries → Supabase
+☐ Refactor useVerifications → Supabase
+☐ Refactor useIssues → Supabase
+☐ Implement photo upload to Supabase Storage
+☐ Setup RLS policies for schools table
+☐ Setup RLS policies for deliveries/verifications/issues
+☐ Implement real-time subscriptions
+☐ Setup React Query for optimistic updates
+
+CATERING ROLE:
+☐ Refactor useCateringDashboard → Supabase
+☐ Refactor useScheduleData → Supabase
+☐ Refactor useMenuData → Supabase (CRUD)
+☐ Refactor usePaymentsData → Supabase
+☐ Refactor useHistoryData → Supabase
+☐ Refactor useIssuesDashboard → Supabase
+☐ Implement menu image upload to Supabase Storage
+☐ Setup RLS policies for caterings table
+☐ Setup RLS policies for menu_items/payments
+☐ Implement real-time subscriptions
+☐ Setup React Query
+
+BACKEND:
+☐ Replace PostgreSQL Pool with Supabase client
+☐ Update all API endpoints to use Supabase
+☐ Implement Supabase Auth integration
+☐ Setup environment variables
+☐ Test all endpoints with RLS
+
+## ✅ CHECKLIST AI INTEGRATION
+
+VECTOR DATABASE:
+☐ Enable pgvector extension in Supabase
+☐ Create vector tables (food_embeddings, verification_embeddings, etc.)
+☐ Create vector search functions
+☐ Test vector search performance
+
+LANGCHAIN SETUP:
+☐ Install Langchain + Cohere + Anthropic packages
+☐ Setup API keys in environment
+☐ Configure Langchain clients
+☐ Test Cohere embeddings
+☐ Test Claude API
+
+AI FOOD ANALYSIS:
+☐ Implement FoodAnalysisService
+☐ Create AI analysis pipeline (Cohere → Vector → Claude)
+☐ Setup background job for AI analysis
+☐ Create API endpoints for AI analysis
+☐ Store results in ai_food_analyses table
+☐ Implement embedding storage
+☐ Test end-to-end flow
+
+ANOMALY DETECTION:
+☐ Implement AnomalyDetectionService
+☐ Create collusion detection logic
+☐ Create fake verification detection
+☐ Setup cron job for daily detection
+☐ Test alert generation
+
+OPTIONAL:
+☐ Implement conversational AI chatbot
+☐ Create RAG system for documentation
+☐ Add voice input support
+☐ Implement AI-powered recommendations
+
+## 📝 MIGRATION STEPS
+
+1. SETUP SUPABASE PROJECT
+   - Create new Supabase project
+   - Enable pgvector extension
+   - Run all migration SQL scripts
+
+2. SEED DATA
+   - Use SEEDING_DATA_SPECIFICATION.txt
+   - Generate and insert seed data
+   - Verify data integrity
+
+3. BACKEND REFACTORING
+   - Install Supabase client
+   - Replace database.ts with supabase.ts
+   - Update all route handlers
+   - Test with Postman/Thunder Client
+
+4. FRONTEND REFACTORING
+   - Install @supabase/supabase-js
+   - Create lib/supabase.ts
+   - Update all hooks one by one
+   - Install React Query
+   - Add real-time subscriptions
+   - Test UI thoroughly
+
+5. AI INTEGRATION
+   - Enable pgvector
+   - Install Langchain packages
+   - Implement AI services
+   - Test AI analysis pipeline
+   - Deploy background jobs
+
+6. TESTING & DEPLOYMENT
+   - Unit tests untuk AI services
+   - Integration tests untuk API
+   - E2E tests untuk critical flows
+   - Deploy to production
+   - Monitor performance
+
+================================================================================
+                              END OF DOCUMENT
+================================================================================
+
+Total Pages: 80+
+Created: 2025-11-19
+
+READY FOR IMPLEMENTATION! 🚀
