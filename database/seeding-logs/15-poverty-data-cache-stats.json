@@ -1,0 +1,47 @@
+{
+  "summary": {
+    "total_records": 170,
+    "total_provinces": 34,
+    "years_covered": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "success_count": 170,
+    "fail_count": 0,
+    "success_rate": "100.0"
+  },
+  "aggregates": {
+    "avg_poverty_rate": "9.97",
+    "avg_gini_ratio": "0.364",
+    "total_poverty_count": "124.132.250",
+    "data_points_per_province": 5
+  },
+  "by_source": {
+    "cached": 92,
+    "bps_api": 78
+  },
+  "by_year": {
+    "2020": 34,
+    "2021": 34,
+    "2022": 34,
+    "2023": 34,
+    "2024": 34
+  },
+  "highest_poverty": [
+    "Papua (26.0%)",
+    "Papua Barat (23.2%)",
+    "Nusa Tenggara Timur (20.1%)",
+    "Maluku (17.4%)",
+    "Gorontalo (15.2%)"
+  ],
+  "lowest_poverty": [
+    "Kalimantan Selatan (4.2%)",
+    "Bali (4.3%)",
+    "DKI Jakarta (4.3%)",
+    "Kepulauan Bangka Belitung (4.4%)",
+    "Kalimantan Tengah (4.7%)"
+  ]
+}

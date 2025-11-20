@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
+import axios from 'axios';
 import {
   DollarSign,
   CheckCircle,
@@ -9,6 +10,7 @@ import {
   UtensilsCrossed,
   Shield,
   TrendingUp,
+  Loader2,
 } from 'lucide-react';
 
 // TODO: Implementasi Map Indonesia dengan markers untuk setiap lokasi sekolah
@@ -23,59 +25,47 @@ import {
 export default function AdminDashboard() {
   const shouldReduceMotion = useReducedMotion();
 
-  // data statistik
-  const stats = {
-    totalSekolah: 320,
-    mitraKatering: 75,
-    escrowAktif: 180,
-    danaTerkunci: 120,
-    danaTerdistribusi: 580,
-  };
+  // state management
+  const [stats, setStats] = useState<any>(null);
+  const [activityLog, setActivityLog] = useState<any[]>([]);
+  const [allocationData, setAllocationData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // data aktivitas sistem
-  const activityLog = [
-    {
-      id: 1,
-      message: 'Verifikasi dana berhasil untuk sekolah SD Nusantara 1.',
-      time: '2024-05-15 10:30 WIB',
-      status: 'Verifikasi',
-      type: 'success',
-    },
-    {
-      id: 2,
-      message: 'Peringatan: Kualitas makanan menurun di mitra katering \'Sehat Sejahtera\'.',
-      time: '2024-05-15 09:15 WIB',
-      status: 'Peringatan',
-      type: 'warning',
-    },
-    {
-      id: 3,
-      message: 'Pembaruan status: Masalah keterlambatan pengiriman di SMP Harapan telah diselesaikan.',
-      time: '2024-05-14 17:00 WIB',
-      status: 'Resolusi',
-      type: 'info',
-    },
-    {
-      id: 4,
-      message: 'Verifikasi dana terlunda untuk SMP Bhinmoka Tunggal Ika, menunggu tinjauan manual.',
-      time: '2024-05-14 14:45 WIB',
-      status: 'Verifikasi',
-      type: 'success',
-    },
-    {
-      id: 5,
-      message: 'Pembaruan akun: Mitra katering \'Pangan Sehat\' telah terdaftar.',
-      time: '2024-05-13 11:22 WIB',
-      status: 'Pembaruan',
-      type: 'info',
-    },
-  ];
+  // fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('token');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-  // data untuk bar chart alokasi AI
-  const allocationData = [
-    { region: 'Provinsi Jawa Barat', percentage: 27 },
-    { region: 'Kebutuhan Normal', percentage: 36 },
-  ];
+        const response = await axios.get(`${apiUrl}/admin/dashboard`, {
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+
+        if (response.data.success) {
+          setStats(response.data.data.stats || {});
+          setActivityLog(response.data.data.activityLog || []);
+          setAllocationData(response.data.data.allocationData || []);
+        } else {
+          throw new Error(response.data.error || 'Failed to fetch dashboard data');
+        }
+      } catch (err: any) {
+        console.error('Error fetching admin dashboard data:', err);
+        setError(err.message || 'Gagal memuat data dashboard. Silakan coba lagi nanti.');
+        setStats(null);
+        setActivityLog([]);
+        setAllocationData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   // animation variants dengan performa tinggi
   const containerVariants = {
@@ -100,6 +90,30 @@ export default function AdminDashboard() {
       },
     },
   };
+
+  // loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-purple-600" />
+          <h3 className="text-xl font-semibold text-gray-700">Memuat Dashboard...</h3>
+        </div>
+      </div>
+    );
+  }
+
+  // error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-red-600 mb-2">Error</h3>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -126,7 +140,7 @@ export default function AdminDashboard() {
                 <Building2 className="w-6 h-6 text-blue-600" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">{stats.totalSekolah}</h3>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">{stats?.totalSekolah || 0}</h3>
             <p className="text-sm text-gray-600">Total Sekolah</p>
           </div>
 
@@ -137,7 +151,7 @@ export default function AdminDashboard() {
                 <UtensilsCrossed className="w-6 h-6 text-orange-600" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">{stats.mitraKatering}</h3>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">{stats?.mitraKatering || 0}</h3>
             <p className="text-sm text-gray-600">Mitra Katering</p>
           </div>
 
@@ -148,7 +162,7 @@ export default function AdminDashboard() {
                 <Shield className="w-6 h-6 text-green-600" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">{stats.escrowAktif}</h3>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">{stats?.escrowAktif || 0}</h3>
             <p className="text-sm text-gray-600">Escrow Aktif</p>
           </div>
 
@@ -159,7 +173,7 @@ export default function AdminDashboard() {
                 <DollarSign className="w-6 h-6 text-purple-600" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">Rp {stats.danaTerkunci} Juta</h3>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">Rp {stats?.danaTerkunci || 0} Juta</h3>
             <p className="text-sm text-gray-600">Dana Terkunci</p>
           </div>
 
@@ -170,7 +184,7 @@ export default function AdminDashboard() {
                 <CheckCircle className="w-6 h-6 text-teal-600" />
               </div>
             </div>
-            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">Rp {stats.danaTerdistribusi} Juta</h3>
+            <h3 className="text-3xl font-bold text-gray-900 mb-1 stat-number">Rp {stats?.danaTerdistribusi || 0} Juta</h3>
             <p className="text-sm text-gray-600">Dana Terdistribusi</p>
           </div>
         </motion.div>

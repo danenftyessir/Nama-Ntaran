@@ -21,8 +21,14 @@
     "seed:ai-food-analyses": "ts-node 16-seed-ai-food-analyses.ts",
     "seed:anomaly-alerts": "ts-node 17-seed-anomaly-alerts.ts",
     "seed:vendor-risk-assessments": "ts-node 18-seed-vendor-risk-assessments.ts",
-    "seed:all": "npm run seed:users && npm run seed:menu-items && npm run seed:deliveries && npm run seed:allocations && npm run seed:verifications && npm run seed:payments && npm run seed:issues && npm run seed:escrow-transactions && npm run seed:payment-events && npm run seed:delivery-confirmations && npm run seed:public-payment-feed && npm run seed:refunds && npm run seed:payment-methods && npm run seed:blockchain-sync-log && npm run seed:poverty-data-cache && npm run seed:ai-food-analyses && npm run seed:anomaly-alerts && npm run seed:vendor-risk-assessments",
-    "seed:ai-features": "npm run seed:poverty-data-cache && npm run seed:ai-food-analyses && npm run seed:anomaly-alerts && npm run seed:vendor-risk-assessments"
+    "seed:stunting-data-cache": "ts-node 19-seed-stunting-data-cache.ts",
+    "seed:blockchain-transaction-history": "ts-node 20-seed-blockchain-transaction-history.ts",
+    "seed:smart-contract-events-raw": "ts-node 21-seed-smart-contract-events-raw.ts",
+    "seed:wallet-balances-snapshot": "ts-node 22-seed-wallet-balances-snapshot.ts",
+    "verify-seeding": "ts-node verify-seeding.ts",
+    "seed:all": "npm run seed:users && npm run seed:menu-items && npm run seed:deliveries && npm run seed:allocations && npm run seed:verifications && npm run seed:payments && npm run seed:issues && npm run seed:escrow-transactions && npm run seed:payment-events && npm run seed:delivery-confirmations && npm run seed:public-payment-feed && npm run seed:refunds && npm run seed:payment-methods && npm run seed:blockchain-sync-log && npm run seed:poverty-data-cache && npm run seed:stunting-data-cache && npm run seed:ai-food-analyses && npm run seed:anomaly-alerts && npm run seed:vendor-risk-assessments && npm run seed:blockchain-transaction-history && npm run seed:smart-contract-events-raw && npm run seed:wallet-balances-snapshot",
+    "seed:ai-features": "npm run seed:poverty-data-cache && npm run seed:stunting-data-cache && npm run seed:ai-food-analyses && npm run seed:anomaly-alerts && npm run seed:vendor-risk-assessments",
+    "seed:blockchain-analytics": "npm run seed:blockchain-transaction-history && npm run seed:smart-contract-events-raw && npm run seed:wallet-balances-snapshot"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

@@ -1,0 +1,31 @@
+{
+  "summary": {
+    "total_assessments": 100,
+    "total_caterings": 100,
+    "success_count": 100,
+    "fail_count": 0,
+    "success_rate": "100.0",
+    "caterings_updated": 100
+  },
+  "risk_distribution": {
+    "low": 61,
+    "medium": 29,
+    "high": 8,
+    "critical": 2
+  },
+  "averages": {
+    "risk_score": "28.2",
+    "late_delivery_rate": "7.69%",
+    "quality_issue_rate": "5.22%",
+    "compliance_rate": "90.67%",
+    "quality_score": "78.4",
+    "default_probability": "10.9%"
+  },
+  "aggregates": {
+    "total_deliveries_assessed": 3275,
+    "total_successful_deliveries": 2836,
+    "total_issues_reported": 119,
+    "success_rate": "86.6%"
+  },
+  "high_risk_count": 5
+}

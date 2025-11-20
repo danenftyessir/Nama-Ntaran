@@ -115,79 +115,11 @@ export function useMenuData(): UseMenuDataReturn {
       const result = await response.json();
       setData(result);
       setCacheData(result);
-    } catch (err) {
-      // fallback ke dummy data jika API tidak tersedia
-      console.warn('API tidak tersedia, menggunakan dummy data:', err);
-
-      // TO DO: hapus dummy data ini setelah API tersedia
-      const dummyData: MenuDataResponse = {
-        menus: [
-          {
-            id: '1',
-            name: 'Nasi Kotak Komplit',
-            description: 'Nasi kotak lezat dengan lauk ayam goreng, sayur tumis, dan sambal. Cocok untuk makan siang yang mengenyangkan dan bergizi.',
-            calories: 550,
-            protein: 30,
-            vitamins: 'A, C',
-            price: 25000,
-            imageUrl: '/aesthetic view.jpg',
-          },
-          {
-            id: '2',
-            name: 'Bubur Ayam Spesial',
-            description: 'Bubur ayam hangat dengan suwiran ayam, cakwe, kerupuk, dan taburan bawang goreng. Sempurna untuk sarapan.',
-            calories: 380,
-            protein: 20,
-            vitamins: 'B, K',
-            price: 18000,
-            imageUrl: '/aesthetic view 2.jpg',
-          },
-          {
-            id: '3',
-            name: 'Sayur Asem Segar',
-            description: 'Sayur asem dengan kuah segar dan aneka sayuran pilihan. Pendamping yang sempurna untuk hidangan utama.',
-            calories: 120,
-            protein: 5,
-            vitamins: 'A, C, E',
-            price: 10000,
-            imageUrl: '/aesthetic view 3.jpg',
-          },
-          {
-            id: '4',
-            name: 'Sop Iga Sapi',
-            description: 'Sop iga sapi empuk dengan kuah kaldu yang kaya rasa, dilengkapi dengan potongan wortel dan kentang.',
-            calories: 450,
-            protein: 35,
-            vitamins: 'B12, K',
-            price: 35000,
-            imageUrl: '/aesthetic view 4.jpg',
-          },
-          {
-            id: '5',
-            name: 'Sate Lilit Ayam',
-            description: 'Sate lilit ayam khas Bali dengan bumbu rempah yang kuat dan aroma serai yang menggoda. Disajikan dengan nasi hangat.',
-            calories: 320,
-            protein: 28,
-            vitamins: 'B6',
-            price: 22000,
-            imageUrl: '/aesthetic view 5.jpg',
-          },
-          {
-            id: '6',
-            name: 'Gado-Gado Sehat',
-            description: 'Salad Indonesia Gado-Gado dengan aneka sayuran rebus, tahu, tempe, dan siraman bumbu kacang gurih.',
-            calories: 300,
-            protein: 15,
-            vitamins: 'K, B',
-            price: 17000,
-            imageUrl: '/jagung.jpg',
-          },
-        ],
-        totalCount: 6,
-      };
-
-      setData(dummyData);
       setError(null);
+    } catch (err: any) {
+      console.error('Error fetching menu data:', err);
+      setError(err.message || 'Gagal mengambil data menu. Silakan coba lagi nanti.');
+      setData(null);
     } finally {
       setIsLoading(false);
     }

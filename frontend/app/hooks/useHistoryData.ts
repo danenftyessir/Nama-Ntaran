@@ -117,85 +117,11 @@ export function useHistoryData(): UseHistoryDataReturn {
       const result = await response.json();
       setData(result);
       setCacheData(result);
-    } catch (err) {
-      // fallback ke dummy data jika API tidak tersedia
-      console.warn('API tidak tersedia, menggunakan dummy data:', err);
-
-      // TO DO: hapus dummy data ini setelah API tersedia
-      const dummyData: HistoryDataResponse = {
-        deliveries: [
-          {
-            id: '1',
-            schoolName: 'SDN Melati Jaya',
-            date: '2023-10-12',
-            portions: 150,
-            status: 'verified',
-            imageUrl: '/aesthetic view.jpg',
-          },
-          {
-            id: '2',
-            schoolName: 'SMP Harapan Bangsa',
-            date: '2023-10-10',
-            portions: 220,
-            status: 'pending',
-            imageUrl: '/aesthetic view 2.jpg',
-          },
-          {
-            id: '3',
-            schoolName: 'SMA Cahaya Ilmu',
-            date: '2023-10-08',
-            portions: 180,
-            status: 'issue',
-            imageUrl: '/aesthetic view 3.jpg',
-          },
-          {
-            id: '4',
-            schoolName: 'TK Pelita Bunda',
-            date: '2023-10-05',
-            portions: 80,
-            status: 'verified',
-            imageUrl: '/aesthetic view 4.jpg',
-          },
-          {
-            id: '5',
-            schoolName: 'SMK Budi Luhur',
-            date: '2023-10-03',
-            portions: 300,
-            status: 'verified',
-            imageUrl: '/aesthetic view 5.jpg',
-          },
-          {
-            id: '6',
-            schoolName: 'SDN Mekar Sari',
-            date: '2023-10-01',
-            portions: 110,
-            status: 'pending',
-            imageUrl: '/jagung.jpg',
-          },
-          {
-            id: '7',
-            schoolName: 'SMP Jaya Raya',
-            date: '2023-09-28',
-            portions: 190,
-            status: 'verified',
-            imageUrl: '/tempe.jpg',
-          },
-          {
-            id: '8',
-            schoolName: 'SMA Merdeka',
-            date: '2023-09-25',
-            portions: 250,
-            status: 'issue',
-            imageUrl: '/otak-otak.jpg',
-          },
-        ],
-        totalCount: 8,
-        currentPage: 1,
-        totalPages: 1,
-      };
-
-      setData(dummyData);
       setError(null);
+    } catch (err: any) {
+      console.error('Error fetching delivery history:', err);
+      setError(err.message || 'Gagal mengambil data riwayat pengiriman. Silakan coba lagi nanti.');
+      setData(null);
     } finally {
       setIsLoading(false);
     }

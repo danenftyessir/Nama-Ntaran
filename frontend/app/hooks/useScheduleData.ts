@@ -62,70 +62,6 @@ const setCache = (data: ScheduleItem[]) => {
   }
 };
 
-// data default untuk jadwal pengiriman
-const defaultSchedules: ScheduleItem[] = [
-  {
-    id: '1',
-    schoolName: 'SDN 01 Harapan Jaya',
-    address: 'Jl. Melati No. 10, Jakarta Timur',
-    timeRange: '08:00 - 09:00 WIB',
-    portions: 150,
-    status: 'in_progress',
-    date: new Date().toISOString().split('T')[0],
-    iconVariant: 'secondary',
-  },
-  {
-    id: '2',
-    schoolName: 'SMP Nasional Mandiri',
-    address: 'Jl. Kenanga No. 5, Kota Bogor',
-    timeRange: '10:00 - 11:00 WIB',
-    portions: 220,
-    status: 'scheduled',
-    date: new Date().toISOString().split('T')[0],
-    iconVariant: 'primary',
-  },
-  {
-    id: '3',
-    schoolName: 'SMA Negeri 88',
-    address: 'Jl. Sudirman No. 12, Kota Bandung',
-    timeRange: '13:00 - 14:00 WIB',
-    portions: 300,
-    status: 'scheduled',
-    date: new Date().toISOString().split('T')[0],
-    iconVariant: 'secondary',
-  },
-  {
-    id: '4',
-    schoolName: 'TK Bahagia Ceria',
-    address: 'Jl. Anggrek No. 3, Kota Depok',
-    timeRange: '15:00 - 16:00 WIB',
-    portions: 80,
-    status: 'delivered',
-    date: new Date().toISOString().split('T')[0],
-    iconVariant: 'primary',
-  },
-  {
-    id: '5',
-    schoolName: 'PAUD Cerdas Bangsa',
-    address: 'Jl. Mawar No. 7, Kota Bekasi',
-    timeRange: '09:30 - 10:30 WIB',
-    portions: 100,
-    status: 'scheduled',
-    date: new Date().toISOString().split('T')[0],
-    iconVariant: 'secondary',
-  },
-  {
-    id: '6',
-    schoolName: 'SD Islam Terpadu',
-    address: 'Jl. Cempaka No. 22, Tangerang Selatan',
-    timeRange: '11:00 - 12:00 WIB',
-    portions: 180,
-    status: 'in_progress',
-    date: new Date().toISOString().split('T')[0],
-    iconVariant: 'primary',
-  },
-];
-
 export function useScheduleData(filter: FilterType): UseScheduleDataReturn {
   const [schedules, setSchedules] = useState<ScheduleItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,16 +86,35 @@ export function useScheduleData(filter: FilterType): UseScheduleDataReturn {
         return;
       }
 
-      // simulasi API call
-      await new Promise(resolve => setTimeout(resolve, 400));
+      // actual API call
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-      // simpan ke cache
-      setCache(defaultSchedules);
-      setSchedules(defaultSchedules);
+      const response = await fetch(`${apiUrl}/catering/schedules`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        // simpan ke cache
+        setCache(result.data);
+        setSchedules(result.data);
+      } else {
+        throw new Error(result.error || 'Failed to fetch schedule data');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Gagal memuat data jadwal';
       setError(errorMessage);
-      setSchedules(defaultSchedules);
+      setSchedules([]);
     } finally {
       setIsLoading(false);
       isFetching.current = false;

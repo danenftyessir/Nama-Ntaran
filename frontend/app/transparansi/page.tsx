@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import axios from 'axios';
 import {
   Facebook,
   Twitter,
   Instagram,
-  Linkedin
+  Linkedin,
+  Loader2
 } from 'lucide-react';
 
 export default function TransparansiPage() {
@@ -19,43 +20,45 @@ export default function TransparansiPage() {
   const heroInView = useInView(heroRef, { once: true, margin: "-100px" });
   const dashboardInView = useInView(dashboardRef, { once: true, margin: "-100px" });
 
-  // data untuk line chart tren alokasi
-  const trendData = [
-    { month: 'Okt', alokasi: 11000000, distribusi: 13000000 },
-    { month: 'Nov', alokasi: 21000000, distribusi: 19000000 },
-    { month: 'Des', alokasi: 5000000, distribusi: 6000000 },
-    { month: 'Jan', alokasi: 18000000, distribusi: 17000000 },
-    { month: 'Feb', alokasi: 23000000, distribusi: 21000000 },
-    { month: 'Mar', alokasi: 24000000, distribusi: 22000000 },
-    { month: 'Apr', alokasi: 27000000, distribusi: 25000000 },
-    { month: 'Mei', alokasi: 25000000, distribusi: 24000000 },
-    { month: 'Jun', alokasi: 28000000, distribusi: 26000000 },
-    { month: 'Jul', alokasi: 29000000, distribusi: 27000000 },
-    { month: 'Agt', alokasi: 30000000, distribusi: 28000000 },
-  ];
+  // state management
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [regionalData, setRegionalData] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [scoreData, setScoreData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // data untuk distribusi regional (donut chart)
-  const regionalData = [
-    { region: 'Jawa', value: 40, color: '#8b5cf6' },
-    { region: 'Sumatera', value: 25, color: '#f59e0b' },
-    { region: 'Kalimantan', value: 20, color: '#3b82f6' },
-    { region: 'Sulawesi', value: 10, color: '#ec4899' },
-    { region: 'Lainnya', value: 5, color: '#10b981' },
-  ];
+  // fetch transparency dashboard data
+  useEffect(() => {
+    const fetchTransparencyData = async () => {
+      try {
+        setLoading(true);
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-  // TODO: implementasi API untuk mendapatkan data transaksi real-time dari blockchain
-  const transactions = [
-    { time: '10 menit lalu', amount: 'Rp 150 Juta', receiver: 'SMP Harapan Bangsa', status: 'Selesai' },
-    { time: '30 menit lalu', amount: 'Rp 200 Juta', receiver: 'SMP Cerdas Mandiri', status: 'Selesai' },
-    { time: '1 jam lalu', amount: 'Rp 75 Juta', receiver: 'SMA Prestasi Unggul', status: 'Tertunda' },
-  ];
+        const response = await axios.get(`${apiUrl}/public/transparency`);
 
-  // data untuk bar chart distribusi skor
-  const scoreData = [
-    { category: 'Tinggi', value: 40, color: '#6366f1' },
-    { category: 'Sedang', value: 110, color: '#6366f1' },
-    { category: 'Rendah', value: 65, color: '#6366f1' },
-  ];
+        if (response.data.success) {
+          setTrendData(response.data.data.trendData || []);
+          setRegionalData(response.data.data.regionalData || []);
+          setTransactions(response.data.data.transactions || []);
+          setScoreData(response.data.data.scoreData || []);
+        } else {
+          throw new Error(response.data.error || 'Failed to fetch transparency data');
+        }
+      } catch (err: any) {
+        console.error('Error fetching transparency data:', err);
+        setError(err.message || 'Gagal memuat data transparansi. Silakan coba lagi nanti.');
+        setTrendData([]);
+        setRegionalData([]);
+        setTransactions([]);
+        setScoreData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransparencyData();
+  }, []);
 
   // variasi animasi
   const containerVariants = {
@@ -91,6 +94,30 @@ export default function TransparansiPage() {
       damping: 20,
     },
   };
+
+  // loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-purple-600" />
+          <h3 className="text-xl font-semibold text-gray-700">Memuat Data Transparansi...</h3>
+        </div>
+      </div>
+    );
+  }
+
+  // error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-red-600 mb-2">Error</h3>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">

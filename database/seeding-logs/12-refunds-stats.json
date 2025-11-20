@@ -1,0 +1,24 @@
+{
+  "totalPayments": 40,
+  "totalRefunds": 40,
+  "successCount": 40,
+  "failedCount": 0,
+  "byStatus": {
+    "COMPLETED": 31,
+    "PROCESSING": 6,
+    "FAILED": 2,
+    "PENDING": 1
+  },
+  "byReason": {
+    "Payment processing error": 4,
+    "Duplicate payment": 6,
+    "Quality issues reported": 6,
+    "School closure/emergency": 4,
+    "Delivery cancelled by school": 10,
+    "Force majeure event": 1,
+    "Catering unable to fulfill order": 8,
+    "Contract termination": 1
+  },
+  "totalRefundAmount": 718769500,
+  "errors": []
+}

@@ -1,0 +1,72 @@
+{
+  "totalDeliveries": 1000,
+  "totalConfirmations": 950,
+  "successCount": 0,
+  "failedCount": 950,
+  "byStatus": {
+    "APPROVED": 901,
+    "ON_HOLD": 4,
+    "REJECTED": 22,
+    "PENDING": 23
+  },
+  "byQualityRating": {
+    "1": 11,
+    "2": 45,
+    "3": 117,
+    "4": 328,
+    "5": 449
+  },
+  "avgPhotosPerConfirmation": 2.6989473684210528,
+  "errors": [
+    {
+      "batch": 1,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 2,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 3,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 4,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 5,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 6,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 7,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 8,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 9,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 100
+    },
+    {
+      "batch": 10,
+      "error": "duplicate key value violates unique constraint \"delivery_confirmations_delivery_id_key\"",
+      "count": 50
+    }
+  ]
+}

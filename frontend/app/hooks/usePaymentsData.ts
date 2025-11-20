@@ -117,14 +117,6 @@ export function usePaymentsData() {
       });
 
       if (!response.ok) {
-        // jika API gagal, gunakan data dummy untuk demo
-        if (response.status === 401 || response.status === 404) {
-          const dummyData = getDummyData();
-          setData(dummyData);
-          saveToCache(dummyData);
-          setIsLoading(false);
-          return;
-        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -136,16 +128,10 @@ export function usePaymentsData() {
       } else {
         throw new Error(result.error || 'Failed to fetch data');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching payments data:', err);
-
-      // fallback ke dummy data jika API tidak tersedia
-      const dummyData = getDummyData();
-      setData(dummyData);
-      saveToCache(dummyData);
-
-      // tidak set error karena menggunakan fallback data
-      // setError('Gagal memuat data pembayaran');
+      setError(err.message || 'Gagal mengambil data pembayaran. Silakan coba lagi nanti.');
+      setData(null);
     } finally {
       setIsLoading(false);
     }
@@ -222,91 +208,6 @@ export function useTransactionFilter(
   }, [transactions, period]);
 
   return filteredTransactions;
-}
-
-// data dummy untuk fallback/demo
-function getDummyData(): PaymentsData {
-  return {
-    fundStatus: {
-      lockedFunds: 45500000,
-      pendingVerification: 12000000,
-      releasedFunds: 67500000,
-      totalFunds: 125000000,
-    },
-    transactions: [
-      {
-        date: '2025-11-19',
-        transactions: [
-          {
-            id: 'txn-001',
-            description: 'Pembayaran dari SDN 01 Bandung',
-            amount: 15000000,
-            type: 'income',
-            status: 'completed',
-            date: '2025-11-19',
-          },
-          {
-            id: 'txn-002',
-            description: 'Biaya operasional harian',
-            amount: 2500000,
-            type: 'expense',
-            status: 'deducted',
-            date: '2025-11-19',
-          },
-        ],
-      },
-      {
-        date: '2025-11-18',
-        transactions: [
-          {
-            id: 'txn-003',
-            description: 'Pembayaran dari SDN 05 Jakarta',
-            amount: 12500000,
-            type: 'income',
-            status: 'paid',
-            date: '2025-11-18',
-          },
-          {
-            id: 'txn-004',
-            description: 'Pembelian bahan baku',
-            amount: 8000000,
-            type: 'expense',
-            status: 'sent',
-            date: '2025-11-18',
-          },
-          {
-            id: 'txn-005',
-            description: 'Refund pesanan dibatalkan',
-            amount: 1500000,
-            type: 'expense',
-            status: 'returned',
-            date: '2025-11-18',
-          },
-        ],
-      },
-      {
-        date: '2025-11-17',
-        transactions: [
-          {
-            id: 'txn-006',
-            description: 'Pembayaran dari SMP 12 Surabaya',
-            amount: 18000000,
-            type: 'income',
-            status: 'completed',
-            date: '2025-11-17',
-          },
-        ],
-      },
-    ],
-    cashFlowData: [
-      { month: 'Jun', income: 42000000, expense: 35000000 },
-      { month: 'Jul', income: 48000000, expense: 38000000 },
-      { month: 'Agu', income: 45000000, expense: 36000000 },
-      { month: 'Sep', income: 52000000, expense: 40000000 },
-      { month: 'Okt', income: 58000000, expense: 42000000 },
-      { month: 'Nov', income: 67500000, expense: 45000000 },
-    ],
-  };
 }
 
 // export types untuk digunakan di komponen lain

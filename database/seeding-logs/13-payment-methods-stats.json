@@ -1,0 +1,31 @@
+{
+  "totalCaterings": 100,
+  "totalPaymentMethods": 100,
+  "successCount": 100,
+  "failedCount": 0,
+  "byMethodType": {
+    "BANK_TRANSFER": 80,
+    "EWALLET": 17,
+    "CRYPTOCURRENCY": 3
+  },
+  "byBankCode": {
+    "BTN": 6,
+    "CIMB": 6,
+    "MEGA": 8,
+    "BCA": 11,
+    "MANDIRI": 8,
+    "PERMATA": 9,
+    "DANAMON": 6,
+    "BRI": 7,
+    "BSI": 10,
+    "BNI": 9
+  },
+  "byEwalletProvider": {
+    "GOPAY": 3,
+    "OVO": 4,
+    "SHOPEEPAY": 3,
+    "LINKAJA": 6,
+    "DANA": 1
+  },
+  "errors": []
+}

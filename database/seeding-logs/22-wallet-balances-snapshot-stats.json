@@ -1,0 +1,23 @@
+{
+  "totalSnapshots": 19573,
+  "successCount": 19573,
+  "failedCount": 0,
+  "byWalletType": {
+    "government": 251,
+    "escrow_contract": 335,
+    "school": 9440,
+    "catering": 9547
+  },
+  "bySnapshotType": {
+    "scheduled": 19255,
+    "on_transaction": 284,
+    "manual": 34
+  },
+  "byNetwork": {
+    "polygon-mainnet": 6788,
+    "arbitrum-one": 6440,
+    "optimism-mainnet": 6345
+  },
+  "totalBalanceIDR": 59732322441375,
+  "errors": []
+}

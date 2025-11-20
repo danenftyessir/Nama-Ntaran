@@ -69,71 +69,6 @@ const setCache = (data: any) => {
   }
 };
 
-// data default untuk fallback
-const defaultData: IssuesDashboardData = {
-  reputation: {
-    rating: 4.8,
-    totalReviews: 1234,
-  },
-  onTimePercentage: 98.5,
-  qualityScore: 9.2,
-  issues: [
-    {
-      id: 1,
-      title: 'Keterlambatan Pengiriman',
-      description: 'Pengiriman ke SD Harapan Bangsa terlambat 30 menit dari jadwal.',
-      severity: 'high',
-      status: 'open',
-      date: '2024-07-28',
-      schoolName: 'SD Harapan Bangsa',
-    },
-    {
-      id: 2,
-      title: 'Kualitas Makanan',
-      description: 'Ada keluhan mengenai rasa makanan yang terlalu asin di SMP N 1 Jakarta.',
-      severity: 'medium',
-      status: 'investigating',
-      date: '2024-07-27',
-      schoolName: 'SMP N 1 Jakarta',
-    },
-    {
-      id: 3,
-      title: 'Porsi Kurang',
-      description: 'Beberapa siswa di SMA Karya Bangsa melaporkan porsi makanan yang tidak sesuai.',
-      severity: 'medium',
-      status: 'open',
-      date: '2024-07-26',
-      schoolName: 'SMA Karya Bangsa',
-    },
-    {
-      id: 4,
-      title: 'Kemasan Rusak',
-      description: 'Kemasan beberapa kotak makanan rusak saat tiba di TK Pelangi.',
-      severity: 'low',
-      status: 'resolved',
-      date: '2024-07-25',
-      schoolName: 'TK Pelangi',
-    },
-    {
-      id: 5,
-      title: 'Dokumentasi Tidak Lengkap',
-      description: 'Laporan verifikasi pengiriman untuk SMP Merdeka tidak lengkap.',
-      severity: 'low',
-      status: 'resolved',
-      date: '2024-07-24',
-      schoolName: 'SMP Merdeka',
-    },
-  ],
-  qualityTrend: [
-    { month: 'Januari', score: 96.5 },
-    { month: 'Februari', score: 97.2 },
-    { month: 'Maret', score: 96.8 },
-    { month: 'April', score: 97.5 },
-    { month: 'Mei', score: 98.1 },
-    { month: 'Juni', score: 97.9 },
-  ],
-};
-
 export function useIssuesDashboard(): UseIssuesDashboardReturn {
   const [data, setData] = useState<IssuesDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -192,9 +127,7 @@ export function useIssuesDashboard(): UseIssuesDashboardReturn {
       const errorMessage =
         err instanceof Error ? err.message : 'Gagal memuat data dashboard';
       setError(errorMessage);
-
-      // gunakan data default jika error
-      setData(defaultData);
+      setData(null);
     } finally {
       setIsLoading(false);
       isFetching.current = false;

@@ -1,0 +1,39 @@
+{
+  "summary": {
+    "total_alerts": 45,
+    "success_count": 45,
+    "fail_count": 0,
+    "success_rate": "100.0",
+    "avg_confidence": "0.80",
+    "critical_alerts": 12,
+    "unresolved_alerts": 30
+  },
+  "by_type": {
+    "quality_degradation": 6,
+    "suspicious_payment": 5,
+    "late_delivery_pattern": 6,
+    "data_tampering": 5,
+    "portion_manipulation": 6,
+    "collusion": 6,
+    "fake_verification": 6,
+    "geographic_anomaly": 5
+  },
+  "by_severity": {
+    "medium": 13,
+    "critical": 12,
+    "high": 16,
+    "low": 4
+  },
+  "by_status": {
+    "resolved": 10,
+    "dismissed": 5,
+    "new": 16,
+    "investigating": 14
+  },
+  "by_recommendation": {
+    "investigate": 22,
+    "block": 6,
+    "monitor": 10,
+    "alert_admin": 7
+  }
+}

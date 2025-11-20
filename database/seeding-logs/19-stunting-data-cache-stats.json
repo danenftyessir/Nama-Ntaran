@@ -1,0 +1,50 @@
+{
+  "summary": {
+    "total_records": 170,
+    "total_provinces": 34,
+    "years_covered": [
+      2020,
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "success_count": 170,
+    "fail_count": 0,
+    "success_rate": "100.0"
+  },
+  "aggregates": {
+    "avg_stunting_rate": "22.67",
+    "avg_severe_stunting_rate": "7.56",
+    "total_stunting_count": "24.255.538",
+    "data_points_per_province": 5
+  },
+  "by_source": {
+    "cached": 88,
+    "kemenkes_api": 82
+  },
+  "by_year": {
+    "2020": 34,
+    "2021": 34,
+    "2022": 34,
+    "2023": 34,
+    "2024": 34
+  },
+  "by_intervention_priority": {
+    "undefined": 170
+  },
+  "highest_stunting": [
+    "Nusa Tenggara Timur (33.3%)",
+    "Papua (30.2%)",
+    "Aceh (29.7%)",
+    "Nusa Tenggara Barat (28.9%)",
+    "Papua Barat (28.8%)"
+  ],
+  "lowest_stunting": [
+    "DKI Jakarta (13.4%)",
+    "Bali (14.1%)",
+    "Kepulauan Bangka Belitung (14.8%)",
+    "Kepulauan Riau (15.4%)",
+    "DI Yogyakarta (16.3%)"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "totalSources": 440,
+  "totalSyncLogs": 440,
+  "successCount": 440,
+  "failedCount": 0,
+  "byEventType": {
+    "ESCROW_LOCKED": 120,
+    "ESCROW_RELEASED": 108,
+    "ESCROW_FAILED": 12,
+    "PAYMENT_EVENT": 200
+  },
+  "byStatus": {
+    "PROCESSED": 369,
+    "PENDING": 27,
+    "PROCESSING": 34,
+    "FAILED": 10
+  },
+  "errors": []
+}

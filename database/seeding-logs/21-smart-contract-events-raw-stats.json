@@ -1,0 +1,24 @@
+{
+  "totalEvents": 2558,
+  "successCount": 2558,
+  "failedCount": 0,
+  "byEventName": {
+    "EscrowLocked": 370,
+    "Transfer": 774,
+    "AllocationCreated": 269,
+    "PaymentInitiated": 251,
+    "PaymentCompleted": 537,
+    "EscrowReleased": 357
+  },
+  "byNetwork": {
+    "polygon-mainnet": 1720,
+    "optimism-mainnet": 253,
+    "arbitrum-one": 585
+  },
+  "byProcessedStatus": {
+    "processed": 2157,
+    "pending": 313,
+    "failed": 88
+  },
+  "errors": []
+}

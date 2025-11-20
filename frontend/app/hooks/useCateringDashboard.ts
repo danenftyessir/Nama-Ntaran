@@ -77,52 +77,6 @@ const setCache = (data: any) => {
   }
 };
 
-// data default untuk fallback
-const defaultStats: DashboardStats = {
-  lockedFunds: '25.500.000',
-  lockedFundsDescription: 'Dana yang belum dicairkan untuk program',
-  todayDistribution: {
-    schools: 3,
-    portions: 1200,
-  },
-  highlightedDates: [18, 20],
-};
-
-const defaultDeliveries: DeliveryItem[] = [
-  {
-    id: '1',
-    schoolName: 'SDN 01 Merdeka',
-    time: '09:00 WIB',
-    portions: 350,
-    status: 'pending',
-  },
-  {
-    id: '2',
-    schoolName: 'SMP Harapan Bangsa',
-    time: '11:30 WIB',
-    portions: 420,
-    status: 'pending',
-  },
-  {
-    id: '3',
-    schoolName: 'SMA Persatuan',
-    time: '14:00 WIB',
-    portions: 500,
-    status: 'pending',
-  },
-  {
-    id: '4',
-    schoolName: 'TK Ceria',
-    time: '08:30 WIB',
-    portions: 200,
-    status: 'pending',
-  },
-];
-
-const defaultBadges: NotificationBadge[] = [
-  { path: '/catering/payments', count: 2 },
-];
-
 export function useCateringDashboard(): UseCateringDashboardReturn {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [deliveries, setDeliveries] = useState<DeliveryItem[]>([]);
@@ -152,34 +106,42 @@ export function useCateringDashboard(): UseCateringDashboardReturn {
         return;
       }
 
-      // simulasi API call - ganti dengan actual API endpoint
-      // const response = await fetch('/api/catering/dashboard');
-      // const data = await response.json();
+      // actual API call
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-      // untuk sementara gunakan data default
-      // simulasi network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch(`${apiUrl}/catering/dashboard`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
 
-      const data = {
-        stats: defaultStats,
-        deliveries: defaultDeliveries,
-        badges: defaultBadges,
-      };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      // simpan ke cache
-      setCache(data);
+      const result = await response.json();
 
-      setStats(data.stats);
-      setDeliveries(data.deliveries);
-      setBadges(data.badges);
+      if (result.success && result.data) {
+        const data = result.data;
+
+        // simpan ke cache
+        setCache(data);
+
+        setStats(data.stats);
+        setDeliveries(data.deliveries || []);
+        setBadges(data.badges || []);
+      } else {
+        throw new Error(result.error || 'Failed to fetch dashboard data');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Gagal memuat data dashboard';
       setError(errorMessage);
-
-      // gunakan data default jika error
-      setStats(defaultStats);
-      setDeliveries(defaultDeliveries);
-      setBadges(defaultBadges);
+      setStats(null);
+      setDeliveries([]);
+      setBadges([]);
     } finally {
       setIsLoading(false);
       isFetching.current = false;

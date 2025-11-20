@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
@@ -16,8 +16,10 @@ import {
   DollarSign,
   ChevronLeft,
   ChevronRight,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
+import axios from 'axios';
 
 // interface untuk data sekolah
 interface School {
@@ -26,10 +28,15 @@ interface School {
   location: string;
   priorityScore: number;
   budget: string;
+  city?: string;
+  province?: string;
   image?: string;
 }
 
 export default function SchoolListPage() {
+  const [schools, setSchools] = useState<School[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedScore, setSelectedScore] = useState('');
@@ -40,49 +47,38 @@ export default function SchoolListPage() {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true, margin: "-100px" });
 
-  // TODO: PENTING - ganti dengan API call ke database
-  // gunakan useEffect untuk fetch data dari endpoint /api/schools
-  // contoh: const { data: schools, isLoading } = useSWR('/api/schools', fetcher);
-  // atau gunakan fetch/axios dengan useEffect
-  // data di bawah ini hanya untuk mock/development
-  const schools: School[] = [
-    { id: 1, name: 'SDN Maju Jaya 1', location: 'Jakarta Pusat', priorityScore: 85, budget: 'Rp 1.5 M' },
-    { id: 2, name: 'SMPN Harapan Bangsa 2', location: 'Surabaya', priorityScore: 78, budget: 'Rp 2.0 M' },
-    { id: 3, name: 'SMAN Cerdas Mandiri 3', location: 'Bandung', priorityScore: 92, budget: 'Rp 2.8 M' },
-    { id: 4, name: 'SD Islam Al-Falah', location: 'Yogyakarta', priorityScore: 70, budget: 'Rp 1.2 M' },
-    { id: 5, name: 'SMP Tunas Bangsa', location: 'Medan', priorityScore: 88, budget: 'Rp 1.8 M' },
-    { id: 6, name: 'SMKN Teknologi Maju', location: 'Semarang', priorityScore: 95, budget: 'Rp 3.5 M' },
-    { id: 7, name: 'SD Bhakti Pertiwi', location: 'Denpasar', priorityScore: 80, budget: 'Rp 1.3 M' },
-    { id: 8, name: 'SMP Global Nusantara', location: 'Makassar', priorityScore: 75, budget: 'Rp 1.9 M' },
-    { id: 9, name: 'SMA Unggul Prestasi', location: 'Palembang', priorityScore: 90, budget: 'Rp 3.0 M' },
-    { id: 10, name: 'SDN Pelita Harapan', location: 'Jakarta Pusat', priorityScore: 82, budget: 'Rp 1.7 M' },
-    { id: 11, name: 'SMPN Bina Prestasi', location: 'Surabaya', priorityScore: 87, budget: 'Rp 2.2 M' },
-    { id: 12, name: 'SMAN Nusa Bangsa', location: 'Bandung', priorityScore: 91, budget: 'Rp 2.9 M' },
-    { id: 13, name: 'SD Kreatif Mandiri', location: 'Yogyakarta', priorityScore: 76, budget: 'Rp 1.4 M' },
-    { id: 14, name: 'SMP Sejahtera', location: 'Medan', priorityScore: 84, budget: 'Rp 1.9 M' },
-    { id: 15, name: 'SMKN Digital Tech', location: 'Semarang', priorityScore: 93, budget: 'Rp 3.2 M' },
-    { id: 16, name: 'SDN Harapan Jaya', location: 'Jakarta Pusat', priorityScore: 79, budget: 'Rp 1.6 M' },
-    { id: 17, name: 'SMPN Patriot Bangsa', location: 'Surabaya', priorityScore: 86, budget: 'Rp 2.1 M' },
-    { id: 18, name: 'SMAN Widya Karya', location: 'Bandung', priorityScore: 89, budget: 'Rp 2.7 M' },
-    { id: 19, name: 'SD Citra Bangsa', location: 'Yogyakarta', priorityScore: 73, budget: 'Rp 1.3 M' },
-    { id: 20, name: 'SMP Karya Mandiri', location: 'Medan', priorityScore: 81, budget: 'Rp 1.7 M' },
-    { id: 21, name: 'SMKN Informatika', location: 'Semarang', priorityScore: 94, budget: 'Rp 3.4 M' },
-    { id: 22, name: 'SDN Cahaya Ilmu', location: 'Denpasar', priorityScore: 77, budget: 'Rp 1.4 M' },
-    { id: 23, name: 'SMPN Bina Nusantara', location: 'Makassar', priorityScore: 83, budget: 'Rp 2.0 M' },
-    { id: 24, name: 'SMAN Taruna Bhakti', location: 'Palembang', priorityScore: 88, budget: 'Rp 2.6 M' },
-    { id: 25, name: 'SD Budi Luhur', location: 'Jakarta Pusat', priorityScore: 74, budget: 'Rp 1.5 M' },
-    { id: 26, name: 'SMP Sinar Harapan', location: 'Surabaya', priorityScore: 85, budget: 'Rp 2.3 M' },
-    { id: 27, name: 'SMAN Pembangunan', location: 'Bandung', priorityScore: 90, budget: 'Rp 2.9 M' },
-    { id: 28, name: 'SD Tunas Mekar', location: 'Yogyakarta', priorityScore: 72, budget: 'Rp 1.2 M' },
-    { id: 29, name: 'SMP Pancasila', location: 'Medan', priorityScore: 86, budget: 'Rp 2.1 M' },
-    { id: 30, name: 'SMKN Multimedia', location: 'Semarang', priorityScore: 92, budget: 'Rp 3.1 M' },
-    { id: 31, name: 'SDN Kartika Jaya', location: 'Denpasar', priorityScore: 78, budget: 'Rp 1.5 M' },
-    { id: 32, name: 'SMPN Dharma Bangsa', location: 'Makassar', priorityScore: 80, budget: 'Rp 1.8 M' },
-    { id: 33, name: 'SMAN Bhinneka Tunggal', location: 'Palembang', priorityScore: 87, budget: 'Rp 2.5 M' },
-    { id: 34, name: 'SD Muhammadiyah', location: 'Jakarta Pusat', priorityScore: 81, budget: 'Rp 1.6 M' },
-    { id: 35, name: 'SMP Al-Azhar', location: 'Surabaya', priorityScore: 89, budget: 'Rp 2.4 M' },
-    { id: 36, name: 'SMAN Nusantara Jaya', location: 'Bandung', priorityScore: 93, budget: 'Rp 3.0 M' },
-  ];
+  // Fetch schools from API
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/schools`);
+
+        // Transform API data to match School interface
+        const transformedSchools = response.data.map((school: any) => ({
+          id: school.id,
+          name: school.name,
+          location: school.city || school.province || 'Unknown',
+          city: school.city,
+          province: school.province,
+          priorityScore: Math.round(school.priority_score || 0),
+          budget: school.budget ? `Rp ${(school.budget / 1000000).toFixed(1)} M` : 'N/A',
+          image: school.image_url
+        }));
+
+        setSchools(transformedSchools);
+        setError(null);
+      } catch (err: any) {
+        console.error('Error fetching schools:', err);
+        setError('Gagal memuat data sekolah. Silakan coba lagi nanti.');
+        setSchools([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchools();
+  }, []);
 
   // daftar wilayah untuk filter
   const regions = [
@@ -373,7 +369,21 @@ export default function SchoolListPage() {
 
       {/* school cards section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        {filteredSchools.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <Loader2 className="w-12 h-12 mx-auto mb-4 animate-spin text-purple-600" />
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">Memuat Data Sekolah...</h3>
+            <p className="text-gray-500">Mohon tunggu sebentar.</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <div className="text-red-400 mb-4">
+              <Search className="w-16 h-16 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-red-600 mb-2">Error</h3>
+              <p className="text-gray-500">{error}</p>
+            </div>
+          </div>
+        ) : filteredSchools.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-gray-400 mb-4">
               <Search className="w-16 h-16 mx-auto mb-4" />

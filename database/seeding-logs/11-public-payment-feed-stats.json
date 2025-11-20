@@ -1,0 +1,18 @@
+{
+  "totalPayments": 1000,
+  "totalFeedEntries": 873,
+  "successCount": 873,
+  "failedCount": 0,
+  "byStatus": {
+    "COMPLETED": 484,
+    "LOCKED": 360,
+    "REFUNDED": 21,
+    "RELEASING": 8
+  },
+  "byRegion": {
+    "D.K.I. Jakarta": 873
+  },
+  "totalAmount": 17022513000,
+  "totalPortions": 428861,
+  "errors": []
+}

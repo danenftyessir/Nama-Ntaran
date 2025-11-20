@@ -1,0 +1,34 @@
+{
+  "summary": {
+    "total_analyses": 900,
+    "total_deliveries": 1000,
+    "analysis_rate": "90.0",
+    "success_count": 900,
+    "fail_count": 0,
+    "success_rate": "100.0"
+  },
+  "quality": {
+    "avg_quality_score": "80.4",
+    "avg_confidence": "0.75",
+    "distribution": {
+      "excellent": 409,
+      "good": 306,
+      "acceptable": 140,
+      "poor": 45
+    }
+  },
+  "compliance": {
+    "meets_bgn_standards": "525 (58.3%)",
+    "has_vegetables": "655 (72.8%)",
+    "portion_match": "900 (100.0%)",
+    "menu_match": "820 (91.1%)"
+  },
+  "review": {
+    "needs_manual_review": "139 (15.4%)",
+    "status_distribution": {
+      "approved": 788,
+      "pending": 79,
+      "rejected": 33
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "totalPayments": 1000,
+  "totalEvents": 3578,
+  "successEvents": 3578,
+  "failedEvents": 0,
+  "eventsByType": {
+    "ALLOCATION_CREATED": 1000,
+    "FUND_LOCKED": 1000,
+    "DELIVERY_CONFIRMED": 555,
+    "PAYMENT_RELEASING": 499,
+    "PAYMENT_RELEASED": 484,
+    "REFUND_INITIATED": 40
+  },
+  "eventsByStatus": {
+    "PROCESSED": 3400,
+    "PENDING": 178
+  },
+  "errors": []
+}
