@@ -1,0 +1,26 @@
+{
+  "totalDeliveries": 1000,
+  "totalIssues": 131,
+  "successCount": 131,
+  "failedCount": 0,
+  "byIssueType": {
+    "quality_issue": 38,
+    "late_delivery": 45,
+    "wrong_portions": 33,
+    "missing_delivery": 11,
+    "other": 4
+  },
+  "bySeverity": {
+    "medium": 42,
+    "low": 56,
+    "high": 31,
+    "critical": 2
+  },
+  "byStatus": {
+    "resolved": 101,
+    "closed": 5,
+    "open": 11,
+    "investigating": 14
+  },
+  "errors": []
+}

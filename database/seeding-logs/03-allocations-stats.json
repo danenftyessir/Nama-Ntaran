@@ -3,11 +3,11 @@
   "successAllocations": 1000,
   "failedAllocations": 0,
   "allocationsByStatus": {
-    "LOCKED": 454,
-    "RELEASED": 479,
-    "RELEASING": 16,
-    "CANCELLED": 38,
-    "ON_HOLD": 13
+    "RELEASED": 484,
+    "CANCELLED": 40,
+    "LOCKED": 445,
+    "ON_HOLD": 16,
+    "RELEASING": 15
   },
   "errors": []
 }

@@ -14,21 +14,21 @@ Terakhir Update: 2025-11-20
                     STATUS IMPLEMENTASI SEEDING
 ================================================================================
 
-PROGRESS: 7 dari 20 tabel (35%)
+PROGRESS: 9 dari 20 tabel (45%)
 
 ✅ SELESAI & DI-SEED KE SUPABASE:
-  1. ✅ users          - Script: 01-seed-users.ts        (Created: 2025-11-20)
-  2. ✅ schools        - Script: 01-seed-users.ts        (Created: 2025-11-20)
-  3. ✅ caterings      - Script: 01-seed-users.ts        (Created: 2025-11-20)
-  4. ✅ menu_items     - Script: 02-seed-menu-items.ts   (Seeded: 2025-11-20, ~2,000 records)
-  5. ✅ deliveries     - Script: 04-seed-deliveries.ts   (Seeded: 2025-11-20, ~1,000 records)
-  6. ✅ allocations    - Script: 03-seed-allocations.ts  (Seeded: 2025-11-20, ~1,000 records)
-  7. ✅ verifications  - Script: 05-seed-verifications.ts (Seeded: 2025-11-20, 1,000 records)
+  1. ✅ users          - Script: 01-seed-users.ts          (Created: 2025-11-20)
+  2. ✅ schools        - Script: 01-seed-users.ts          (Created: 2025-11-20)
+  3. ✅ caterings      - Script: 01-seed-users.ts          (Created: 2025-11-20)
+  4. ✅ menu_items     - Script: 02-seed-menu-items.ts     (Seeded: 2025-11-20, ~2,000 records)
+  5. ✅ deliveries     - Script: 04-seed-deliveries.ts     (Seeded: 2025-11-20, ~1,000 records)
+  6. ✅ allocations    - Script: 03-seed-allocations.ts    (Seeded: 2025-11-20, ~1,000 records)
+  7. ✅ verifications  - Script: 05-seed-verifications.ts  (Seeded: 2025-11-20, 1,000 records)
+  8. ✅ payments       - Script: 06-seed-payments.ts       (Seeded: 2025-11-20, 1,000 records)
+  9. ✅ issues         - Script: 07-seed-issues.ts         (Seeded: 2025-11-20, 131 records)
 
 ❌ BELUM DIBUAT:
-  8. ❌ payments
-  9. ❌ escrow_transactions
- 10. ❌ issues
+ 10. ❌ escrow_transactions
  11. ❌ delivery_confirmations
  12. ❌ payment_events
  13. ❌ public_payment_feed
@@ -41,18 +41,22 @@ PROGRESS: 7 dari 20 tabel (35%)
  20. ❌ blockchain_sync_log
 
 SCRIPT YANG SIAP DIJALANKAN:
-  - ✅ 01-seed-users.ts         → Users, Schools, Caterings (~5,000-30,000 records)
+  - ✅ 01-seed-users.ts         → Users, Schools, Caterings ✅ SEEDED
   - ✅ 02-seed-menu-items.ts    → Menu Items (~2,000 items) ✅ SEEDED
   - ✅ 04-seed-deliveries.ts    → Deliveries (~1,000 records) ✅ SEEDED
   - ✅ 03-seed-allocations.ts   → Budget Allocations (~1,000 records) ✅ SEEDED
   - ✅ 05-seed-verifications.ts → Verifications (1,000 records) ✅ SEEDED
+  - ✅ 06-seed-payments.ts      → Payments (1,000 records) ✅ SEEDED
+  - ✅ 07-seed-issues.ts        → Issues (131 records) ✅ SEEDED
 
 URUTAN EKSEKUSI YANG BENAR:
-  1. npm run seed:users         # Foundation (users, schools, caterings)
-  2. npm run seed:menu-items    # Menu catalog ✅ SEEDED
-  3. npm run seed:deliveries    # Core transactions ✅ SEEDED
-  4. npm run seed:allocations   # Budget allocations ✅ SEEDED
-  5. npm run seed:verifications # Delivery verifications ✅ SEEDED
+  1. npm run seed:users         # Foundation (users, schools, caterings) ✅
+  2. npm run seed:menu-items    # Menu catalog ✅
+  3. npm run seed:deliveries    # Core transactions ✅
+  4. npm run seed:allocations   # Budget allocations ✅
+  5. npm run seed:verifications # Delivery verifications ✅
+  6. npm run seed:payments      # Payment tracking ✅
+  7. npm run seed:issues        # Problem reports ✅
 
 ================================================================================
                           RINGKASAN EKSEKUTIF

@@ -8,7 +8,10 @@
     "seed:deliveries": "ts-node 04-seed-deliveries.ts",
     "seed:allocations": "ts-node 03-seed-allocations.ts",
     "seed:verifications": "ts-node 05-seed-verifications.ts",
-    "seed:all": "npm run seed:users && npm run seed:menu-items && npm run seed:deliveries && npm run seed:allocations && npm run seed:verifications"
+    "seed:payments": "ts-node 06-seed-payments.ts",
+    "seed:issues": "ts-node 07-seed-issues.ts",
+    "seed:escrow-transactions": "ts-node 08-seed-escrow-transactions.ts",
+    "seed:all": "npm run seed:users && npm run seed:menu-items && npm run seed:deliveries && npm run seed:allocations && npm run seed:verifications && npm run seed:payments && npm run seed:issues && npm run seed:escrow-transactions"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

@@ -4,16 +4,16 @@
   "successCount": 1000,
   "failedCount": 0,
   "byQualityRating": {
-    "1": 5,
-    "2": 40,
-    "3": 105,
-    "4": 340,
-    "5": 510
+    "1": 11,
+    "2": 36,
+    "3": 112,
+    "4": 350,
+    "5": 491
   },
   "byStatus": {
-    "approved": 902,
-    "pending": 77,
-    "rejected": 21
+    "approved": 905,
+    "pending": 75,
+    "rejected": 20
   },
   "errors": []
 }

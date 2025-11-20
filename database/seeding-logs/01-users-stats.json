@@ -1,0 +1,3385 @@
+{
+  "totalSchools": 27288,
+  "totalCaterings": 100,
+  "totalAdmins": 682,
+  "successSchools": 0,
+  "successCaterings": 0,
+  "successAdmins": 0,
+  "failedSchools": 27288,
+  "failedCaterings": 100,
+  "failedAdmins": 682,
+  "errors": [
+    {
+      "type": "school",
+      "batch": 1,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 2,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 3,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 4,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 5,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 6,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 7,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 8,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 9,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 10,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 11,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 12,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 13,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 14,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 15,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 16,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 17,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 18,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 19,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 20,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 21,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 22,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 23,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 24,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 25,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 26,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 27,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 28,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 29,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 30,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 31,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 32,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 33,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 34,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 35,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 36,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 37,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 38,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 39,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 40,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 41,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 42,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 43,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 44,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 45,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 46,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 47,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 48,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 49,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 50,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 51,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 52,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 53,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 54,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 55,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 56,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 57,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 58,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 59,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 60,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 61,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 62,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 63,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 64,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 65,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 66,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 67,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 68,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 69,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 70,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 71,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 72,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 73,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 74,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 75,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 76,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 77,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 78,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 79,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 80,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 81,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 82,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 83,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 84,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 85,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 86,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 87,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 88,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 89,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 90,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 91,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 92,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 93,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 94,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 95,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 96,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 97,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 98,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 99,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 100,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 101,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 102,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 103,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 104,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 105,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 106,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 107,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 108,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 109,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 110,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 111,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 112,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 113,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 114,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 115,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 116,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 117,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 118,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 119,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 120,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 121,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 122,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 123,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 124,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 125,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 126,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 127,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 128,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 129,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 130,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 131,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 132,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 133,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 134,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 135,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 136,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 137,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 138,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 139,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 140,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 141,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 142,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 143,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 144,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 145,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 146,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 147,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 148,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 149,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 150,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 151,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 152,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 153,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 154,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 155,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 156,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 157,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 158,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 159,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 160,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 161,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 162,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 163,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 164,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 165,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 166,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 167,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 168,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 169,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 170,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 171,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 172,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 173,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 174,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 175,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 176,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 177,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 178,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 179,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 180,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 181,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 182,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 183,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 184,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 185,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 186,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 187,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 188,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 189,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 190,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 191,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 192,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 193,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 194,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 195,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 196,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 197,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 198,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 199,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 200,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 201,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 202,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 203,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 204,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 205,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 206,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 207,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 208,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 209,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 210,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 211,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 212,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 213,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 214,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 215,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 216,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 217,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 218,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 219,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 220,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 221,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 222,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 223,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 224,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 225,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 226,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 227,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 228,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 229,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 230,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 231,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 232,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 233,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 234,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 235,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 236,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 237,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 238,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 239,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 240,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 241,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 242,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 243,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 244,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 245,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 246,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 247,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 248,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 249,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 250,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 251,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 252,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 253,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 254,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 255,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 256,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 257,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 258,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 259,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 260,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 261,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 262,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 263,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 264,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 265,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 266,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 267,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 268,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 269,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 270,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 271,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 272,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 273,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 274,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 275,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 276,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 277,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 278,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 279,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 280,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 281,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 282,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 283,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 284,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 285,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 286,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 287,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 288,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 289,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 290,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 291,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 292,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 293,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 294,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 295,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 296,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 297,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 298,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 299,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 300,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 301,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 302,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 303,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 304,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 305,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 306,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 307,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 308,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 309,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 310,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 311,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 312,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 313,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 314,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 315,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 316,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 317,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 318,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 319,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 320,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 321,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 322,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 323,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 324,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 325,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 326,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 327,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 328,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 329,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 330,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 331,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 332,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 333,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 334,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 335,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 336,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 337,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 338,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 339,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 340,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 341,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 342,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 343,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 344,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 345,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 346,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 347,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 348,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 349,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 350,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 351,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 352,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 353,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 354,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 355,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 356,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 357,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 358,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 359,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 360,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 361,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 362,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 363,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 364,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 365,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 366,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 367,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 368,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 369,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 370,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 371,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 372,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 373,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 374,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 375,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 376,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 377,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 378,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 379,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 380,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 381,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 382,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 383,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 384,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 385,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 386,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 387,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 388,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 389,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 390,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 391,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 392,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 393,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 394,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 395,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 396,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 397,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 398,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 399,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 400,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 401,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 402,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 403,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 404,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 405,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 406,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 407,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 408,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 409,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 410,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 411,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 412,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 413,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 414,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 415,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 416,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 417,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 418,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 419,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 420,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 421,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 422,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 423,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 424,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 425,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 426,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 427,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 428,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 429,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 430,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 431,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 432,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 433,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 434,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 435,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 436,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 437,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 438,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 439,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 440,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 441,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 442,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 443,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 444,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 445,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 446,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 447,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 448,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 449,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 450,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 451,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 452,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 453,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 454,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 455,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 456,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 457,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 458,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 459,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 460,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 461,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 462,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 463,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 464,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 465,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 466,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 467,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 468,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 469,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 470,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 471,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 472,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 473,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 474,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 475,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 476,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 477,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 478,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 479,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 480,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 481,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 482,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 483,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 484,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 485,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 486,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 487,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 488,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 489,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 490,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 491,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 492,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 493,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 494,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 495,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 496,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 497,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 498,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 499,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 500,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 501,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 502,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 503,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 504,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 505,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 506,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 507,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 508,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 509,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 510,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 511,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 512,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 513,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 514,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 515,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 516,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 517,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 518,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 519,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 520,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 521,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 522,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 523,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 524,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 525,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 526,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 527,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 528,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 529,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 530,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 531,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 532,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 533,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 534,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 535,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 536,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 537,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 538,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 539,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 540,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 541,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 542,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 543,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 544,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 545,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "school",
+      "batch": 546,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 38
+    },
+    {
+      "type": "catering",
+      "batch": 1,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "catering",
+      "batch": 2,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 1,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 2,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 3,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 4,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 5,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 6,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 7,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 8,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 9,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 10,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 11,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 12,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 13,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 50
+    },
+    {
+      "type": "admin",
+      "batch": 14,
+      "error": "duplicate key value violates unique constraint \"users_email_key\"",
+      "count": 32
+    }
+  ]
+}

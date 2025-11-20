@@ -1,0 +1,14 @@
+{
+  "totalAllocations": 1000,
+  "totalPayments": 1000,
+  "successCount": 1000,
+  "failedCount": 0,
+  "byStatus": {
+    "COMPLETED": 484,
+    "REFUNDED": 40,
+    "LOCKED": 445,
+    "CONFIRMED": 16,
+    "RELEASING": 15
+  },
+  "errors": []
+}

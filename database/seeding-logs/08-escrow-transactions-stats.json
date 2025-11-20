@@ -1,0 +1,16 @@
+{
+  "totalTransactions": 80,
+  "successTransactions": 80,
+  "failedTransactions": 0,
+  "transactionsByType": {
+    "LOCK": 40,
+    "RELEASE": 36,
+    "FAILED": 4
+  },
+  "transactionsByStatus": {
+    "CONFIRMED": 72,
+    "PENDING": 4,
+    "FAILED": 4
+  },
+  "errors": []
+}
