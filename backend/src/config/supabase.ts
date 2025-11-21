@@ -13,11 +13,18 @@
  * ============================================================================
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
 // Load environment variables
 dotenv.config();
+
+// ============================================================================
+// TYPE DEFINITION
+// ============================================================================
+
+// Get SupabaseClient type from createClient return type
+type SupabaseClient = ReturnType<typeof createClient>;
 
 // ============================================================================
 // ENVIRONMENT VARIABLES VALIDATION
@@ -47,9 +54,6 @@ export const supabase: SupabaseClient = createClient(
     auth: {
       autoRefreshToken: false,
       persistSession: false,
-    },
-    db: {
-      schema: 'public',
     },
   }
 );

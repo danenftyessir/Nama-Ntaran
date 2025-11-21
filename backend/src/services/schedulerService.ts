@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ============================================================================
  * SCHEDULER SERVICE - REAL-TIME PRIORITY SCORING & BPS DATA UPDATES

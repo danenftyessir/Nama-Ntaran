@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
@@ -12,101 +12,77 @@ import {
   AlertTriangle,
   ChevronRight,
   ImageIcon,
+  Loader2,
 } from 'lucide-react';
+import api from '@/lib/api';
 
-// TODO: Implementasi real-time notification untuk issue baru
-// TODO: Tambahkan fitur bulk actions untuk mengelola multiple issues
-// TODO: Integrasi dengan system notifikasi email untuk reporter
-// TODO: Implementasi advanced filtering (by date range, severity, type)
-// TODO: Tambahkan export laporan issues ke PDF/Excel
-// TODO: Implementasi SLA tracking untuk response time
+interface Issue {
+  id: number;
+  school_name: string;
+  catering_name: string;
+  issue_type: string;
+  description: string;
+  status: string;
+  reported_at: string;
+  resolved_at?: string;
+  has_evidence: boolean;
+}
+
+interface Stats {
+  pending: number;
+  investigating: number;
+  resolved: number;
+  rejected: number;
+}
 
 export default function IssuesPage() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [allIssues, setAllIssues] = useState<Issue[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    pending: 0,
+    investigating: 0,
+    resolved: 0,
+    rejected: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 6;
   const shouldReduceMotion = useReducedMotion();
 
-  // data issues mock
-  const allIssues = [
-    {
-      id: 1,
-      school: 'SDN 01 Bandung',
-      catering: 'Katering Sehat Mandiri',
-      issueType: 'Kuantitas',
-      description: 'Jumlah porsi kurang 20 dari yang dijanjikan',
-      status: 'Pending',
-      reportedAt: '2025-11-14 10:30',
-      hasEvidence: true,
-    },
-    {
-      id: 2,
-      school: 'SMP 12 Surabaya',
-      catering: 'Katering Nutrisi Prima',
-      issueType: 'Kualitas',
-      description: 'Makanan tidak sesuai standar nutrisi',
-      status: 'Investigasi',
-      reportedAt: '2025-11-13 14:20',
-      hasEvidence: true,
-    },
-    {
-      id: 3,
-      school: 'SDN 05 Jakarta',
-      catering: 'Katering Sehat Sejahtera',
-      issueType: 'Keterlambatan',
-      description: 'Pengiriman terlambat 2 jam',
-      status: 'Selesai',
-      reportedAt: '2025-11-12 11:00',
-      resolvedAt: '2025-11-12 15:00',
-      hasEvidence: false,
-    },
-    {
-      id: 4,
-      school: 'SMPN Harapan Bangsa',
-      catering: 'Katering Nutrisi Prima',
-      issueType: 'Kualitas',
-      description: 'Makanan tidak fresh, beberapa sudah basi',
-      status: 'Investigasi',
-      reportedAt: '2025-11-11 09:15',
-      hasEvidence: true,
-    },
-    {
-      id: 5,
-      school: 'SDN Banyu Biru 1',
-      catering: 'Warung Sehat Bu Ani',
-      issueType: 'Lainnya',
-      description: 'Kemasan rusak dan tumpah',
-      status: 'Ditolak',
-      reportedAt: '2025-11-10 13:45',
-      hasEvidence: false,
-    },
-    {
-      id: 6,
-      school: 'SMP 08 Yogyakarta',
-      catering: 'Katering Sehat Mandiri',
-      issueType: 'Kuantitas',
-      description: 'Porsi lebih sedikit dari standar',
-      status: 'Pending',
-      reportedAt: '2025-11-09 08:30',
-      hasEvidence: true,
-    },
-  ];
+  useEffect(() => {
+    fetchIssues();
+  }, []);
 
-  // statistik
-  const stats = {
-    pending: 3,
-    investigating: 2,
-    resolved: 12,
-    rejected: 5,
+  const fetchIssues = async () => {
+    setIsLoading(true);
+    try {
+      const [issuesResponse, statsResponse] = await Promise.all([
+        api.get('/api/issues'),
+        api.get('/api/issues/stats'),
+      ]);
+
+      setAllIssues(issuesResponse.issues || []);
+      setStats(statsResponse.stats || {
+        pending: 0,
+        investigating: 0,
+        resolved: 0,
+        rejected: 0,
+      });
+    } catch (error: any) {
+      console.error('Error fetching issues:', error);
+      alert(error.response?.data?.error || 'Gagal memuat data issues');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // filter issues
   const filteredIssues = allIssues.filter((issue) => {
     const matchesSearch =
-      issue.school.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      issue.catering.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      issue.school_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      issue.catering_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       issue.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === '' || issue.status === statusFilter;
     return matchesSearch && matchesStatus;
@@ -169,6 +145,17 @@ export default function IssuesPage() {
         return 'bg-gray-100 text-gray-700';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Memuat data issues...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -311,25 +298,25 @@ export default function IssuesPage() {
                         <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
                           <AlertTriangle className="w-4 h-4 text-white" />
                         </div>
-                        <span className="font-medium text-gray-900 text-sm">{issue.school}</span>
+                        <span className="font-medium text-gray-900 text-sm">{issue.school_name}</span>
                       </div>
                     </td>
                     <td className="p-4">
-                      <span className="text-gray-600 text-sm">{issue.catering}</span>
+                      <span className="text-gray-600 text-sm">{issue.catering_name}</span>
                     </td>
                     <td className="p-4">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${getIssueTypeBadgeClass(
-                          issue.issueType
+                          issue.issue_type
                         )}`}
                       >
-                        {issue.issueType}
+                        {issue.issue_type}
                       </span>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2 max-w-xs">
                         <span className="text-sm text-gray-600 truncate">{issue.description}</span>
-                        {issue.hasEvidence && (
+                        {issue.has_evidence && (
                           <ImageIcon className="w-4 h-4 text-purple-600 flex-shrink-0" />
                         )}
                       </div>
@@ -344,7 +331,9 @@ export default function IssuesPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className="text-gray-600 text-sm">{issue.reportedAt}</span>
+                      <span className="text-gray-600 text-sm">
+                        {new Date(issue.reported_at).toLocaleString('id-ID')}
+                      </span>
                     </td>
                     <td className="p-4">
                       <button

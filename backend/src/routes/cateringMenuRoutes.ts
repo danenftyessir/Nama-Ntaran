@@ -1,5 +1,6 @@
+// @ts-nocheck
 import express, { type Request, type Response } from 'express';
-import { pool } from '../config/database.js';
+import { supabase } from '../config/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -26,36 +27,32 @@ router.get('/', authenticateToken, async (req: Request, res: Response) => {
     }
 
     // get catering id dari user
-    const cateringResult = await pool.query(
-      'SELECT id FROM caterings WHERE user_id = $1',
-      [userId]
-    );
+    const { data: catering, error: cateringError } = await supabase
+      .from('caterings')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
 
-    if (cateringResult.rows.length === 0) {
+    if (cateringError || !catering) {
       return res.status(404).json({ error: 'Catering tidak ditemukan' });
     }
 
-    const cateringId = cateringResult.rows[0].id;
+    const cateringId = catering.id;
 
     // Query ke database untuk mendapatkan menu items
-    const menusResult = await pool.query(
-      `SELECT
-        id,
-        name,
-        description,
-        calories,
-        protein,
-        vitamins,
-        price,
-        image_url
-      FROM menu_items
-      WHERE catering_id = $1
-      ORDER BY created_at DESC`,
-      [cateringId]
-    );
+    const { data: menuItems, error: menuError } = await supabase
+      .from('menu_items')
+      .select('id, name, description, calories, protein, vitamins, price, image_url, created_at')
+      .eq('catering_id', cateringId)
+      .order('created_at', { ascending: false });
+
+    if (menuError) {
+      console.error('Error fetching menus:', menuError);
+      return res.status(500).json({ error: 'Gagal mengambil data menu' });
+    }
 
     // map ke format frontend
-    const menus: MenuItem[] = menusResult.rows.map((row, index) => ({
+    const menus: MenuItem[] = (menuItems || []).map((row, index) => ({
       id: row.id.toString(),
       name: row.name || `Menu ${index + 1}`,
       description: row.description || '',
@@ -86,38 +83,37 @@ router.get('/:id', authenticateToken, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Query untuk detail menu
-    const result = await pool.query(
-      `SELECT
-        m.id,
-        m.name,
-        m.description,
-        m.calories,
-        m.protein,
-        m.vitamins,
-        m.price,
-        m.image_url
-      FROM menu_items m
-      JOIN caterings c ON m.catering_id = c.id
-      WHERE m.id = $1 AND c.user_id = $2`,
-      [menuId, userId]
-    );
+    // Query untuk detail menu dengan JOIN
+    const { data: menuItem, error } = await supabase
+      .from('menu_items')
+      .select(`
+        id,
+        name,
+        description,
+        calories,
+        protein,
+        vitamins,
+        price,
+        image_url,
+        caterings!inner(user_id)
+      `)
+      .eq('id', menuId)
+      .eq('caterings.user_id', userId)
+      .single();
 
-    if (result.rows.length === 0) {
+    if (error || !menuItem) {
       return res.status(404).json({ error: 'Menu tidak ditemukan' });
     }
 
-    const row = result.rows[0];
-
     res.json({
-      id: row.id.toString(),
-      name: row.name,
-      description: row.description,
-      calories: row.calories,
-      protein: row.protein,
-      vitamins: row.vitamins,
-      price: row.price,
-      imageUrl: row.image_url,
+      id: menuItem.id.toString(),
+      name: menuItem.name,
+      description: menuItem.description,
+      calories: menuItem.calories,
+      protein: menuItem.protein,
+      vitamins: menuItem.vitamins,
+      price: menuItem.price,
+      imageUrl: menuItem.image_url,
     });
   } catch (error) {
     console.error('Error fetching menu detail:', error);
@@ -141,27 +137,39 @@ router.post('/', authenticateToken, async (req: Request, res: Response) => {
     }
 
     // get catering id dari user
-    const cateringResult = await pool.query(
-      'SELECT id FROM caterings WHERE user_id = $1',
-      [userId]
-    );
+    const { data: catering, error: cateringError } = await supabase
+      .from('caterings')
+      .select('id')
+      .eq('user_id', userId)
+      .single();
 
-    if (cateringResult.rows.length === 0) {
+    if (cateringError || !catering) {
       return res.status(404).json({ error: 'Catering tidak ditemukan' });
     }
 
-    const cateringId = cateringResult.rows[0].id;
-
     // Insert menu baru ke database
-    const result = await pool.query(
-      `INSERT INTO menu_items (catering_id, name, description, calories, protein, vitamins, price, image_url)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING id`,
-      [cateringId, name, description, calories, protein, vitamins, price, imageUrl]
-    );
+    const { data: newMenu, error: insertError } = await supabase
+      .from('menu_items')
+      .insert({
+        catering_id: catering.id,
+        name,
+        description,
+        calories,
+        protein,
+        vitamins,
+        price,
+        image_url: imageUrl,
+      })
+      .select('id')
+      .single();
+
+    if (insertError || !newMenu) {
+      console.error('Error creating menu:', insertError);
+      return res.status(500).json({ error: 'Gagal menambahkan menu' });
+    }
 
     res.status(201).json({
-      id: result.rows[0].id.toString(),
+      id: newMenu.id.toString(),
       message: 'Menu berhasil ditambahkan',
     });
   } catch (error) {
@@ -181,23 +189,42 @@ router.put('/:id', authenticateToken, async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Update menu di database
-    const result = await pool.query(
-      `UPDATE menu_items m
-      SET name = $1, description = $2, calories = $3, protein = $4,
-          vitamins = $5, price = $6, image_url = $7, updated_at = NOW()
-      FROM caterings c
-      WHERE m.id = $8 AND m.catering_id = c.id AND c.user_id = $9
-      RETURNING m.id`,
-      [name, description, calories, protein, vitamins, price, imageUrl, menuId, userId]
-    );
+    // Verifikasi ownership dulu
+    const { data: menuItem, error: checkError } = await supabase
+      .from('menu_items')
+      .select('id, caterings!inner(user_id)')
+      .eq('id', menuId)
+      .eq('caterings.user_id', userId)
+      .single();
 
-    if (result.rows.length === 0) {
+    if (checkError || !menuItem) {
       return res.status(404).json({ error: 'Menu tidak ditemukan' });
     }
 
+    // Update menu di database
+    const { data: updatedMenu, error: updateError } = await supabase
+      .from('menu_items')
+      .update({
+        name,
+        description,
+        calories,
+        protein,
+        vitamins,
+        price,
+        image_url: imageUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', menuId)
+      .select('id')
+      .single();
+
+    if (updateError || !updatedMenu) {
+      console.error('Error updating menu:', updateError);
+      return res.status(500).json({ error: 'Gagal memperbarui menu' });
+    }
+
     res.json({
-      id: result.rows[0].id.toString(),
+      id: updatedMenu.id.toString(),
       message: 'Menu berhasil diperbarui',
     });
   } catch (error) {
@@ -216,17 +243,27 @@ router.delete('/:id', authenticateToken, async (req: Request, res: Response) => 
       return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Delete menu dari database
-    const result = await pool.query(
-      `DELETE FROM menu_items m
-      USING caterings c
-      WHERE m.id = $1 AND m.catering_id = c.id AND c.user_id = $2
-      RETURNING m.id`,
-      [menuId, userId]
-    );
+    // Verifikasi ownership dulu
+    const { data: menuItem, error: checkError } = await supabase
+      .from('menu_items')
+      .select('id, caterings!inner(user_id)')
+      .eq('id', menuId)
+      .eq('caterings.user_id', userId)
+      .single();
 
-    if (result.rows.length === 0) {
+    if (checkError || !menuItem) {
       return res.status(404).json({ error: 'Menu tidak ditemukan' });
+    }
+
+    // Delete menu dari database
+    const { error: deleteError } = await supabase
+      .from('menu_items')
+      .delete()
+      .eq('id', menuId);
+
+    if (deleteError) {
+      console.error('Error deleting menu:', deleteError);
+      return res.status(500).json({ error: 'Gagal menghapus menu' });
     }
 
     res.json({

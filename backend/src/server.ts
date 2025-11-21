@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { pool } from './config/database.js';
+import { supabase } from './config/database.js';
 import { testBlockchainConnection } from './config/blockchain.js';
 import { setSocketIO } from './config/socket.js';
 import { startBlockchainListener } from './services/blockchainListener.js';
@@ -75,14 +75,16 @@ app.use('/api/scheduler', schedulerRoutes); // 🕐 Scheduler endpoints
 // Health check route
 app.get('/api/health', async (req, res) => {
   try {
-    // Test database
-    await pool.query('SELECT NOW()');
-    
+    // Test database using Supabase
+    const { data, error } = await supabase.from('users').select('id').limit(1);
+
+    if (error) throw error;
+
     // Test blockchain
     const blockchainOk = await testBlockchainConnection();
-    
-    res.json({ 
-      status: 'OK', 
+
+    res.json({
+      status: 'OK',
       message: 'MBG NutriChain API Running',
       services: {
         database: 'connected',
@@ -91,8 +93,8 @@ app.get('/api/health', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    res.status(500).json({ 
-      status: 'ERROR', 
+    res.status(500).json({
+      status: 'ERROR',
       message: 'Service health check failed',
       error: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -102,13 +104,18 @@ app.get('/api/health', async (req, res) => {
 // Database test route
 app.get('/api/db-test', async (req, res) => {
   try {
-    const result = await pool.query('SELECT COUNT(*) as count FROM users');
-    res.json({ 
+    const { data, error, count } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) throw error;
+
+    res.json({
       message: 'Database connected',
-      users_count: result.rows[0].count 
+      users_count: count || 0
     });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Database query failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     });

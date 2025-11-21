@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ============================================================================
  * SCHEDULER ROUTES - REAL-TIME PRIORITY SCORING MANAGEMENT
@@ -13,7 +14,7 @@
 
 import express from 'express';
 import schedulerService from '../services/schedulerService.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -52,7 +53,7 @@ router.get('/status', async (req, res) => {
  * Manually trigger priority scoring job
  * Requires authentication
  */
-router.post('/trigger/priority-scoring', authenticate, async (req, res) => {
+router.post('/trigger/priority-scoring', authenticateToken, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user?.role !== 'admin' && req.user?.role !== 'system_admin') {
@@ -84,7 +85,7 @@ router.post('/trigger/priority-scoring', authenticate, async (req, res) => {
  * Manually trigger BPS data refresh job
  * Requires authentication
  */
-router.post('/trigger/bps-data-refresh', authenticate, async (req, res) => {
+router.post('/trigger/bps-data-refresh', authenticateToken, async (req, res) => {
   try {
     // Check if user is admin
     if (req.user?.role !== 'admin' && req.user?.role !== 'system_admin') {

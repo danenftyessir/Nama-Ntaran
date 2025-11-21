@@ -1,77 +1,91 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../components/layout/Navbar';
 import GlassPanel from '../components/ui/GlassPanel';
-import { Search, School, MapPin, Users, TrendingUp, Award } from 'lucide-react';
+import { Search, School, MapPin, Users, TrendingUp, Award, Loader2 } from 'lucide-react';
+import api from '@/lib/api';
+
+interface School {
+  id: number;
+  name: string;
+  npsn: string;
+  city: string;
+  province: string;
+  student_count: number;
+  priority_score: number;
+  status: string;
+}
+
+interface Stats {
+  totalSchools: number;
+  totalStudents: number;
+  totalPortionsToday: number;
+  activeSchools: number;
+}
 
 export default function SekolahPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [schools, setSchools] = useState<School[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalSchools: 0,
+    totalStudents: 0,
+    totalPortionsToday: 0,
+    activeSchools: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Mock data
-  const schools = [
-    {
-      id: 1,
-      name: 'SDN 01 Bandung Wetan',
-      npsn: '20219123',
-      location: 'Bandung, Jawa Barat',
-      students: 450,
-      priority: 'Tinggi',
-      priorityColor: 'red',
-      portions: 450,
-      status: 'Aktif',
-    },
-    {
-      id: 2,
-      name: 'SDN 05 Menteng',
-      npsn: '20100234',
-      location: 'Jakarta Pusat, DKI Jakarta',
-      students: 380,
-      priority: 'Sedang',
-      priorityColor: 'yellow',
-      portions: 380,
-      status: 'Aktif',
-    },
-    {
-      id: 3,
-      name: 'SDN 08 Gubeng',
-      npsn: '20315678',
-      location: 'Surabaya, Jawa Timur',
-      students: 520,
-      priority: 'Tinggi',
-      priorityColor: 'red',
-      portions: 520,
-      status: 'Aktif',
-    },
-    {
-      id: 4,
-      name: 'SDN 12 Medan Area',
-      npsn: '10210987',
-      location: 'Medan, Sumatera Utara',
-      students: 340,
-      priority: 'Sedang',
-      priorityColor: 'yellow',
-      portions: 340,
-      status: 'Aktif',
-    },
-    {
-      id: 5,
-      name: 'SDN 03 Makassar',
-      npsn: '40123456',
-      location: 'Makassar, Sulawesi Selatan',
-      students: 290,
-      priority: 'Rendah',
-      priorityColor: 'green',
-      portions: 290,
-      status: 'Aktif',
-    },
-  ];
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const [schoolsResponse, statsResponse] = await Promise.all([
+        api.get('/api/schools'),
+        api.get('/api/schools/stats'),
+      ]);
+
+      setSchools(schoolsResponse.schools || []);
+      setStats(statsResponse.stats || {
+        totalSchools: 0,
+        totalStudents: 0,
+        totalPortionsToday: 0,
+        activeSchools: 0,
+      });
+    } catch (err: any) {
+      console.error('Error fetching schools data:', err);
+      setError(err.response?.data?.error || 'Gagal memuat data sekolah');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getPriorityLabel = (score: number) => {
+    if (score >= 70) return { label: 'Tinggi', color: 'red' };
+    if (score >= 40) return { label: 'Sedang', color: 'yellow' };
+    return { label: 'Rendah', color: 'green' };
+  };
 
   const filteredSchools = schools.filter(school =>
     school.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     school.npsn.includes(searchQuery) ||
-    school.location.toLowerCase().includes(searchQuery.toLowerCase())
+    school.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    school.province.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 blockchain-mesh flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-white">Memuat data sekolah...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 blockchain-mesh">
@@ -110,6 +124,19 @@ export default function SekolahPage() {
           </div>
         </GlassPanel>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+            <p className="text-red-600 font-semibold">{error}</p>
+            <button
+              onClick={fetchData}
+              className="mt-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        )}
+
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <GlassPanel hover>
@@ -119,7 +146,7 @@ export default function SekolahPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Sekolah</p>
-                <p className="text-2xl font-bold text-gray-900">1,234</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalSchools.toLocaleString('id-ID')}</p>
               </div>
             </div>
           </GlassPanel>
@@ -131,7 +158,7 @@ export default function SekolahPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Siswa</p>
-                <p className="text-2xl font-bold text-gray-900">456,789</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalStudents.toLocaleString('id-ID')}</p>
               </div>
             </div>
           </GlassPanel>
@@ -143,7 +170,7 @@ export default function SekolahPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Porsi Hari Ini</p>
-                <p className="text-2xl font-bold text-gray-900">12,340</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.totalPortionsToday.toLocaleString('id-ID')}</p>
               </div>
             </div>
           </GlassPanel>
@@ -155,7 +182,7 @@ export default function SekolahPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Sekolah Aktif</p>
-                <p className="text-2xl font-bold text-gray-900">1,180</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.activeSchools.toLocaleString('id-ID')}</p>
               </div>
             </div>
           </GlassPanel>
@@ -168,58 +195,61 @@ export default function SekolahPage() {
           </h2>
 
           <div className="space-y-4">
-            {filteredSchools.map((school) => (
-              <div
-                key={school.id}
-                className="glass-subtle rounded-xl p-6 hover:shadow-modern transition-smooth cursor-pointer"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {school.name}
-                      </h3>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          school.priorityColor === 'red'
-                            ? 'bg-red-100 text-red-700'
-                            : school.priorityColor === 'yellow'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-green-100 text-green-700'
-                        }`}
-                      >
-                        Prioritas {school.priority}
-                      </span>
+            {filteredSchools.map((school) => {
+              const priority = getPriorityLabel(school.priority_score);
+              return (
+                <div
+                  key={school.id}
+                  className="glass-subtle rounded-xl p-6 hover:shadow-modern transition-smooth cursor-pointer"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {school.name}
+                        </h3>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            priority.color === 'red'
+                              ? 'bg-red-100 text-red-700'
+                              : priority.color === 'yellow'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : 'bg-green-100 text-green-700'
+                          }`}
+                        >
+                          Prioritas {priority.label}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <School className="w-4 h-4" />
+                          <span className="text-sm">NPSN: {school.npsn}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          <span className="text-sm">{school.city}, {school.province}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <Users className="w-4 h-4" />
+                          <span className="text-sm">{school.student_count} Siswa</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <TrendingUp className="w-4 h-4" />
+                          <span className="text-sm">{school.student_count} Porsi/hari</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <School className="w-4 h-4" />
-                        <span className="text-sm">NPSN: {school.npsn}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span className="text-sm">{school.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Users className="w-4 h-4" />
-                        <span className="text-sm">{school.students} Siswa</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <TrendingUp className="w-4 h-4" />
-                        <span className="text-sm">{school.portions} Porsi/hari</span>
-                      </div>
+                    <div className="ml-4">
+                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm">
+                        Lihat Detail
+                      </button>
                     </div>
-                  </div>
-
-                  <div className="ml-4">
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm">
-                      Lihat Detail
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {filteredSchools.length === 0 && (

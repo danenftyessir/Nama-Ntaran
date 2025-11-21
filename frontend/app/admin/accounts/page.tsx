@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   Search,
@@ -9,79 +9,46 @@ import {
   Upload,
   ChevronRight,
   MoreHorizontal,
+  Loader2,
 } from 'lucide-react';
+import api from '@/lib/api';
 
-// TODO: Implementasi fitur import akun dari file CSV atau Excel
-// TODO: Implementasi fitur export data akun ke berbagai format
-// TODO: Tambahkan modal untuk tambah/edit akun dengan validasi form
-// TODO: Integrasi dengan backend API untuk CRUD operations
-// TODO: Tambahkan fitur bulk actions (hapus multiple, update status multiple)
+interface Account {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  registrationDate: string;
+  walletAddress: string;
+}
 
 export default function AccountsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [allAccounts, setAllAccounts] = useState<Account[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const itemsPerPage = 6;
   const shouldReduceMotion = useReducedMotion();
 
-  // data akun mock
-  const allAccounts = [
-    {
-      id: 1,
-      name: 'SDN Banyu Biru 1',
-      email: 'sdn.banyubiru1@example.com',
-      role: 'Sekolah',
-      status: 'Aktif',
-      registrationDate: '2023-01-15',
-      walletAddress: '0xabc12def456gh789i',
-    },
-    {
-      id: 2,
-      name: 'PT Cahaya Kuliner',
-      email: 'info@cahayakuliner.co.id',
-      role: 'Katering',
-      status: 'Aktif',
-      registrationDate: '2022-11-20',
-      walletAddress: '0x123abc456def789gh',
-    },
-    {
-      id: 3,
-      name: 'Budi Santoso',
-      email: 'budi.santoso@nutritrack.com',
-      role: 'Administrator',
-      status: 'Aktif',
-      registrationDate: '2023-03-10',
-      walletAddress: '0xdef456ghi789jki012',
-    },
-    {
-      id: 4,
-      name: 'SMPN Harapan Bangsa',
-      email: 'smp.harapanbangsa@example.com',
-      role: 'Sekolah',
-      status: 'Tertunda',
-      registrationDate: '2023-05-01',
-      walletAddress: '0x456def789ghi012jkl',
-    },
-    {
-      id: 5,
-      name: 'Warung Sehat Bu Ani',
-      email: 'bu.ani@warungsehat.com',
-      role: 'Katering',
-      status: 'Nonaktif',
-      registrationDate: '2023-02-28',
-      walletAddress: '0x789ghi012jkl345mno',
-    },
-    {
-      id: 6,
-      name: 'Dewi Lestari',
-      email: 'dewi.lestari@nutritrack.com',
-      role: 'Administrator',
-      status: 'Aktif',
-      registrationDate: '2023-07-01',
-      walletAddress: '0x012jkl345mno678pqr',
-    },
-  ];
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
+
+  const fetchAccounts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get('/api/users');
+      setAllAccounts(response.users || []);
+    } catch (error: any) {
+      console.error('Error fetching accounts:', error);
+      alert(error.response?.data?.error || 'Gagal memuat data akun');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // filter akun
   const filteredAccounts = allAccounts.filter((account) => {
@@ -125,32 +92,43 @@ export default function AccountsPage() {
   };
 
   const handleAddAccount = () => {
-    // TODO: Implementasi modal tambah akun
-    console.log('Tambah akun baru');
+    alert('Fitur tambah akun akan segera tersedia');
   };
 
   const handleImportAccount = () => {
-    // TODO: Implementasi import akun dari file
-    console.log('Impor akun');
+    alert('Fitur import akun akan segera tersedia');
   };
 
   const handleExportAccount = () => {
-    // TODO: Implementasi export akun ke file
-    console.log('Ekspor akun');
+    alert('Fitur export akun akan segera tersedia');
   };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'Aktif':
+      case 'active':
         return 'bg-purple-100 text-purple-700';
       case 'Tertunda':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-700';
       case 'Nonaktif':
+      case 'inactive':
         return 'bg-red-100 text-red-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Memuat data akun...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -292,7 +270,9 @@ export default function AccountsPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className="text-gray-600 text-sm">{account.registrationDate}</span>
+                      <span className="text-gray-600 text-sm">
+                        {new Date(account.registrationDate).toLocaleDateString('id-ID')}
+                      </span>
                     </td>
                     <td className="p-4">
                       <span className="text-gray-600 text-sm font-mono">{account.walletAddress}</span>

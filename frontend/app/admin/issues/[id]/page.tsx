@@ -17,66 +17,66 @@ import {
   AlertTriangle,
   Eye,
   Package,
+  Loader2,
 } from 'lucide-react';
+import api from '@/lib/api';
 
-// TODO: Integrasi dengan backend API untuk fetch detail issue berdasarkan ID
-// TODO: Implementasi upload foto bukti tambahan dari admin
-// TODO: Tambahkan fitur comment thread untuk komunikasi dengan reporter
-// TODO: Implementasi notifikasi real-time untuk update status issue
-// TODO: Tambahkan history log untuk semua perubahan status dan action
-// TODO: Integrasi dengan escrow system untuk automated refund/compensation
+interface IssueDetail {
+  id: number;
+  school_name: string;
+  school_id: number;
+  catering_name: string;
+  catering_id: number;
+  delivery_id: number;
+  issue_type: string;
+  description: string;
+  status: string;
+  severity: string;
+  reported_at: string;
+  reporter_name: string;
+  reporter_contact: string;
+  expected_quantity?: number;
+  received_quantity?: number;
+  delivery_date: string;
+  delivery_time: string;
+  location: string;
+  evidence_photos: string[];
+  timeline: {
+    timestamp: string;
+    action: string;
+    actor: string;
+    description: string;
+  }[];
+}
 
 export default function IssueDetailPage() {
   const router = useRouter();
   const params = useParams();
   const issueId = params.id as string;
-  const [issue, setIssue] = useState<any>(null);
+  const [issue, setIssue] = useState<IssueDetail | null>(null);
   const [resolution, setResolution] = useState('');
   const [actionNotes, setActionNotes] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    // data mock - replace dengan actual API call
-    setIssue({
-      id: parseInt(issueId),
-      school_name: 'SDN 01 Bandung',
-      school_id: 1,
-      catering_name: 'Katering Sehat Mandiri',
-      catering_id: 1,
-      delivery_id: 36,
-      issue_type: 'Kuantitas',
-      description: 'Jumlah porsi makanan yang diterima kurang 20 dari yang seharusnya (dijanjikan 250 porsi, diterima 230 porsi)',
-      status: 'Pending',
-      severity: 'Medium',
-      reported_at: '2025-11-14T10:30:00',
-      reporter_name: 'Kepala Sekolah SDN 01',
-      reporter_contact: 'kepala@sdn01bandung.sch.id',
-      expected_quantity: 250,
-      received_quantity: 230,
-      delivery_date: '2025-11-14',
-      delivery_time: '10:00',
-      location: 'Jl. Merdeka No. 123, Bandung',
-      evidence_photos: [
-        '/uploads/evidence/photo1.jpg',
-        '/uploads/evidence/photo2.jpg',
-        '/uploads/evidence/photo3.jpg',
-      ],
-      timeline: [
-        {
-          timestamp: '2025-11-14T10:30:00',
-          action: 'Issue Dilaporkan',
-          actor: 'Kepala Sekolah SDN 01',
-          description: 'Laporan masalah kekurangan porsi dibuat',
-        },
-        {
-          timestamp: '2025-11-14T10:35:00',
-          action: 'Notifikasi Terkirim',
-          actor: 'System',
-          description: 'Email notifikasi dikirim ke katering dan admin',
-        },
-      ],
-    });
+    fetchIssueDetail();
   }, [issueId]);
+
+  const fetchIssueDetail = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get(`/api/issues/${issueId}`);
+      setIssue(response.issue);
+    } catch (error: any) {
+      console.error('Error fetching issue detail:', error);
+      alert(error.response?.data?.error || 'Gagal memuat detail issue');
+      router.push('/admin/issues');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // animation variants
   const containerVariants = {
@@ -102,26 +102,49 @@ export default function IssueDetailPage() {
     },
   };
 
-  const handleResolve = () => {
+  const handleResolve = async () => {
     if (!resolution || !actionNotes) {
       alert('Mohon lengkapi semua field');
       return;
     }
-    // TODO: Implementasi API call untuk resolve issue
-    console.log('Resolving issue...', { issueId, resolution, actionNotes });
-    alert('Issue berhasil diselesaikan!');
-    router.push('/admin/issues');
+
+    setIsSubmitting(true);
+    try {
+      await api.post(`/api/issues/${issueId}/resolve`, {
+        resolution,
+        actionNotes,
+      });
+
+      alert('Issue berhasil diselesaikan!');
+      router.push('/admin/issues');
+    } catch (error: any) {
+      console.error('Error resolving issue:', error);
+      alert(error.response?.data?.error || 'Gagal menyelesaikan issue');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleReject = () => {
+  const handleReject = async () => {
     if (!actionNotes) {
       alert('Mohon berikan alasan penolakan');
       return;
     }
-    // TODO: Implementasi API call untuk reject issue
-    console.log('Rejecting issue...', { issueId, actionNotes });
-    alert('Issue ditolak');
-    router.push('/admin/issues');
+
+    setIsSubmitting(true);
+    try {
+      await api.post(`/api/issues/${issueId}/reject`, {
+        actionNotes,
+      });
+
+      alert('Issue ditolak');
+      router.push('/admin/issues');
+    } catch (error: any) {
+      console.error('Error rejecting issue:', error);
+      alert(error.response?.data?.error || 'Gagal menolak issue');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getStatusBadgeClass = (status: string) => {
@@ -167,11 +190,11 @@ export default function IssueDetailPage() {
     }
   };
 
-  if (!issue) {
+  if (isLoading || !issue) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Memuat Detail Issue...</p>
         </div>
       </div>
@@ -467,14 +490,19 @@ export default function IssueDetailPage() {
             <div className="flex gap-4">
               <button
                 onClick={handleResolve}
-                disabled={!resolution || !actionNotes}
+                disabled={!resolution || !actionNotes || isSubmitting}
                 className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-smooth flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                <CheckCircle className="w-5 h-5" />
+                {isSubmitting ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-5 h-5" />
+                )}
                 Selesaikan Issue
               </button>
               <button
                 onClick={handleReject}
+                disabled={isSubmitting}
                 className="px-6 py-3 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-semibold transition-smooth flex items-center gap-2 text-sm"
               >
                 <XCircle className="w-5 h-5" />

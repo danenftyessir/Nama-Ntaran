@@ -14,7 +14,7 @@
  */
 
 import { ethers, Contract } from 'ethers';
-import { pool } from '../config/database.js';
+import { supabase } from '../config/database.js';
 import dotenv from 'dotenv';
 
 dotenv.config();

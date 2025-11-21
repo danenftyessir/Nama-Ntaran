@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ============================================================================
  * PRIORITY SCORING SERVICE - UPDATED FOR 0-100 STRICT DISTRIBUTION

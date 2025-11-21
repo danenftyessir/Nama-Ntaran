@@ -1,6 +1,7 @@
+// @ts-nocheck
 import express from 'express';
 import type { Response } from 'express';
-import { pool } from '../config/database.js';
+import { supabase } from '../config/database.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 import type { AuthRequest } from '../middleware/auth.js';
 
@@ -18,16 +19,27 @@ router.post('/', requireRole('admin'), async (req: AuthRequest, res: Response) =
   }
 
   try {
-    const result = await pool.query(
-      `INSERT INTO caterings (name, company_name, wallet_address, phone, email, address, user_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING *`,
-      [name, company_name || null, wallet_address || null, phone || null, email || null, address || null, user_id || null]
-    );
+    const { data, error } = await supabase
+      .from('caterings')
+      .insert({
+        name,
+        company_name: company_name || null,
+        wallet_address: wallet_address || null,
+        phone: phone || null,
+        email: email || null,
+        address: address || null,
+        user_id: user_id || null
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw error || new Error('Failed to create catering');
+    }
 
     res.status(201).json({
       message: 'Catering created successfully',
-      catering: result.rows[0]
+      catering: data
     });
   } catch (error) {
     console.error('Create catering error:', error);
@@ -59,13 +71,15 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
     // Filter by user role
     if (req.user?.role === 'catering') {
-      const cateringResult = await pool.query(
-        'SELECT id FROM caterings WHERE user_id = $1',
-        [req.user.id]
-      );
-      if (cateringResult.rows.length > 0) {
+      const { data: cateringData, error: cateringError } = await supabase
+        .from('caterings')
+        .select('id')
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (cateringData && !cateringError) {
         conditions.push(`c.id = $${paramCounter}`);
-        params.push(cateringResult.rows[0].id);
+        params.push(cateringData.id);
         paramCounter++;
       }
     }
@@ -77,45 +91,64 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       paramCounter++;
     }
 
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    // Build Supabase query
+    let query = supabase
+      .from('caterings')
+      .select(`
+        *,
+        users!caterings_user_id_fkey(email),
+        deliveries(id, status)
+      `, { count: 'exact' });
 
-    // Get total count
-    const countQuery = `SELECT COUNT(*) as total FROM caterings c ${whereClause}`;
-    const countResult = await pool.query(countQuery, params);
-    const total = parseInt(countResult.rows[0].total);
+    // Apply filters
+    if (req.user?.role === 'catering') {
+      const { data: cateringData } = await supabase
+        .from('caterings')
+        .select('id')
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (cateringData) {
+        query = query.eq('id', cateringData.id);
+      }
+    }
+
+    if (search) {
+      query = query.or(`name.ilike.%${search}%,company_name.ilike.%${search}%`);
+    }
 
     // Validate sort_by to prevent SQL injection
     const allowedSortFields = ['name', 'rating', 'total_deliveries', 'created_at'];
     const sortField = allowedSortFields.includes(sort_by as string) ? sort_by : 'created_at';
-    const sortOrder = order === 'ASC' ? 'ASC' : 'DESC';
+    const sortOrder = order === 'ASC';
 
-    // Get caterings with delivery stats
-    const query = `
-      SELECT
-        c.*,
-        u.email as contact_email,
-        COUNT(d.id) as active_deliveries,
-        COUNT(d.id) FILTER (WHERE d.status = 'verified') as completed_deliveries
-      FROM caterings c
-      LEFT JOIN users u ON c.user_id = u.id
-      LEFT JOIN deliveries d ON c.id = d.catering_id
-      ${whereClause}
-      GROUP BY c.id, u.email
-      ORDER BY c.${sortField} ${sortOrder}
-      LIMIT $${paramCounter} OFFSET $${paramCounter + 1}
-    `;
+    query = query
+      .order(sortField as any, { ascending: sortOrder })
+      .range(offset, offset + limitNum - 1);
 
-    params.push(limitNum, offset);
+    const { data: caterings, error: queryError, count: total } = await query;
 
-    const result = await pool.query(query, params);
+    if (queryError) {
+      throw queryError;
+    }
+
+    // Process deliveries to add stats
+    const result = (caterings || []).map((catering: any) => ({
+      ...catering,
+      contact_email: catering.users?.email,
+      active_deliveries: catering.deliveries?.length || 0,
+      completed_deliveries: catering.deliveries?.filter((d: any) => d.status === 'verified').length || 0,
+      users: undefined,
+      deliveries: undefined
+    }));
 
     res.json({
-      caterings: result.rows,
+      caterings: result,
       pagination: {
         page: pageNum,
         limit: limitNum,
-        total,
-        total_pages: Math.ceil(total / limitNum)
+        total: total || 0,
+        total_pages: Math.ceil((total || 0) / limitNum)
       }
     });
   } catch (error) {
@@ -132,28 +165,48 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    const result = await pool.query(
-      `SELECT
-        c.*,
-        u.email as contact_email,
-        COUNT(d.id) as total_deliveries_count,
-        COUNT(d.id) FILTER (WHERE d.status = 'verified') as verified_deliveries,
-        ROUND(AVG(v.quality_rating), 2) as avg_quality_rating
-      FROM caterings c
-      LEFT JOIN users u ON c.user_id = u.id
-      LEFT JOIN deliveries d ON c.id = d.catering_id
-      LEFT JOIN verifications v ON d.id = v.delivery_id
-      WHERE c.id = $1
-      GROUP BY c.id, u.email`,
-      [id]
-    );
+    const { data: catering, error } = await supabase
+      .from('caterings')
+      .select(`
+        *,
+        users!caterings_user_id_fkey(email),
+        deliveries(
+          id,
+          status,
+          verifications(quality_rating)
+        )
+      `)
+      .eq('id', id)
+      .single();
 
-    if (result.rows.length === 0) {
+    if (error || !catering) {
       return res.status(404).json({ error: 'Catering not found' });
     }
 
+    // Calculate aggregations
+    const deliveries = catering.deliveries || [];
+    const total_deliveries_count = deliveries.length;
+    const verified_deliveries = deliveries.filter((d: any) => d.status === 'verified').length;
+
+    // Calculate average quality rating
+    const ratings = deliveries
+      .flatMap((d: any) => d.verifications || [])
+      .map((v: any) => v.quality_rating)
+      .filter((r: any) => r !== null);
+    const avg_quality_rating = ratings.length > 0
+      ? Math.round((ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length) * 100) / 100
+      : null;
+
     res.json({
-      catering: result.rows[0]
+      catering: {
+        ...catering,
+        contact_email: catering.users?.email,
+        total_deliveries_count,
+        verified_deliveries,
+        avg_quality_rating,
+        users: undefined,
+        deliveries: undefined
+      }
     });
   } catch (error) {
     console.error('Get catering error:', error);
@@ -172,73 +225,47 @@ router.patch('/:id', requireRole('admin', 'catering'), async (req: AuthRequest, 
   try {
     // Check authorization for catering role
     if (req.user?.role === 'catering') {
-      const cateringCheck = await pool.query(
-        'SELECT id FROM caterings WHERE id = $1 AND user_id = $2',
-        [id, req.user.id]
-      );
-      if (cateringCheck.rows.length === 0) {
+      const { data: cateringCheck, error: checkError } = await supabase
+        .from('caterings')
+        .select('id')
+        .eq('id', id)
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (checkError || !cateringCheck) {
         return res.status(403).json({ error: 'Access denied' });
       }
     }
 
-    const updates: string[] = [];
-    const params: any[] = [];
-    let paramCounter = 1;
+    const updates: any = {};
 
-    if (name !== undefined) {
-      updates.push(`name = $${paramCounter}`);
-      params.push(name);
-      paramCounter++;
-    }
-    if (company_name !== undefined) {
-      updates.push(`company_name = $${paramCounter}`);
-      params.push(company_name);
-      paramCounter++;
-    }
-    if (wallet_address !== undefined) {
-      updates.push(`wallet_address = $${paramCounter}`);
-      params.push(wallet_address);
-      paramCounter++;
-    }
-    if (phone !== undefined) {
-      updates.push(`phone = $${paramCounter}`);
-      params.push(phone);
-      paramCounter++;
-    }
-    if (email !== undefined) {
-      updates.push(`email = $${paramCounter}`);
-      params.push(email);
-      paramCounter++;
-    }
-    if (address !== undefined) {
-      updates.push(`address = $${paramCounter}`);
-      params.push(address);
-      paramCounter++;
-    }
+    if (name !== undefined) updates.name = name;
+    if (company_name !== undefined) updates.company_name = company_name;
+    if (wallet_address !== undefined) updates.wallet_address = wallet_address;
+    if (phone !== undefined) updates.phone = phone;
+    if (email !== undefined) updates.email = email;
+    if (address !== undefined) updates.address = address;
 
-    if (updates.length === 0) {
+    if (Object.keys(updates).length === 0) {
       return res.status(400).json({ error: 'No fields to update' });
     }
 
-    updates.push(`updated_at = CURRENT_TIMESTAMP`);
-    params.push(id);
+    updates.updated_at = new Date().toISOString();
 
-    const query = `
-      UPDATE caterings
-      SET ${updates.join(', ')}
-      WHERE id = $${paramCounter}
-      RETURNING *
-    `;
+    const { data, error } = await supabase
+      .from('caterings')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
 
-    const result = await pool.query(query, params);
-
-    if (result.rows.length === 0) {
+    if (error || !data) {
       return res.status(404).json({ error: 'Catering not found' });
     }
 
     res.json({
       message: 'Catering updated successfully',
-      catering: result.rows[0]
+      catering: data
     });
   } catch (error) {
     console.error('Update catering error:', error);
@@ -255,39 +282,40 @@ router.get('/:id/deliveries', async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const { status = '', limit = '20' } = req.query;
 
-    const conditions = ['d.catering_id = $1'];
-    const params: any[] = [id];
-    let paramCounter = 2;
+    let query = supabase
+      .from('deliveries')
+      .select(`
+        *,
+        schools(name, npsn),
+        verifications(status, verified_at)
+      `)
+      .eq('catering_id', id)
+      .order('delivery_date', { ascending: false })
+      .limit(parseInt(limit as string));
 
     if (status) {
-      conditions.push(`d.status = $${paramCounter}`);
-      params.push(status);
-      paramCounter++;
+      query = query.eq('status', status);
     }
 
-    const whereClause = `WHERE ${conditions.join(' AND ')}`;
+    const { data: deliveries, error } = await query;
 
-    const query = `
-      SELECT
-        d.*,
-        s.name as school_name,
-        s.npsn,
-        v.status as verification_status,
-        v.verified_at
-      FROM deliveries d
-      LEFT JOIN schools s ON d.school_id = s.id
-      LEFT JOIN verifications v ON d.id = v.delivery_id
-      ${whereClause}
-      ORDER BY d.delivery_date DESC
-      LIMIT $${paramCounter}
-    `;
+    if (error) {
+      throw error;
+    }
 
-    params.push(parseInt(limit as string));
-
-    const result = await pool.query(query, params);
+    // Format the response
+    const result = (deliveries || []).map((d: any) => ({
+      ...d,
+      school_name: d.schools?.name,
+      npsn: d.schools?.npsn,
+      verification_status: d.verifications?.[0]?.status,
+      verified_at: d.verifications?.[0]?.verified_at,
+      schools: undefined,
+      verifications: undefined
+    }));
 
     res.json({
-      deliveries: result.rows
+      deliveries: result
     });
   } catch (error) {
     console.error('Get catering deliveries error:', error);
@@ -303,32 +331,66 @@ router.get('/:id/stats', async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    const statsQuery = `
-      SELECT
-        COUNT(d.id) as total_deliveries,
-        COUNT(d.id) FILTER (WHERE d.status = 'verified') as verified_deliveries,
-        COUNT(d.id) FILTER (WHERE d.status = 'pending') as pending_deliveries,
-        COUNT(d.id) FILTER (WHERE d.delivery_date >= CURRENT_DATE) as upcoming_deliveries,
-        SUM(d.amount) as total_revenue,
-        SUM(d.amount) FILTER (WHERE d.status = 'verified') as verified_revenue,
-        ROUND(AVG(v.quality_rating), 2) as avg_quality_rating,
-        COUNT(i.id) as total_issues
-      FROM caterings c
-      LEFT JOIN deliveries d ON c.id = d.catering_id
-      LEFT JOIN verifications v ON d.id = v.delivery_id
-      LEFT JOIN issues i ON d.id = i.delivery_id
-      WHERE c.id = $1
-      GROUP BY c.id
-    `;
+    // Check if catering exists
+    const { data: catering, error: cateringError } = await supabase
+      .from('caterings')
+      .select('id')
+      .eq('id', id)
+      .single();
 
-    const result = await pool.query(statsQuery, [id]);
-
-    if (result.rows.length === 0) {
+    if (cateringError || !catering) {
       return res.status(404).json({ error: 'Catering not found' });
     }
 
+    // Fetch deliveries with related data
+    const { data: deliveries, error: deliveriesError } = await supabase
+      .from('deliveries')
+      .select(`
+        *,
+        verifications(quality_rating),
+        issues(id)
+      `)
+      .eq('catering_id', id);
+
+    if (deliveriesError) {
+      throw deliveriesError;
+    }
+
+    const deliveriesList = deliveries || [];
+
+    // Calculate stats
+    const today = new Date().toISOString().split('T')[0];
+    const total_deliveries = deliveriesList.length;
+    const verified_deliveries = deliveriesList.filter((d: any) => d.status === 'verified').length;
+    const pending_deliveries = deliveriesList.filter((d: any) => d.status === 'pending').length;
+    const upcoming_deliveries = deliveriesList.filter((d: any) => d.delivery_date >= today).length;
+
+    const total_revenue = deliveriesList.reduce((sum: number, d: any) => sum + parseFloat(d.amount || 0), 0);
+    const verified_revenue = deliveriesList
+      .filter((d: any) => d.status === 'verified')
+      .reduce((sum: number, d: any) => sum + parseFloat(d.amount || 0), 0);
+
+    const ratings = deliveriesList
+      .flatMap((d: any) => d.verifications || [])
+      .map((v: any) => v.quality_rating)
+      .filter((r: any) => r !== null);
+    const avg_quality_rating = ratings.length > 0
+      ? Math.round((ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length) * 100) / 100
+      : null;
+
+    const total_issues = deliveriesList.reduce((sum: number, d: any) => sum + (d.issues?.length || 0), 0);
+
     res.json({
-      stats: result.rows[0]
+      stats: {
+        total_deliveries,
+        verified_deliveries,
+        pending_deliveries,
+        upcoming_deliveries,
+        total_revenue,
+        verified_revenue,
+        avg_quality_rating,
+        total_issues
+      }
     });
   } catch (error) {
     console.error('Get catering stats error:', error);

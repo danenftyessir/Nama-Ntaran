@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   Lock,
@@ -14,94 +14,86 @@ import {
   ChevronRight,
   MoreHorizontal,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
+import api from '@/lib/api';
 
-// TODO: Implementasi smart contract integration untuk lock/release funds
-// TODO: Tambahkan modal konfirmasi untuk release funds dengan signature
-// TODO: Integrasi dengan blockchain explorer (Etherscan, BSCScan, dll)
-// TODO: Implementasi real-time status update menggunakan WebSocket
-// TODO: Tambahkan history log untuk setiap transaksi escrow
-// TODO: Implementasi multi-signature approval untuk release funds
-// TODO: Tambahkan notifikasi email/push ketika status escrow berubah
+interface Escrow {
+  id: number;
+  school: string;
+  catering: string;
+  amount: number;
+  status: string;
+  lockedAt: string;
+  releaseDate: string;
+  releasedAt?: string;
+  txHash: string;
+}
+
+interface Stats {
+  totalTerkunci: number;
+  totalTercair: number;
+  pendingRelease: number;
+}
 
 export default function EscrowPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [allEscrows, setAllEscrows] = useState<Escrow[]>([]);
+  const [stats, setStats] = useState<Stats>({
+    totalTerkunci: 0,
+    totalTercair: 0,
+    pendingRelease: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [isReleasing, setIsReleasing] = useState<number | null>(null);
   const itemsPerPage = 6;
   const shouldReduceMotion = useReducedMotion();
 
-  // data escrow mock
-  const allEscrows = [
-    {
-      id: 1,
-      school: 'SDN 01 Bandung',
-      catering: 'Katering Sehat Mandiri',
-      amount: 15000000,
-      status: 'Terkunci',
-      lockedAt: '2025-11-10',
-      releaseDate: '2025-11-15',
-      txHash: '0x7f9fade234b567c89012d3456e78f9a01234b567c890a3b2',
-    },
-    {
-      id: 2,
-      school: 'SMP 12 Surabaya',
-      catering: 'Katering Nutrisi Prima',
-      amount: 18000000,
-      status: 'Menunggu Rilis',
-      lockedAt: '2025-11-12',
-      releaseDate: '2025-11-16',
-      txHash: '0x8a1bcde345c678d90123e4567f89a12345c678d901b4c3',
-    },
-    {
-      id: 3,
-      school: 'SDN 05 Jakarta',
-      catering: 'Katering Sehat Sejahtera',
-      amount: 12500000,
-      status: 'Tercairkan',
-      lockedAt: '2025-11-08',
-      releaseDate: '2025-11-12',
-      releasedAt: '2025-11-12',
-      txHash: '0x9b2cdef456d789e01234f5678a90b23456d789e012c5d4',
-    },
-    {
-      id: 4,
-      school: 'SMPN Harapan Bangsa',
-      catering: 'Katering Nutrisi Prima',
-      amount: 20000000,
-      status: 'Terkunci',
-      lockedAt: '2025-11-14',
-      releaseDate: '2025-11-18',
-      txHash: '0xa3c4def567e890f12345g6789b01c34567e890f123d6e5',
-    },
-    {
-      id: 5,
-      school: 'SDN Banyu Biru 1',
-      catering: 'Warung Sehat Bu Ani',
-      amount: 13500000,
-      status: 'Tertunda',
-      lockedAt: '2025-11-13',
-      releaseDate: '2025-11-17',
-      txHash: '0xb4d5efg678f901g23456h7890c12d45678f901g234e7f6',
-    },
-    {
-      id: 6,
-      school: 'SMP 08 Yogyakarta',
-      catering: 'Katering Sehat Mandiri',
-      amount: 16500000,
-      status: 'Tercairkan',
-      lockedAt: '2025-11-09',
-      releaseDate: '2025-11-13',
-      releasedAt: '2025-11-13',
-      txHash: '0xc5e6fgh789g012h34567i8901d23e56789g012h345f8g7',
-    },
-  ];
+  useEffect(() => {
+    fetchEscrowData();
+  }, []);
 
-  // statistik
-  const stats = {
-    totalTerkunci: 125000000,
-    totalTercair: 95000000,
-    pendingRelease: 30000000,
+  const fetchEscrowData = async () => {
+    setIsLoading(true);
+    try {
+      const [escrowsResponse, statsResponse] = await Promise.all([
+        api.get('/api/escrow'),
+        api.get('/api/escrow/stats'),
+      ]);
+
+      setAllEscrows(escrowsResponse.escrows || []);
+      setStats(statsResponse.stats || {
+        totalTerkunci: 0,
+        totalTercair: 0,
+        pendingRelease: 0,
+      });
+    } catch (error: any) {
+      console.error('Error fetching escrow data:', error);
+      alert(error.response?.data?.error || 'Gagal memuat data escrow');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReleaseFunds = async (id: number) => {
+    if (!confirm('Apakah Anda yakin ingin merelease dana escrow ini?')) {
+      return;
+    }
+
+    setIsReleasing(id);
+    try {
+      await api.post(`/api/escrow/${id}/release`);
+      alert('Dana berhasil direlease!');
+      // Refresh data
+      await fetchEscrowData();
+    } catch (error: any) {
+      console.error('Error releasing funds:', error);
+      alert(error.response?.data?.error || 'Gagal merelease dana');
+    } finally {
+      setIsReleasing(null);
+    }
   };
 
   // filter escrow
@@ -144,11 +136,6 @@ export default function EscrowPage() {
     },
   };
 
-  const handleReleaseFunds = (id: number) => {
-    // TODO: Implementasi release funds dengan smart contract
-    console.log('Release funds untuk escrow', id);
-  };
-
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'Terkunci':
@@ -171,6 +158,17 @@ export default function EscrowPage() {
       minimumFractionDigits: 0,
     }).format(amount);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Memuat data escrow...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -327,7 +325,9 @@ export default function EscrowPage() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className="text-gray-600 text-sm">{escrow.lockedAt}</span>
+                      <span className="text-gray-600 text-sm">
+                        {new Date(escrow.lockedAt).toLocaleDateString('id-ID')}
+                      </span>
                     </td>
                     <td className="p-4">
                       <a
@@ -344,9 +344,14 @@ export default function EscrowPage() {
                       {escrow.status === 'Menunggu Rilis' ? (
                         <button
                           onClick={() => handleReleaseFunds(escrow.id)}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-smooth text-sm font-medium"
+                          disabled={isReleasing === escrow.id}
+                          className="flex items-center gap-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-smooth text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Unlock className="w-4 h-4" />
+                          {isReleasing === escrow.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Unlock className="w-4 h-4" />
+                          )}
                           Release
                         </button>
                       ) : (
