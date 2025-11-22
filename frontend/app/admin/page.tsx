@@ -38,9 +38,9 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-        const response = await axios.get(`${apiUrl}/admin/dashboard`, {
+        const response = await axios.get(`${apiUrl}/api/admin/dashboard`, {
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
@@ -55,7 +55,8 @@ export default function AdminDashboard() {
         }
       } catch (err: any) {
         console.error('Error fetching admin dashboard data:', err);
-        setError(err.message || 'Gagal memuat data dashboard. Silakan coba lagi nanti.');
+        const errorMessage = err.response?.data?.message || err.response?.data?.error || err.message || 'Gagal memuat data dashboard. Silakan coba lagi nanti.';
+        setError(errorMessage);
         setStats(null);
         setActivityLog([]);
         setAllocationData([]);

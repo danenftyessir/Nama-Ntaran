@@ -80,10 +80,27 @@ export async function apiRequest<T = any>(
   }
 
   const response = await fetch(url, requestOptions);
-  const data = await response.json();
+
+  // Handle non-JSON responses (like HTML error pages)
+  const contentType = response.headers.get('content-type');
+  let data;
+
+  if (contentType && contentType.includes('application/json')) {
+    data = await response.json();
+  } else {
+    // If response is not JSON (e.g., HTML error page)
+    const text = await response.text();
+    data = {
+      error: 'Server returned non-JSON response',
+      message: response.statusText || 'Request failed',
+      statusCode: response.status
+    };
+  }
 
   if (!response.ok) {
-    throw new Error(data.error || data.message || 'Request failed');
+    const error = new Error(data.error || data.message || `Request failed with status ${response.status}`);
+    (error as any).response = { data, status: response.status };
+    throw error;
   }
 
   return data;
