@@ -166,4 +166,111 @@ router.get('/stats', async (req: AuthRequest, res: Response) => {
   }
 });
 
+// ============================================
+// GET /api/admin/users
+// Get all users for account management
+// ============================================
+router.get('/users', async (req: AuthRequest, res: Response) => {
+  try {
+    const { page = '1', limit = '50', role = '', status = '' } = req.query;
+    const pageNum = parseInt(page as string);
+    const limitNum = Math.min(parseInt(limit as string), 100); // Max 100
+    const offset = (pageNum - 1) * limitNum;
+
+    // Build base query without joins first (faster)
+    let query = supabase
+      .from('users')
+      .select('id, email, role, is_active, created_at', { count: 'exact' });
+
+    // Apply filters
+    if (role) {
+      query = query.eq('role', role);
+    }
+
+    if (status === 'active') {
+      query = query.eq('is_active', true);
+    } else if (status === 'inactive') {
+      query = query.eq('is_active', false);
+    }
+
+    query = query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limitNum - 1);
+
+    const { data: users, error, count } = await query;
+
+    if (error) throw error;
+
+    // Get related data separately for better performance
+    const userIds = (users || []).map((u: any) => u.id);
+
+    // Fetch schools for school users
+    const { data: schools } = await supabase
+      .from('schools')
+      .select('user_id, name')
+      .in('user_id', userIds);
+
+    // Fetch caterings for catering users
+    const { data: caterings } = await supabase
+      .from('caterings')
+      .select('user_id, name')
+      .in('user_id', userIds);
+
+    // Create lookup maps
+    const schoolsMap = new Map((schools || []).map((s: any) => [s.user_id, s.name]));
+    const cateringsMap = new Map((caterings || []).map((c: any) => [c.user_id, c.name]));
+
+    // Format users with name and wallet info
+    const formattedUsers = (users || []).map((user: any) => {
+      let name = 'Unknown User';
+      let walletAddress = 'N/A';
+
+      // Get name based on role
+      if (user.role === 'school') {
+        name = schoolsMap.get(user.id) || 'School User';
+      } else if (user.role === 'catering') {
+        name = cateringsMap.get(user.id) || 'Catering User';
+      } else if (user.role === 'admin') {
+        name = user.email.split('@')[0]; // Use email prefix for admin
+      }
+
+      // Map role to Indonesian
+      const roleMap: Record<string, string> = {
+        'admin': 'Administrator',
+        'school': 'Sekolah',
+        'catering': 'Katering'
+      };
+
+      return {
+        id: user.id,
+        name,
+        email: user.email,
+        role: roleMap[user.role] || user.role,
+        status: user.is_active ? 'Aktif' : 'Nonaktif',
+        registrationDate: user.created_at,
+        walletAddress
+      };
+    });
+
+    res.json({
+      success: true,
+      users: formattedUsers,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: count || 0,
+        total_pages: Math.ceil((count || 0) / limitNum)
+      }
+    });
+
+  } catch (error: any) {
+    console.error('[Admin Users] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch users',
+      message: error.message
+    });
+  }
+});
+
 export default router;
