@@ -25,6 +25,7 @@ import cateringHistoryRoutes from './routes/cateringHistoryRoutes.js';
 import cateringMenuRoutes from './routes/cateringMenuRoutes.js';
 import cateringIssuesRoutes from './routes/cateringIssuesRoutes.js';
 import schedulerRoutes from './routes/schedulerRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Import scheduler service
 import schedulerService from './services/schedulerService.js';
@@ -56,6 +57,7 @@ app.use('/uploads', express.static('uploads'));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/schools', schoolsRoutes);
 app.use('/api/deliveries', deliveriesRoutes);
 app.use('/api/verifications', verificationsRoutes);

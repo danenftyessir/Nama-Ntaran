@@ -60,19 +60,24 @@ export default function IssuesPage() {
     try {
       const [issuesResponse, statsResponse] = await Promise.all([
         api.get('/api/issues'),
-        api.get('/api/issues/stats'),
+        api.get('/api/issues/stats/summary'),
       ]);
 
-      setAllIssues(issuesResponse.issues || []);
-      setStats(statsResponse.stats || {
-        pending: 0,
-        investigating: 0,
-        resolved: 0,
-        rejected: 0,
+      // Handle response based on structure
+      const issuesData = issuesResponse.success ? issuesResponse.issues : (issuesResponse.issues || []);
+      const statsData = statsResponse.success ? statsResponse.stats : (statsResponse.stats || {});
+
+      setAllIssues(issuesData);
+      setStats({
+        pending: statsData.pending || 0,
+        investigating: statsData.investigating || 0,
+        resolved: statsData.resolved || 0,
+        rejected: statsData.rejected || 0,
       });
     } catch (error: any) {
       console.error('Error fetching issues:', error);
-      alert(error.response?.data?.error || 'Gagal memuat data issues');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Gagal memuat data issues';
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }

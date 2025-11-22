@@ -168,6 +168,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     }));
 
     res.json({
+      success: true,
       issues: result,
       pagination: {
         page: pageNum,
@@ -179,6 +180,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Get issues error:', error);
     res.status(500).json({
+      success: false,
       error: 'Failed to fetch issues',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
@@ -213,6 +215,7 @@ router.get('/:id', async (req: AuthRequest, res: Response) => {
     }
 
     res.json({
+      success: true,
       issue: {
         ...issue,
         delivery_date: issue.deliveries?.delivery_date,
@@ -335,13 +338,14 @@ router.get('/stats/summary', async (req: AuthRequest, res: Response) => {
 
     const issuesList = issues || [];
 
-    // Calculate stats
+    // Calculate stats - map to Indonesian status names
     const stats = {
       total_issues: issuesList.length,
-      open_issues: issuesList.filter((i: any) => i.status === 'open').length,
+      pending: issuesList.filter((i: any) => i.status === 'open').length,
       investigating: issuesList.filter((i: any) => i.status === 'investigating').length,
-      resolved: issuesList.filter((i: any) => i.status === 'resolved').length,
-      closed: issuesList.filter((i: any) => i.status === 'closed').length,
+      resolved: issuesList.filter((i: any) => i.status === 'resolved' || i.status === 'closed').length,
+      rejected: issuesList.filter((i: any) => i.status === 'rejected').length,
+      open_issues: issuesList.filter((i: any) => i.status === 'open').length,
       critical: issuesList.filter((i: any) => i.severity === 'critical').length,
       high: issuesList.filter((i: any) => i.severity === 'high').length,
       late_deliveries: issuesList.filter((i: any) => i.issue_type === 'late_delivery').length,
@@ -349,11 +353,13 @@ router.get('/stats/summary', async (req: AuthRequest, res: Response) => {
     };
 
     res.json({
+      success: true,
       stats
     });
   } catch (error) {
     console.error('Get issue stats error:', error);
     res.status(500).json({
+      success: false,
       error: 'Failed to fetch issue stats',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
