@@ -37,6 +37,8 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({ data = [] }) => {
   // hitung skala untuk sumbu X
   const xScale = useMemo(() => {
     return (index: number) => {
+      // handle kasus data.length 0 atau 1
+      if (data.length <= 1) return 0;
       return (index / (data.length - 1)) * innerWidth;
     };
   }, [data.length, innerWidth]);
@@ -144,6 +146,14 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({ data = [] }) => {
 
       {/* chart */}
       <div className="w-full overflow-x-auto">
+        {data.length === 0 ? (
+          <div className="flex items-center justify-center h-64 text-gray-400">
+            <div className="text-center">
+              <TrendingUp className="w-12 h-12 mx-auto mb-2 opacity-30" />
+              <p>Belum ada data untuk ditampilkan</p>
+            </div>
+          </div>
+        ) : (
         <svg
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
           className="w-full h-auto"
@@ -253,6 +263,7 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({ data = [] }) => {
             </linearGradient>
           </defs>
         </svg>
+        )}
       </div>
 
       {/* label sumbu Y */}

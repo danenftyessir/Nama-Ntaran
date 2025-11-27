@@ -1,0 +1,12 @@
+{
+  "totalAdmins": 283,
+  "successAdmins": 283,
+  "failedAdmins": 0,
+  "byLevel": {
+    "system": 5,
+    "provinsi": 114,
+    "kabupaten": 164
+  },
+  "byPosition": {},
+  "errors": []
+}

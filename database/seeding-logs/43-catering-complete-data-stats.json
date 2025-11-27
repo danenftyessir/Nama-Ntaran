@@ -1,0 +1,31 @@
+{
+  "totalCaterings": 100,
+  "successPaymentMethods": 200,
+  "successMenuItems": 2310,
+  "successRiskAssessments": 100,
+  "failedPaymentMethods": 0,
+  "failedMenuItems": 0,
+  "failedRiskAssessments": 0,
+  "menusByCategory": {
+    "salad": 256,
+    "soup": 266,
+    "complete_meal": 417,
+    "side_dish": 505,
+    "beverage": 267,
+    "dessert": 258,
+    "snack": 249,
+    "main_course": 92
+  },
+  "paymentMethodsByType": {
+    "BANK_TRANSFER": 100,
+    "CRYPTOCURRENCY": 47,
+    "EWALLET": 53
+  },
+  "riskByLevel": {
+    "critical": 82,
+    "high": 5,
+    "medium": 7,
+    "low": 6
+  },
+  "errors": []
+}
