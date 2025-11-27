@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import useIssues from '../../hooks/useIssues';
 import ModernSidebar from '../../components/layout/ModernSidebar';
+import { useSchoolLogo } from '../../hooks/useSchoolLogo';
 import {
   LayoutDashboard,
   AlertTriangle,
@@ -29,10 +30,28 @@ import {
 export default function IssuesPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { logoUrl } = useSchoolLogo();
 
-  const { issues, isLoading } = useIssues({
+  const { issues, isLoading, refetch } = useIssues({
     autoFetch: true,
   });
+
+  // Debug: log issues data
+  useEffect(() => {
+    console.log('🔍 Issues data:', issues);
+    console.log('📊 Issues count:', issues?.length || 0);
+  }, [issues]);
+
+  // Refetch issues when page becomes visible (e.g., after redirect from create)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refetch();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refetch]);
 
   // state untuk filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -151,6 +170,10 @@ export default function IssuesPage() {
     return true;
   });
 
+  // Debug: log filtered issues
+  console.log('🎯 Filtered issues count:', filteredIssues.length);
+  console.log('📝 Active filters:', { searchQuery, selectedIssueType, selectedStatus, selectedDate });
+
   // reset semua filter
   const handleResetFilters = () => {
     setSearchQuery('');
@@ -176,6 +199,7 @@ export default function IssuesPage() {
         userName={user.name || 'Kepala Sekolah'}
         userEmail={user.email || 'sekolah@mbg.id'}
         schoolName={user.school_name || 'Sekolah'}
+        schoolLogoUrl={logoUrl}
       />
 
       {/* main content dengan margin left untuk sidebar */}
@@ -282,7 +306,7 @@ export default function IssuesPage() {
           </div>
 
           {/* table section */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden smooth-animate">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-lg font-bold text-gray-900">Daftar Isu Terbaru</h2>
             </div>
@@ -328,7 +352,7 @@ export default function IssuesPage() {
                     filteredIssues.map((issue: any) => (
                       <tr
                         key={issue.id}
-                        className="hover:bg-gray-50 transition-smooth"
+                        className="hover:bg-gray-50"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-semibold text-gray-900">
@@ -358,7 +382,7 @@ export default function IssuesPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
                             onClick={() => router.push(`/school/issues/${issue.id}`)}
-                            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold text-sm transition-smooth"
+                            className="inline-flex items-center gap-1.5 text-blue-600 hover:text-blue-800 font-semibold text-sm"
                           >
                             <Eye className="w-4 h-4" />
                             Lihat Detail

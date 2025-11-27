@@ -76,11 +76,11 @@ let anthropicClient: Anthropic | null = null;
 
 function getAnthropicClient(): Anthropic {
   if (!anthropicClient) {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.CLAUDE_API_KEY;
 
     if (!apiKey) {
       throw new Error(
-        'ANTHROPIC_API_KEY not found in environment variables. ' +
+        'CLAUDE_API_KEY not found in environment variables. ' +
         'Please add it to your .env file.'
       );
     }

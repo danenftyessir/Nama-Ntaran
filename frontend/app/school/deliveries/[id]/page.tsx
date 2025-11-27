@@ -22,7 +22,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
-import { deliveriesApi } from '@/lib/api';
+import { deliveriesApi, blockchainApi } from '@/lib/api';
 import { Delivery, MenuItem } from '../../../hooks/useDeliveries';
 
 // konfigurasi animasi untuk performa optimal
@@ -65,6 +65,8 @@ export default function DeliveryDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [blockchainTx, setBlockchainTx] = useState<any | null>(null);
+  const [blockchainLoading, setBlockchainLoading] = useState(false);
 
   // hook untuk intersection observer
   const { ref: contentRef, inView: contentInView } = useInView({
@@ -106,6 +108,29 @@ export default function DeliveryDetailPage() {
     fetchData();
   }, [deliveryId]);
 
+  // fetch blockchain transaction data
+  useEffect(() => {
+    if (!deliveryId || !delivery) return;
+
+    const fetchBlockchainData = async () => {
+      setBlockchainLoading(true);
+      try {
+        const response = await blockchainApi.getTransactionByDelivery(deliveryId);
+        if (response.success && response.data) {
+          setBlockchainTx(response.data);
+        }
+      } catch (err: any) {
+        console.log('No blockchain transaction found for this delivery:', err.message);
+        // Not an error - just means no blockchain transaction yet
+        setBlockchainTx(null);
+      } finally {
+        setBlockchainLoading(false);
+      }
+    };
+
+    fetchBlockchainData();
+  }, [deliveryId, delivery]);
+
   // redirect jika tidak terautentikasi
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -129,7 +154,12 @@ export default function DeliveryDetailPage() {
   // menu items dari API atau fallback ke default
   const menuItems: MenuItem[] = useMemo(() => {
     if (delivery?.menu_items && delivery.menu_items.length > 0) {
-      return delivery.menu_items;
+      // Transform API data structure to match MenuItem interface
+      return delivery.menu_items.map((item: any) => ({
+        name: item.menu_name || item.name || 'Unknown Item',
+        quantity: item.quantity || 0,
+        unit: item.unit || 'porsi',
+      }));
     }
     // fallback jika data dari API belum tersedia
     return [
@@ -280,24 +310,39 @@ export default function DeliveryDetailPage() {
 
   // generate ID transaksi dari API atau fallback
   const getTransactionId = () => {
+    if (blockchainTx?.txHash) {
+      return blockchainTx.txHash;
+    }
     if (delivery.blockchain_tx_id) {
       return delivery.blockchain_tx_id;
     }
-    return `TXN-BLK-${String(delivery.id).toUpperCase().padStart(8, '0')}`;
+    return null; // No transaction ID available
   };
 
   // generate URL blockchain explorer
   const getBlockchainExplorerUrl = () => {
+    const txHash = blockchainTx?.txHash;
+    if (txHash) {
+      // Use Polygon Mumbai testnet explorer
+      return `https://mumbai.polygonscan.com/tx/${txHash}`;
+    }
     if (delivery.blockchain_explorer_url) {
       return delivery.blockchain_explorer_url;
     }
-    // fallback ke URL default dengan transaction ID
-    const txId = getTransactionId();
-    return `https://explorer.blockchain.com/tx/${txId}`;
+    return null; // No blockchain URL available
+  };
+
+  // check if blockchain transaction exists
+  const hasBlockchainTransaction = () => {
+    return blockchainTx !== null && blockchainTx?.txHash;
   };
 
   // ambil status escrow dari data atau inferensi dari status pengiriman
   const getEscrowStatus = (): 'locked' | 'released' | 'disputed' => {
+    // Use blockchain transaction status if available
+    if (blockchainTx?.status) {
+      return blockchainTx.status;
+    }
     if (delivery.escrow_status) {
       return delivery.escrow_status;
     }
@@ -476,9 +521,13 @@ export default function DeliveryDetailPage() {
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-600">ID Transaksi</span>
-                  <span className="font-mono font-medium text-gray-900">
-                    {getTransactionId()}
-                  </span>
+                  {blockchainLoading ? (
+                    <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                  ) : (
+                    <span className="font-mono font-medium text-gray-900">
+                      {getTransactionId() || 'Belum tersedia'}
+                    </span>
+                  )}
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-600">Status Escrow</span>
@@ -486,15 +535,21 @@ export default function DeliveryDetailPage() {
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-gray-600">Tautan Blockchain</span>
-                  <a
-                    href={getBlockchainExplorerUrl()}
-                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium transition-smooth"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Lihat Di Explorer
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
+                  {blockchainLoading ? (
+                    <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                  ) : hasBlockchainTransaction() ? (
+                    <a
+                      href={getBlockchainExplorerUrl() || '#'}
+                      className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium transition-smooth"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Lihat Di Explorer
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <span className="text-gray-500 text-sm">Belum tersedia</span>
+                  )}
                 </div>
               </div>
             </motion.div>

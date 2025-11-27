@@ -10,6 +10,7 @@ import { startBlockchainListener } from './services/blockchainListener.js';
 
 // Import routes
 import authRoutes from './routes/auth.js';
+import publicRoutes from './routes/publicRoutes.js';
 import schoolsRoutes from './routes/schools.js';
 import deliveriesRoutes from './routes/deliveries.js';
 import verificationsRoutes from './routes/verifications.js';
@@ -28,6 +29,7 @@ import cateringDashboardRoutes from './routes/cateringDashboardRoutes.js';
 import cateringScheduleRoutes from './routes/cateringScheduleRoutes.js';
 import schedulerRoutes from './routes/schedulerRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 // Import scheduler service
 import schedulerService from './services/schedulerService.js';
@@ -59,7 +61,9 @@ app.use('/uploads', express.static('uploads'));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/public', publicRoutes); // 🌐 Public endpoints (no auth required)
 app.use('/api/admin', adminRoutes);
+app.use('/api/upload', uploadRoutes); // 📤 File upload endpoints
 app.use('/api/schools', schoolsRoutes);
 app.use('/api/deliveries', deliveriesRoutes);
 app.use('/api/verifications', verificationsRoutes);

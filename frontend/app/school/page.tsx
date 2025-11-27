@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import { useSchoolLogo } from '../hooks/useSchoolLogo';
 import useDeliveries from '../hooks/useDeliveries';
 import useVerifications from '../hooks/useVerifications';
 import useIssues from '../hooks/useIssues';
@@ -37,6 +38,7 @@ import {
 export default function SchoolDashboard() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { logoUrl } = useSchoolLogo();
 
   const [selectedDelivery, setSelectedDelivery] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -178,6 +180,7 @@ export default function SchoolDashboard() {
         userName={user.name || 'Kepala Sekolah'}
         userEmail={user.email || 'sekolah@mbg.id'}
         schoolName={schoolInfo.name}
+        schoolLogoUrl={logoUrl}
         onLogout={handleLogout}
       />
 

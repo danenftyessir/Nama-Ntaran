@@ -6,6 +6,8 @@ export interface AuthRequest extends Request {
     id: number;
     email: string;
     role: string;
+    school_id?: number;  // For school users
+    catering_id?: number;  // For catering users
   };
 }
 
@@ -27,6 +29,8 @@ export const authenticateToken = (
       id: number;
       email: string;
       role: string;
+      school_id?: number;
+      catering_id?: number;
     };
 
     req.user = decoded;

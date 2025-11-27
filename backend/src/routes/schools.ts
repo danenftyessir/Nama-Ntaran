@@ -249,4 +249,94 @@ router.get('/filters/cities/:province', async (req: AuthRequest, res: Response) 
   }
 });
 
+// PATCH /api/schools/:id - Update school information
+router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    // Debug logging
+    console.log('[Schools PATCH] Request:', {
+      userId: req.user?.id,
+      userRole: req.user?.role,
+      userSchoolId: req.user?.school_id,
+      targetSchoolId: parseInt(id),
+      match: req.user?.school_id === parseInt(id)
+    });
+
+    // Validate that user has permission (only school role can update their own school)
+    if (req.user?.role === 'school' && req.user?.school_id !== parseInt(id)) {
+      console.error('[Schools PATCH] Permission denied - school_id mismatch');
+      return res.status(403).json({
+        error: 'You can only update your own school',
+        debug: {
+          your_school_id: req.user?.school_id,
+          requested_school_id: parseInt(id)
+        }
+      });
+    }
+
+    // Allowed fields to update
+    const allowedFields = [
+      'name',
+      'npsn',
+      'address',
+      'kelurahan',
+      'logo_url',
+      'latitude',
+      'longitude',
+      'province',
+      'city',
+      'district',
+      'jenjang',
+      'status'
+    ];
+
+    // Filter updateData to only include allowed fields
+    const filteredData: Record<string, any> = {};
+    for (const field of allowedFields) {
+      if (updateData[field] !== undefined) {
+        filteredData[field] = updateData[field];
+      }
+    }
+
+    if (Object.keys(filteredData).length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+
+    // Add updated_at timestamp
+    filteredData.updated_at = new Date().toISOString();
+
+    console.log('Updating school:', id, filteredData);
+
+    // Update school in database
+    const { data: school, error } = await supabase
+      .from('schools')
+      .update(filteredData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Update school error:', error);
+      throw error;
+    }
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    res.json({
+      message: 'School updated successfully',
+      school
+    });
+  } catch (error) {
+    console.error('Update school error:', error);
+    res.status(500).json({
+      error: 'Failed to update school',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

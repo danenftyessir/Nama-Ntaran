@@ -177,22 +177,46 @@ export default function IssueDetailPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <ModernSidebar
-        navItems={navItems}
-        userRole="School"
-        userName={user.name || 'Kepala Sekolah'}
-        userEmail={user.email || 'sekolah@mbg.id'}
-        schoolName={user.school_name || 'Sekolah'}
-      />
+    <>
+      <style jsx global>{`
+        @media print {
+          /* Hide sidebar and unnecessary elements */
+          aside, .print\\:hidden, button, footer {
+            display: none !important;
+          }
+          /* Remove margins for main content */
+          main {
+            margin-left: 0 !important;
+            padding: 20px !important;
+          }
+          /* Full width for content */
+          .max-w-4xl {
+            max-width: 100% !important;
+          }
+          /* Clean background */
+          body, html, div {
+            background: white !important;
+          }
+        }
+      `}</style>
+      <div className="flex min-h-screen bg-gray-50">
+        <aside className="print:hidden">
+          <ModernSidebar
+            navItems={navItems}
+            userRole="School"
+            userName={user.name || 'Kepala Sekolah'}
+            userEmail={user.email || 'sekolah@mbg.id'}
+            schoolName={user.school_name || 'Sekolah'}
+          />
+        </aside>
 
-      {/* main content dengan margin left untuk sidebar */}
+        {/* main content dengan margin left untuk sidebar */}
       <main className="flex-1 ml-72 overflow-y-auto scroll-container">
         <div className="max-w-5xl mx-auto p-8 py-12">
           {/* back button */}
           <button
             onClick={() => router.push('/school/issues')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition-smooth"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 font-medium transition-smooth print:hidden"
           >
             <ArrowLeft className="w-5 h-5" />
             Kembali ke Daftar Isu
@@ -339,7 +363,7 @@ export default function IssueDetailPage() {
               </div>
 
               {/* action buttons */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 smooth-animate">
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 smooth-animate print:hidden">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">Tindakan</h3>
                 <div className="space-y-3">
                   <button
@@ -360,7 +384,7 @@ export default function IssueDetailPage() {
           </div>
 
           {/* footer */}
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center print:hidden">
             <p className="text-sm text-gray-500">
               © 2025 MBG School Portal. All rights reserved.
             </p>
@@ -368,5 +392,6 @@ export default function IssueDetailPage() {
         </div>
       </main>
     </div>
+    </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import Navbar from './components/layout/Navbar';
@@ -15,12 +15,32 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+interface ChartDataItem {
+  month: string;
+  alokasi: number;
+  distribusi: number;
+}
+
+interface PrioritySchool {
+  nama: string;
+  kota: string;
+  anggaran: string;
+  status: string;
+  statusColor: string;
+}
+
 export default function Home() {
   const heroRef = useRef(null);
   const whatsPokeRef = useRef(null);
   const chartRef = useRef(null);
   const contentRef = useRef(null);
   const tableRef = useRef(null);
+
+  // State untuk data dari backend
+  const [chartData, setChartData] = useState<ChartDataItem[]>([]);
+  const [prioritySchools, setPrioritySchools] = useState<PrioritySchool[]>([]);
+  const [isLoadingChart, setIsLoadingChart] = useState(true);
+  const [isLoadingSchools, setIsLoadingSchools] = useState(true);
 
   // menggunakan useInView untuk trigger animasi saat scroll
   const heroInView = useInView(heroRef, { once: true, amount: 0.3 });
@@ -34,61 +54,35 @@ export default function Home() {
   const heroImageY = useTransform(scrollY, [0, 500], [0, 150]);
   const heroImageOpacity = useTransform(scrollY, [0, 300], [1, 0]);
 
-  // data untuk chart status alokasi
-  const chartData = [
-    { month: 'Jan', alokasi: 180, distribusi: 165 },
-    { month: 'Feb', alokasi: 220, distribusi: 200 },
-    { month: 'Mar', alokasi: 260, distribusi: 235 },
-    { month: 'Apr', alokasi: 240, distribusi: 220 },
-    { month: 'Mei', alokasi: 280, distribusi: 250 },
-    { month: 'Jun', alokasi: 300, distribusi: 280 },
-  ];
+  // Fetch data dari backend saat component mount
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/public/allocation-chart');
+        const data = await response.json();
+        setChartData(data.chartData || []);
+      } catch (error) {
+        console.error('Error fetching chart data:', error);
+      } finally {
+        setIsLoadingChart(false);
+      }
+    };
 
-  // data untuk tabel sekolah prioritas
-  const prioritySchools = [
-    {
-      nama: 'SDN Bukit Batin 1',
-      kota: 'Jakarta',
-      anggaran: 'Rp 1.5 M',
-      status: 'Aktif',
-      statusColor: 'text-green-600 bg-green-50',
-    },
-    {
-      nama: 'SMPN Harapan Bangsa',
-      kota: 'Surabaya',
-      anggaran: 'Rp 1.2 M',
-      status: 'Aktif',
-      statusColor: 'text-green-600 bg-green-50',
-    },
-    {
-      nama: 'SMAN Cerdas Mandiri',
-      kota: 'Bandung',
-      anggaran: 'Rp 1.8 M',
-      status: 'Aktif',
-      statusColor: 'text-green-600 bg-green-50',
-    },
-    {
-      nama: 'SDIT Cahaya Ilmu',
-      kota: 'Yogyakarta',
-      anggaran: 'Rp 1.0 M',
-      status: 'Aktif',
-      statusColor: 'text-green-600 bg-green-50',
-    },
-    {
-      nama: 'SMP Bhinneka Tunggal',
-      kota: 'Medan',
-      anggaran: 'Rp 1.1 M',
-      status: 'Aktif',
-      statusColor: 'text-green-600 bg-green-50',
-    },
-    {
-      nama: 'SMK Teknologi Maju',
-      kota: 'Semarang',
-      anggaran: 'Rp 1.4 M',
-      status: 'Selesai',
-      statusColor: 'text-blue-600 bg-blue-50',
-    },
-  ];
+    const fetchPrioritySchools = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/public/priority-schools?limit=6');
+        const data = await response.json();
+        setPrioritySchools(data.prioritySchools || []);
+      } catch (error) {
+        console.error('Error fetching priority schools:', error);
+      } finally {
+        setIsLoadingSchools(false);
+      }
+    };
+
+    fetchChartData();
+    fetchPrioritySchools();
+  }, []);
 
   // variasi animasi untuk stagger effect
   const containerVariants = {
@@ -228,51 +222,64 @@ export default function Home() {
               transition={{ delay: 0.2, duration: 0.8 }}
               style={{ willChange: 'transform' }}
             >
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis
-                    dataKey="month"
-                    tick={{ fill: '#6b7280', fontSize: 14 }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <YAxis
-                    tick={{ fill: '#6b7280', fontSize: 14 }}
-                    axisLine={{ stroke: '#e5e7eb' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '12px',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                    }}
-                  />
-                  <Legend
-                    wrapperStyle={{ paddingTop: '20px' }}
-                    iconType="circle"
-                  />
-                  <Bar
-                    dataKey="alokasi"
-                    name="Alokasi"
-                    fill="#8b5cf6"
-                    radius={[8, 8, 0, 0]}
-                    animationDuration={1500}
-                    animationBegin={0}
-                  />
-                  <Bar
-                    dataKey="distribusi"
-                    name="Distribusi"
-                    fill="#ec4899"
-                    radius={[8, 8, 0, 0]}
-                    animationDuration={1500}
-                    animationBegin={200}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              {isLoadingChart ? (
+                <div className="flex items-center justify-center h-[400px]">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Memuat data chart...</p>
+                  </div>
+                </div>
+              ) : chartData.length === 0 ? (
+                <div className="flex items-center justify-center h-[400px]">
+                  <p className="text-gray-600">Tidak ada data chart tersedia</p>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis
+                      dataKey="month"
+                      tick={{ fill: '#6b7280', fontSize: 14 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <YAxis
+                      tick={{ fill: '#6b7280', fontSize: 14 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                      }}
+                    />
+                    <Legend
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="circle"
+                    />
+                    <Bar
+                      dataKey="alokasi"
+                      name="Alokasi"
+                      fill="#8b5cf6"
+                      radius={[8, 8, 0, 0]}
+                      animationDuration={1500}
+                      animationBegin={0}
+                    />
+                    <Bar
+                      dataKey="distribusi"
+                      name="Distribusi"
+                      fill="#ec4899"
+                      radius={[8, 8, 0, 0]}
+                      animationDuration={1500}
+                      animationBegin={200}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </motion.div>
           </motion.div>
         </div>
@@ -346,59 +353,72 @@ export default function Home() {
               animate={tableInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-purple-50 to-blue-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
-                        Sekolah
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
-                        Kota
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
-                        Anggaran Dialokasikan
-                      </th>
-                      <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <motion.tbody
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate={tableInView ? 'visible' : 'hidden'}
-                    className="divide-y divide-gray-100"
-                  >
-                    {prioritySchools.map((school, index) => (
-                      <motion.tr
-                        key={index}
-                        variants={itemVariants}
-                        className="hover:bg-gray-50 transition-colors"
-                        whileHover={{ scale: 1.01 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                          {school.nama}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {school.kota}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
-                          {school.anggaran}
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${school.statusColor}`}
-                          >
-                            {school.status}
-                          </span>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </motion.tbody>
-                </table>
-              </div>
+              {isLoadingSchools ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Memuat data sekolah...</p>
+                  </div>
+                </div>
+              ) : prioritySchools.length === 0 ? (
+                <div className="flex items-center justify-center py-20">
+                  <p className="text-gray-600">Tidak ada data sekolah tersedia</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-purple-50 to-blue-50">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                          Sekolah
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                          Kota
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                          Anggaran Dialokasikan
+                        </th>
+                        <th className="px-6 py-4 text-left text-sm font-bold text-gray-900">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <motion.tbody
+                      variants={containerVariants}
+                      initial="hidden"
+                      animate={tableInView ? 'visible' : 'hidden'}
+                      className="divide-y divide-gray-100"
+                    >
+                      {prioritySchools.map((school, index) => (
+                        <motion.tr
+                          key={index}
+                          variants={itemVariants}
+                          className="hover:bg-gray-50 transition-colors"
+                          whileHover={{ scale: 1.01 }}
+                          transition={{ type: 'spring', stiffness: 300 }}
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                            {school.nama}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            {school.kota}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 font-semibold">
+                            {school.anggaran}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${school.statusColor}`}
+                            >
+                              {school.status}
+                            </span>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </motion.tbody>
+                  </table>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         </div>
@@ -417,6 +437,7 @@ export default function Home() {
                   width={120}
                   height={40}
                   className="object-contain brightness-0 invert"
+                  style={{ height: 'auto' }}
                 />
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">

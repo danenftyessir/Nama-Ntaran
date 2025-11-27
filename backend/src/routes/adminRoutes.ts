@@ -8,6 +8,8 @@ import type { Response } from 'express';
 import { supabase } from '../config/database.js';
 import { authenticateToken, requireRole } from '../middleware/auth.js';
 import type { AuthRequest } from '../middleware/auth.js';
+import { batchCalculatePriorityScores } from '../services/priorityScoringService.js';
+import { batchCalculateHybridScores } from '../services/hybridPriorityScoring.js';
 
 const router = express.Router();
 
@@ -268,6 +270,74 @@ router.get('/users', async (req: AuthRequest, res: Response) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch users',
+      message: error.message
+    });
+  }
+});
+
+// ============================================
+// POST /api/admin/recalculate-priority-scores
+// Recalculate priority scores for all schools (base formula only)
+// ============================================
+router.post('/recalculate-priority-scores', async (req: AuthRequest, res: Response) => {
+  try {
+    console.log('[Admin] Starting priority score recalculation...');
+
+    const { limit = 1000, offset = 0 } = req.body;
+
+    const result = await batchCalculatePriorityScores(supabase, limit, offset);
+
+    console.log('[Admin] Priority score recalculation completed:', result);
+
+    res.json({
+      success: result.success,
+      message: 'Priority scores recalculated successfully',
+      result
+    });
+
+  } catch (error: any) {
+    console.error('[Admin Recalculate] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to recalculate priority scores',
+      message: error.message
+    });
+  }
+});
+
+// ============================================
+// POST /api/admin/recalculate-hybrid-scores
+// Recalculate priority scores with AI urgency analysis
+// Body: { limit, offset, useAI }
+// ============================================
+router.post('/recalculate-hybrid-scores', async (req: AuthRequest, res: Response) => {
+  try {
+    console.log('[Admin] Starting hybrid score recalculation with AI...');
+
+    const { limit = 1000, offset = 0, useAI = true } = req.body;
+
+    if (useAI && !process.env.CLAUDE_API_KEY) {
+      return res.status(400).json({
+        success: false,
+        error: 'AI analysis requested but CLAUDE_API_KEY not configured'
+      });
+    }
+
+    const result = await batchCalculateHybridScores(supabase, limit, offset, useAI);
+
+    console.log('[Admin] Hybrid score recalculation completed:', result);
+
+    res.json({
+      success: result.success,
+      message: 'Hybrid priority scores recalculated successfully',
+      result
+    });
+
+  } catch (error: any) {
+    console.error('[Admin Recalculate Hybrid] Error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to recalculate hybrid priority scores',
       message: error.message
     });
   }

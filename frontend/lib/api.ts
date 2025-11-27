@@ -196,6 +196,14 @@ export const schoolsApi = {
   async getById(id: string | number) {
     return apiRequest(`/api/schools/${id}`, { requireAuth: true });
   },
+
+  async update(id: string | number, data: any) {
+    return apiRequest(`/api/schools/${id}`, {
+      method: 'PATCH',
+      body: data,
+      requireAuth: true,
+    });
+  },
 };
 
 // Caterings API
@@ -305,6 +313,26 @@ export const analyticsApi = {
   },
 };
 
+// Blockchain API
+export const blockchainApi = {
+  async getFeed(params?: Record<string, any>) {
+    const query = params ? `?${new URLSearchParams(params).toString()}` : '';
+    return apiRequest(`/api/blockchain/feed${query}`);
+  },
+
+  async getStats() {
+    return apiRequest('/api/blockchain/stats');
+  },
+
+  async getTransactionByHash(txHash: string) {
+    return apiRequest(`/api/blockchain/transaction/${txHash}`);
+  },
+
+  async getTransactionByDelivery(deliveryId: string | number) {
+    return apiRequest(`/api/blockchain/delivery/${deliveryId}`);
+  },
+};
+
 // Default export object dengan semua API dan generic HTTP methods
 const api = {
   // Named API exports
@@ -315,6 +343,7 @@ const api = {
   caterings: cateringsApi,
   issues: issuesApi,
   analytics: analyticsApi,
+  blockchain: blockchainApi,
 
   // Generic HTTP methods untuk backward compatibility
   async get(endpoint: string, config?: { params?: Record<string, any> }) {

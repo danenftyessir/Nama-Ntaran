@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import useDeliveries from '../../hooks/useDeliveries';
 import ModernSidebar from '../../components/layout/ModernSidebar';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useSchoolLogo } from '../../hooks/useSchoolLogo';
+import { motion } from 'framer-motion';
 
 // TO DO: implementasi export data ke CSV/Excel
 // TO DO: tambahkan grafik statistik verifikasi per bulan
@@ -62,6 +63,7 @@ const reducedMotionVariants = {
 export default function HistoryPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { logoUrl } = useSchoolLogo();
 
   // state untuk filter
   const [statusFilter, setStatusFilter] = useState('');
@@ -237,6 +239,7 @@ export default function HistoryPage() {
         userName={user.name || 'Kepala Sekolah'}
         userEmail={user.email || 'sekolah@mbg.id'}
         schoolName={user.school_name || 'Sekolah'}
+        schoolLogoUrl={logoUrl}
         onLogout={() => router.push('/login')}
       />
 
@@ -425,20 +428,11 @@ export default function HistoryPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      <AnimatePresence mode="popLayout">
                         {paginatedDeliveries.map((delivery, index) => (
-                          <motion.tr
+                          <tr
                             key={delivery.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{
-                              duration: 0.3,
-                              delay: index * 0.05,
-                              ease: [0.4, 0, 0.2, 1]
-                            }}
                             onClick={() => router.push(`/school/deliveries/${delivery.id}`)}
-                            className="border-b border-gray-50 hover:bg-gray-50 transition-smooth cursor-pointer gpu-accelerate"
+                            className="border-b border-gray-50 hover:bg-gray-50 transition-smooth cursor-pointer"
                           >
                             <td className="px-6 py-4">
                               <span className="font-mono text-sm font-medium text-gray-900">
@@ -461,7 +455,9 @@ export default function HistoryPage() {
                             </td>
                             <td className="px-6 py-4">
                               <span className="text-sm text-gray-600">
-                                {delivery.menu_items || delivery.notes || 'Nasi, Ayam Goreng, Sayur Lodeh'}
+                                {Array.isArray(delivery.menu_items) && delivery.menu_items.length > 0
+                                  ? delivery.menu_items.map((item: any) => item.menu_name || item.name).filter(Boolean).join(', ')
+                                  : delivery.notes || 'Nasi, Ayam Goreng, Sayur Lodeh'}
                               </span>
                             </td>
                             <td className="px-6 py-4">
@@ -477,9 +473,8 @@ export default function HistoryPage() {
                                 {delivery.verifier_name || user.school_name || 'Budi Santoso'}
                               </span>
                             </td>
-                          </motion.tr>
+                          </tr>
                         ))}
-                      </AnimatePresence>
                     </tbody>
                   </table>
                 </div>

@@ -476,10 +476,10 @@ Return ONLY a JSON array with this structure:
     }
 
     // FALLBACK 1: Try Claude if Cohere unavailable
-    if (process.env.ANTHROPIC_API_KEY) {
+    if (process.env.CLAUDE_API_KEY) {
       try {
         console.log('[AI Analytics] Using Claude for budget optimization (fallback)');
-        const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+        const client = new Anthropic({ apiKey: process.env.CLAUDE_API_KEY });
 
         const message = await client.messages.create({
           model: "claude-3-5-sonnet-20241022",

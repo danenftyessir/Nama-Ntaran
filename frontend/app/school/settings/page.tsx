@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
+import { useSchoolLogo } from '../../hooks/useSchoolLogo';
 import { motion, useReducedMotion } from 'framer-motion';
 import ModernSidebar from '../../components/layout/ModernSidebar';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
 import Select from '../../components/ui/Select';
 import ImageUpload from '../../components/ui/ImageUpload';
+import { schoolsApi } from '@/lib/api';
 import {
   Settings,
   LayoutDashboard,
@@ -113,18 +115,15 @@ const InputField = memo(function InputField({
 export default function SchoolSettingsPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { logoUrl } = useSchoolLogo();
   const prefersReducedMotion = useReducedMotion();
 
   // state untuk form profil sekolah
   const [schoolProfile, setSchoolProfile] = useState({
     logo: '',
-    npsn: '1023456789',
-    name: 'SDN 01 Jakarta Pusat',
-    address: 'Jl. Merdeka Raya No. 10, Jakarta Pusat, DKI Jakarta, 10110',
-    studentCount: '500',
-    contactName: 'Bapak Budi Santoso',
-    contactEmail: 'budi.santoso@sdn01.sch.id',
-    contactPhone: '081234567890',
+    npsn: '',
+    name: '',
+    address: '',
   });
 
   // state untuk preferensi notifikasi
@@ -153,6 +152,33 @@ export default function SchoolSettingsPage() {
     }
   }, [authLoading, isAuthenticated, user, router]);
 
+  // fetch school data saat mount
+  useEffect(() => {
+    const fetchSchoolData = async () => {
+      if (!user?.school_id) return;
+
+      try {
+        const response = await schoolsApi.getById(user.school_id);
+        const school = response.school;
+
+        // Update state dengan data dari server
+        setSchoolProfile(prev => ({
+          ...prev,
+          logo: school.logo_url || '',
+          npsn: school.npsn || prev.npsn,
+          name: school.name || prev.name,
+          address: school.address || prev.address,
+        }));
+      } catch (error) {
+        console.error('Failed to fetch school data:', error);
+      }
+    };
+
+    if (user?.school_id) {
+      fetchSchoolData();
+    }
+  }, [user?.school_id]);
+
   // navigation items untuk sidebar - sama dengan halaman school lainnya
   const navItems = [
     { label: 'Dashboard', path: '/school', icon: LayoutDashboard },
@@ -169,14 +195,41 @@ export default function SchoolSettingsPage() {
   }, []);
 
   // handler untuk simpan perubahan
-  const handleSave = useCallback(() => {
-    console.log('Menyimpan pengaturan...', {
-      schoolProfile,
-      notifications,
-      verification,
-    });
-    alert('Pengaturan berhasil disimpan!');
-  }, [schoolProfile, notifications, verification]);
+  const handleSave = useCallback(async () => {
+    if (!user?.school_id) {
+      alert('Error: School ID tidak ditemukan');
+      return;
+    }
+
+    try {
+      console.log('Menyimpan pengaturan...', {
+        schoolProfile,
+        notifications,
+        verification,
+      });
+
+      // Prepare data for API
+      const updateData: any = {
+        name: schoolProfile.name,
+        npsn: schoolProfile.npsn,
+        address: schoolProfile.address,
+      };
+
+      // Include logo URL if it's a Supabase URL (not base64)
+      if (schoolProfile.logo && schoolProfile.logo.startsWith('http')) {
+        updateData.logo_url = schoolProfile.logo;
+      }
+
+      // Save to backend
+      await schoolsApi.update(user.school_id, updateData);
+
+      console.log('Settings saved successfully');
+      alert('Pengaturan berhasil disimpan!');
+    } catch (error: any) {
+      console.error('Failed to save settings:', error);
+      alert(`Gagal menyimpan pengaturan: ${error.message || 'Unknown error'}`);
+    }
+  }, [schoolProfile, notifications, verification, user]);
 
   // handler untuk logout
   const handleLogout = useCallback(() => {
@@ -247,6 +300,7 @@ export default function SchoolSettingsPage() {
         userName={user.name || 'Kepala Sekolah'}
         userEmail={user.email || 'sekolah@mbg.id'}
         schoolName={schoolInfo.name}
+        schoolLogoUrl={schoolProfile.logo || logoUrl}
         onLogout={handleLogout}
       />
 
@@ -285,6 +339,7 @@ export default function SchoolSettingsPage() {
                   onChange={(value) => handleProfileChange('logo', value)}
                   placeholder="Unggah Logo"
                   size="lg"
+                  folder="schools/logos"
                 />
               </div>
 
@@ -303,29 +358,6 @@ export default function SchoolSettingsPage() {
                 label="Alamat Lengkap"
                 value={schoolProfile.address}
                 onChange={(value) => handleProfileChange('address', value)}
-              />
-              <InputField
-                label="Jumlah Siswa"
-                value={schoolProfile.studentCount}
-                onChange={(value) => handleProfileChange('studentCount', value)}
-                type="number"
-              />
-              <InputField
-                label="Nama Kontak"
-                value={schoolProfile.contactName}
-                onChange={(value) => handleProfileChange('contactName', value)}
-              />
-              <InputField
-                label="Email Kontak"
-                value={schoolProfile.contactEmail}
-                onChange={(value) => handleProfileChange('contactEmail', value)}
-                type="email"
-              />
-              <InputField
-                label="Nomor Telepon Kontak"
-                value={schoolProfile.contactPhone}
-                onChange={(value) => handleProfileChange('contactPhone', value)}
-                type="tel"
               />
 
               {/* tombol simpan */}

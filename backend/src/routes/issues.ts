@@ -12,12 +12,12 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // POST /api/issues - Report an issue (with optional photo)
-router.post('/', requireRole('school', 'admin'), uploadSingle('issue_photo'), async (req: AuthRequest, res: Response) => {
-  const { delivery_id, issue_type, description, severity } = req.body;
+router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: Response) => {
+  const { delivery_id, issue_type, description, severity, photo_url } = req.body;
 
-  if (!delivery_id || !issue_type || !description) {
+  if (!issue_type || !description) {
     return res.status(400).json({
-      error: 'delivery_id, issue_type, and description are required'
+      error: 'issue_type and description are required'
     });
   }
 
@@ -30,23 +30,28 @@ router.post('/', requireRole('school', 'admin'), uploadSingle('issue_photo'), as
   }
 
   try {
-    // Get photo URL if file was uploaded
-    let photoUrl = null;
-    if (req.file) {
-      photoUrl = getFileUrl(req.file.filename, 'issues');
+    // Build insert data
+    const insertData: any = {
+      reported_by: req.user?.id,
+      issue_type,
+      description,
+      severity: severity || 'medium',
+      status: 'open'
+    };
+
+    // Add delivery_id if provided
+    if (delivery_id) {
+      insertData.delivery_id = delivery_id;
+    }
+
+    // Add photo_url if provided
+    if (photo_url) {
+      insertData.photo_url = photo_url;
     }
 
     const { data, error } = await supabase
       .from('issues')
-      .insert({
-        delivery_id,
-        reported_by: req.user?.id,
-        issue_type,
-        description,
-        severity: severity || 'medium',
-        status: 'open',
-        photo_url: photoUrl
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -88,7 +93,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
       .from('issues')
       .select(`
         *,
-        deliveries!inner(
+        deliveries(
           delivery_date,
           portions,
           amount,
@@ -103,15 +108,8 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
     // Filter by user role
     if (req.user?.role === 'school') {
-      const { data: schoolData } = await supabase
-        .from('schools')
-        .select('id')
-        .eq('user_id', req.user.id)
-        .single();
-
-      if (schoolData) {
-        query = query.eq('deliveries.school_id', schoolData.id);
-      }
+      // Filter by reported_by to include issues without delivery_id
+      query = query.eq('reported_by', req.user.id);
     } else if (req.user?.role === 'catering') {
       const { data: cateringData } = await supabase
         .from('caterings')

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
+import { createClient } from '@supabase/supabase-js';
 import {
   Facebook,
   Twitter,
@@ -19,7 +20,12 @@ import {
   Filter,
   Loader2
 } from 'lucide-react';
-import axios from 'axios';
+
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 // interface untuk data sekolah
 interface School {
@@ -47,15 +53,43 @@ export default function SchoolListPage() {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true, margin: "-100px" });
 
-  // Fetch schools from API
+  // Fetch schools from Supabase
   useEffect(() => {
     const fetchSchools = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/schools`);
 
-        // Transform API data to match School interface
-        const transformedSchools = response.data.map((school: any) => ({
+        // Fetch ALL schools in batches to bypass Supabase's 1000 row limit
+        let allSchools: any[] = [];
+        let start = 0;
+        const batchSize = 1000;
+        let hasMore = true;
+
+        while (hasMore) {
+          const { data: batch, error: supabaseError } = await supabase
+            .from('schools')
+            .select('*')
+            .order('priority_score', { ascending: false })
+            .range(start, start + batchSize - 1);
+
+          if (supabaseError) {
+            throw supabaseError;
+          }
+
+          if (batch && batch.length > 0) {
+            allSchools = [...allSchools, ...batch];
+            start += batchSize;
+
+            if (batch.length < batchSize) {
+              hasMore = false;
+            }
+          } else {
+            hasMore = false;
+          }
+        }
+
+        // Transform Supabase data to match School interface
+        const transformedSchools = allSchools.map((school: any) => ({
           id: school.id,
           name: school.name,
           location: school.city || school.province || 'Unknown',
@@ -69,8 +103,8 @@ export default function SchoolListPage() {
         setSchools(transformedSchools);
         setError(null);
       } catch (err: any) {
-        console.error('Error fetching schools:', err);
-        setError('Gagal memuat data sekolah. Silakan coba lagi nanti.');
+        console.error('Error fetching schools from Supabase:', err);
+        setError('Gagal memuat data sekolah dari database. Silakan coba lagi nanti.');
         setSchools([]);
       } finally {
         setLoading(false);
@@ -135,6 +169,11 @@ export default function SchoolListPage() {
 
   // filter data sekolah berdasarkan kriteria yang dipilih
   const filteredSchools = schools.filter((school) => {
+    // filter sekolah dengan skor prioritas = 0 (jangan tampilkan)
+    if (school.priorityScore === 0) {
+      return false;
+    }
+
     // filter berdasarkan search query
     const matchesSearch = school.name.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -149,7 +188,7 @@ export default function SchoolListPage() {
       } else if (selectedScore === 'Sedang (70-84)') {
         matchesScore = school.priorityScore >= 70 && school.priorityScore < 85;
       } else if (selectedScore === 'Rendah (0-69)') {
-        matchesScore = school.priorityScore >= 0 && school.priorityScore < 70;
+        matchesScore = school.priorityScore > 0 && school.priorityScore < 70;
       }
     }
 
@@ -430,11 +469,12 @@ export default function SchoolListPage() {
                   </div>
 
                   {/* button */}
-                  <button
-                    className="w-full py-2 px-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-lg hover:border-purple-600 hover:text-purple-600 transition-all duration-200"
+                  <Link
+                    href={`/school-list/${school.id}`}
+                    className="block w-full py-2 px-4 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-lg hover:border-purple-600 hover:text-purple-600 transition-all duration-200 text-center"
                   >
                     Lihat Detail
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}

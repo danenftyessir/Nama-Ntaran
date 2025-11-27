@@ -63,29 +63,35 @@ router.post('/register', async (req: Request, res: Response) => {
       throw new Error(userError?.message || 'Failed to create user');
     }
 
+    // Prepare JWT payload
+    let jwtPayload: any = {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    };
+
     // If catering, create catering profile
     if (role === 'catering' && company_name) {
-      await supabase
+      const { data: catering } = await supabase
         .from('caterings')
         .insert({
           name: name || company_name,
           company_name,
           email,
           user_id: user.id
-        });
+        })
+        .select('id')
+        .single();
+
+      // Add catering_id to JWT token
+      if (catering) {
+        jwtPayload.catering_id = catering.id;
+      }
     }
 
     // Generate JWT token
     const secret = process.env.JWT_SECRET || 'nutrichain-secret-key';
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        role: user.role
-      },
-      secret,
-      { expiresIn: '7d' }
-    );
+    const token = jwt.sign(jwtPayload, secret, { expiresIn: '7d' });
 
     res.status(201).json({
       message: 'Registration successful',
@@ -237,17 +243,12 @@ router.post('/login', async (req: Request, res: Response) => {
       });
     }
 
-    // Generate JWT token
-    const secret = process.env.JWT_SECRET || 'nutrichain-secret-key';
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        role: user.role
-      },
-      secret,
-      { expiresIn: '7d' }
-    );
+    // Prepare JWT payload
+    let jwtPayload: any = {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    };
 
     // siapkan response user
     let userResponse: any = {
@@ -265,6 +266,7 @@ router.post('/login', async (req: Request, res: Response) => {
         .single();
 
       if (school) {
+        jwtPayload.school_id = school.id;  // Add to JWT token
         userResponse.school_id = school.id;
         userResponse.school_name = school.name;
         userResponse.school_npsn = school.npsn;
@@ -282,11 +284,16 @@ router.post('/login', async (req: Request, res: Response) => {
         .single();
 
       if (catering) {
+        jwtPayload.catering_id = catering.id;  // Add to JWT token
         userResponse.catering_id = catering.id;
         userResponse.catering_name = catering.company_name || catering.name;
         userResponse.name = catering.name;
       }
     }
+
+    // Generate JWT token with school_id/catering_id
+    const secret = process.env.JWT_SECRET || 'nutrichain-secret-key';
+    const token = jwt.sign(jwtPayload, secret, { expiresIn: '7d' });
 
     res.json({
       message: 'Login successful',

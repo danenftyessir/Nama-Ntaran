@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/app/context/AuthContext';
 import ModernSidebar from '@/app/components/layout/ModernSidebar';
+import { useSchoolLogo } from '@/app/hooks/useSchoolLogo';
 import {
   LayoutDashboard,
   CheckCircle,
@@ -35,6 +36,7 @@ interface DeliveryQRData {
 export default function VerifyQRPage() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
+  const { logoUrl } = useSchoolLogo();
   const [scanning, setScanning] = useState(false);
   const [scannedData, setScannedData] = useState<DeliveryQRData | null>(null);
   const [error, setError] = useState('');
@@ -290,6 +292,7 @@ export default function VerifyQRPage() {
         userName={user?.name || 'Kepala Sekolah'}
         userEmail={user?.email || 'sekolah@mbg.id'}
         schoolName={schoolInfo.name}
+        schoolLogoUrl={logoUrl}
         onLogout={handleLogout}
       />
 

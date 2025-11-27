@@ -129,6 +129,72 @@ router.get('/stats', async (req, res) => {
 });
 
 /**
+ * GET /api/blockchain/delivery/:deliveryId
+ * Get blockchain transaction for a specific delivery (public endpoint)
+ */
+router.get('/delivery/:deliveryId', async (req, res) => {
+  try {
+    const { deliveryId } = req.params;
+
+    const { data: tx, error } = await supabase
+      .from('escrow_transactions')
+      .select(`
+        *,
+        deliveries(
+          portions,
+          delivery_date,
+          schools(name, npsn, address)
+        ),
+        caterings(name, wallet_address)
+      `)
+      .eq('delivery_id', deliveryId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !tx) {
+      return res.status(404).json({
+        success: false,
+        error: 'Transaction not found for this delivery'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        escrowId: tx.escrow_id,
+        amount: parseFloat(tx.amount),
+        status: tx.status,
+        txHash: tx.tx_hash,
+        blockNumber: tx.block_number,
+        lockedAt: tx.locked_at,
+        releasedAt: tx.released_at,
+        school: {
+          name: tx.deliveries?.schools?.name,
+          npsn: tx.deliveries?.schools?.npsn,
+          address: tx.deliveries?.schools?.address
+        },
+        catering: {
+          name: tx.caterings?.name,
+          walletAddress: tx.caterings?.wallet_address
+        },
+        delivery: {
+          portions: tx.deliveries?.portions,
+          date: tx.deliveries?.delivery_date
+        }
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching delivery transaction:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch delivery transaction',
+      details: error.message
+    });
+  }
+});
+
+/**
  * GET /api/blockchain/transaction/:txHash
  * Get transaction details by hash (public endpoint)
  */

@@ -18,6 +18,7 @@ interface ModernSidebarProps {
   userName: string;
   userEmail: string;
   schoolName?: string;
+  schoolLogoUrl?: string;
   onLogout?: () => void;
 }
 
@@ -27,6 +28,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
   userName,
   userEmail,
   schoolName,
+  schoolLogoUrl,
   onLogout,
 }) => {
   const pathname = usePathname();
@@ -62,6 +64,7 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
             width={180}
             height={60}
             className="object-contain"
+            style={{ width: 'auto', height: 'auto' }}
             priority
           />
         </div>
@@ -70,9 +73,22 @@ const ModernSidebar: React.FC<ModernSidebarProps> = ({
       {/* informasi user */}
       <div className="p-6 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className={`w-12 h-12 rounded-full ${roleColors[userRole.toLowerCase()] || roleColors.public} flex items-center justify-center font-bold shadow-modern`}>
-            {userName.charAt(0).toUpperCase()}
-          </div>
+          {schoolLogoUrl ? (
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-modern ring-2 ring-gray-200">
+              <Image
+                src={schoolLogoUrl}
+                alt="School Logo"
+                width={48}
+                height={48}
+                className="w-full h-full object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className={`w-12 h-12 rounded-full ${roleColors[userRole.toLowerCase()] || roleColors.public} flex items-center justify-center font-bold shadow-modern`}>
+              {userName.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-900 truncate">{userName}</p>
             {schoolName && (

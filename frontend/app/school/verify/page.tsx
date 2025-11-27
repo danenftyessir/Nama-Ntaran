@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import useDeliveries from '../../hooks/useDeliveries';
 import ModernSidebar from '../../components/layout/ModernSidebar';
+import { useSchoolLogo } from '../../hooks/useSchoolLogo';
 import GlassPanel from '../../components/ui/GlassPanel';
 import DeliveryCard from '../../components/school/DeliveryCard';
 import {
@@ -28,6 +29,7 @@ import {
 export default function VerifyPage() {
   const router = useRouter();
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { logoUrl } = useSchoolLogo();
 
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -94,6 +96,7 @@ export default function VerifyPage() {
         userName={user?.name || 'Kepala Sekolah'}
         userEmail={user?.email || 'sekolah@mbg.id'}
         schoolName={schoolInfo.name}
+        schoolLogoUrl={logoUrl}
         onLogout={handleLogout}
       />
 

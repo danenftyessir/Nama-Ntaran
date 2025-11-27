@@ -25,6 +25,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { getPovertyData } from './bpsDataService.js';
+import { normalizeProvinceName } from '../utils/provinceNormalizer.js';
 
 // ============================================================================
 // TYPES
@@ -152,15 +153,43 @@ function normalizeStuntingRate(stuntingRate: number): number {
 
 /**
  * Get jenjang weight (0-100) with strict priority
+ * Also extracts jenjang from school name if needed (e.g., "SD NEGERI..." → "SD")
  */
-function getJenjangWeight(jenjang: string | null): number {
+function getJenjangWeight(jenjang: string | null, schoolName?: string): number {
   if (!jenjang) return JENJANG_WEIGHTS.DEFAULT;
 
   const normalizedJenjang = jenjang.toUpperCase();
 
+  // First try to match the jenjang field directly
   for (const [key, weight] of Object.entries(JENJANG_WEIGHTS)) {
     if (normalizedJenjang.includes(key)) {
       return weight;
+    }
+  }
+
+  // If jenjang is generic (like 'dikdas'), try to extract from school name
+  if (schoolName && (normalizedJenjang === 'DIKDAS' || normalizedJenjang === 'DIKMEN')) {
+    const normalizedName = schoolName.toUpperCase();
+
+    // Check school name for specific jenjang keywords
+    // Handle special cases first (MIN→MI, MTSN/MTS→MTS, MAN→MA, SMPN→SMP, etc.)
+    if (/\bMIN\b/.test(normalizedName)) return JENJANG_WEIGHTS.MI || 100;
+    if (/\bMIS\b/.test(normalizedName)) return JENJANG_WEIGHTS.MI || 100;
+    if (/\bMTSN\b/.test(normalizedName)) return JENJANG_WEIGHTS.MTS || 70;
+    if (/\bMTS\b/.test(normalizedName)) return JENJANG_WEIGHTS.MTS || 70;
+    if (/\bMAN\b/.test(normalizedName)) return JENJANG_WEIGHTS.MA || 40;
+    if (/\bSDN\b/.test(normalizedName)) return JENJANG_WEIGHTS.SD || 100;
+    if (/\bSMPN\b/.test(normalizedName)) return JENJANG_WEIGHTS.SMP || 70;
+    if (/\bSMAN\b/.test(normalizedName)) return JENJANG_WEIGHTS.SMA || 40;
+    if (/\bSMKN\b/.test(normalizedName)) return JENJANG_WEIGHTS.SMK || 40;
+
+    // Then check basic keywords (whole word match)
+    const jenjangKeywords = ['SD', 'MI', 'SMP', 'SMA', 'SMK', 'MA'];
+    for (const keyword of jenjangKeywords) {
+      const regex = new RegExp(`\\b${keyword}\\b`);
+      if (regex.test(normalizedName)) {
+        return JENJANG_WEIGHTS[keyword] || JENJANG_WEIGHTS.DEFAULT;
+      }
     }
   }
 
@@ -193,22 +222,24 @@ async function getPovertyRateWithAPI(province: string): Promise<{ rate: number; 
 }
 
 /**
- * Get stunting rate from cache (Kemenkes data not implemented per user request)
+ * Get stunting rate from seeder data (latest_stunting_data table)
  */
 async function getStuntingRate(supabase: any, province: string): Promise<number> {
+  // Normalize province name to match stunting data format
+  const normalizedProvince = normalizeProvinceName(province);
+
   const { data, error } = await supabase
-    .from('stunting_data_cache')
+    .from('latest_stunting_data')
     .select('stunting_rate')
-    .eq('province', province)
-    .eq('year', 2024)
+    .eq('province', normalizedProvince)
     .single();
 
   if (error || !data) {
-    console.warn(`No stunting data for province: ${province}, using national average`);
+    console.warn(`No stunting data for province: ${province} (normalized: ${normalizedProvince}), using national average`);
     return STUNTING_RANGE.NATIONAL_AVG;
   }
 
-  return data.stunting_rate;
+  return parseFloat(data.stunting_rate);
 }
 
 // ============================================================================
@@ -229,7 +260,7 @@ export async function calculatePriorityScore(
   // Normalize to 0-100 scale with strict distribution
   const normalizedPoverty = normalizePovertyRate(povertyRate);
   const normalizedStunting = normalizeStuntingRate(stuntingRate);
-  const jenjangWeight = getJenjangWeight(school.jenjang);
+  const jenjangWeight = getJenjangWeight(school.jenjang, school.name);
 
   // Calculate component scores (already weighted)
   const povertyScore = normalizedPoverty * WEIGHTS.POVERTY;
@@ -298,14 +329,17 @@ export async function batchCalculatePriorityScores(
       };
     }
 
-    console.log(`[Priority Scoring] Calculating scores for ${schools.length} schools with BPS API integration...`);
+    console.log(`[Priority Scoring] Calculating scores for ${schools.length} schools...`);
 
     // Calculate scores
     const results: PriorityScoreResult[] = [];
     const errors: Array<{ schoolId: number; error: string }> = [];
     const dataSourceCounts = { bpsApi: 0, cached: 0, simulated: 0 };
+    const startTime = Date.now();
 
-    for (const school of schools) {
+    for (let i = 0; i < schools.length; i++) {
+      const school = schools[i];
+
       try {
         const result = await calculatePriorityScore(supabase, school);
         results.push(result);
@@ -314,15 +348,28 @@ export async function batchCalculatePriorityScores(
         if (result.dataSource === 'bps_api') dataSourceCounts.bpsApi++;
         else if (result.dataSource === 'cached') dataSourceCounts.cached++;
         else dataSourceCounts.simulated++;
+
+        // Progress logging every 50 schools
+        if ((i + 1) % 50 === 0 || i === schools.length - 1) {
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+          const rate = ((i + 1) / (Date.now() - startTime) * 1000).toFixed(1);
+          console.log(`   📊 Calculated ${i + 1}/${schools.length} schools (${elapsed}s, ${rate} schools/sec)`);
+        }
       } catch (error: any) {
-        console.error(`Error calculating score for school ${school.id}:`, error.message);
+        console.error(`   ❌ Error calculating score for school ${school.id}:`, error.message);
         errors.push({ schoolId: school.id, error: error.message });
       }
     }
 
+    console.log(`[Priority Scoring] ✅ All scores calculated, now updating database...`);
+
     // Update database
     let updated = 0;
-    for (const result of results) {
+    const updateStartTime = Date.now();
+
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+
       const { error: updateError } = await supabase
         .from('schools')
         .update({
@@ -332,10 +379,17 @@ export async function batchCalculatePriorityScores(
         .eq('id', result.schoolId);
 
       if (updateError) {
-        console.error(`Failed to update school ${result.schoolId}:`, updateError.message);
+        console.error(`   ❌ Failed to update school ${result.schoolId}:`, updateError.message);
         errors.push({ schoolId: result.schoolId, error: updateError.message });
       } else {
         updated++;
+      }
+
+      // Progress logging every 100 updates
+      if ((i + 1) % 100 === 0 || i === results.length - 1) {
+        const elapsed = ((Date.now() - updateStartTime) / 1000).toFixed(1);
+        const rate = ((i + 1) / (Date.now() - updateStartTime) * 1000).toFixed(1);
+        console.log(`   💾 Updated ${updated}/${results.length} schools (${elapsed}s, ${rate} updates/sec)`);
       }
     }
 

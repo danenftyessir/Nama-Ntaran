@@ -103,7 +103,7 @@ router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: R
     let aiAnalysis = null;
     let aiAnalysisId = null;
 
-    if (photo_url && process.env.ANTHROPIC_API_KEY) {
+    if (photo_url && process.env.CLAUDE_API_KEY) {
       console.log('🤖 Starting AI food quality analysis...');
 
       try {
@@ -189,8 +189,8 @@ router.post('/', requireRole('school', 'admin'), async (req: AuthRequest, res: R
         // Don't fail the verification if AI analysis fails
         // Log the error but continue with the process
       }
-    } else if (!process.env.ANTHROPIC_API_KEY) {
-      console.warn('⚠️  ANTHROPIC_API_KEY not configured - skipping AI analysis');
+    } else if (!process.env.CLAUDE_API_KEY) {
+      console.warn('⚠️  CLAUDE_API_KEY not configured - skipping AI analysis');
     }
 
     // Update delivery status to verified
