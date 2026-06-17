@@ -11,99 +11,109 @@ interface NavbarProps {
 }
 
 export default function Navbar({ role = 'public' }: NavbarProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  // menu navigasi untuk public
   const publicLinks = [
-    { href: '/about', label: 'Tentang' },
-    { href: '/transparansi', label: 'Dashboard Publik' },
-    { href: '/login', label: 'Portal Internal' },
+    { href: '/about',       label: 'Tentang' },
+    { href: '/transparansi',label: 'Dashboard Publik' },
+    { href: '/login',       label: 'Portal Internal' },
   ];
 
   const links = role === 'public' ? publicLinks : [];
+  const isPublic = role === 'public';
+
+  const NAV_BG     = 'rgba(4,9,15,0.88)';
+  const NAV_BORDER = 'rgba(56,189,248,0.1)';
+  const CYAN       = '#38bdf8';
+  const LINK_COLOR = '#64748b';
 
   return (
     <motion.nav
-      className="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100"
-      initial={{ y: -100 }}
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 50,
+        backdropFilter: 'blur(14px)',
+        WebkitBackdropFilter: 'blur(14px)',
+        background: isPublic ? NAV_BG : 'rgba(255,255,255,0.96)',
+        borderBottom: `1px solid ${isPublic ? NAV_BORDER : '#e5e7eb'}`,
+        boxShadow: isPublic ? '0 4px 24px rgba(0,0,0,0.5)' : '0 1px 6px rgba(0,0,0,0.06)',
+      }}
+      initial={{ y: -80 }}
       animate={{ y: 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 110, damping: 22 }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 60 }}>
           {/* logo */}
-          <Link href="/" className="flex items-center group">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <Image
-                src="/MBG-removebg-preview.png"
-                alt="MBG Logo"
-                width={120}
-                height={40}
+          <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 18 }}>
+              <Image src="/MBG-removebg-preview.png" alt="MBG Logo" width={108} height={36}
                 className="object-contain"
-                priority
-              />
+                style={{ height: 'auto', filter: isPublic ? 'brightness(0) invert(1)' : 'none', opacity: isPublic ? 0.85 : 1 }}
+                priority />
             </motion.div>
           </Link>
 
-          {/* desktop navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            {links.map((link, index) => (
-              <motion.div
-                key={link.href}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link
-                  href={link.href}
-                  className="text-gray-700 hover:text-purple-600 transition-colors font-medium relative group"
-                >
+          {/* desktop links */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }} className="hidden md:flex">
+            {links.map((link, i) => (
+              <motion.div key={link.href}
+                initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}>
+                <Link href={link.href}
+                  style={{ fontSize: 14, fontWeight: 500, color: isPublic ? LINK_COLOR : '#374151',
+                    textDecoration: 'none', position: 'relative', paddingBottom: 2 }}
+                  className="nav-link-hover"
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.color = isPublic ? CYAN : '#7c3aed';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.color = isPublic ? LINK_COLOR : '#374151';
+                  }}>
                   {link.label}
-                  <motion.span
-                    className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-blue-600 group-hover:w-full transition-all duration-300"
-                  />
                 </Link>
               </motion.div>
             ))}
           </div>
 
-          {/* mobile menu button */}
+          {/* mobile toggle */}
           <motion.button
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            whileTap={{ scale: 0.95 }}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6 text-gray-700" /> : <Menu className="w-6 h-6 text-gray-700" />}
+            className="md:hidden"
+            style={{ padding: 8, borderRadius: 8, background: 'transparent',
+              border: `1px solid ${isPublic ? 'rgba(56,189,248,0.15)' : '#e5e7eb'}`,
+              color: isPublic ? LINK_COLOR : '#374151', cursor: 'pointer', display: 'flex' }}
+            onClick={() => setOpen(!open)}
+            whileTap={{ scale: 0.93 }}>
+            {open ? <X size={20} /> : <Menu size={20} />}
           </motion.button>
         </div>
 
         {/* mobile menu */}
         <AnimatePresence>
-          {mobileMenuOpen && (
+          {open && (
             <motion.div
-              className="md:hidden py-4 border-t border-gray-200"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {links.map((link, index) => (
-                <motion.div
-                  key={link.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ delay: index * 0.05 }}
-                >
-                  <Link
-                    href={link.href}
-                    className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors font-medium"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+              style={{ paddingBottom: 12, borderTop: `1px solid ${isPublic ? 'rgba(56,189,248,0.08)' : '#e5e7eb'}` }}
+              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }}>
+              {links.map((link, i) => (
+                <motion.div key={link.href}
+                  initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -14 }} transition={{ delay: i * 0.05 }}>
+                  <Link href={link.href}
+                    style={{ display: 'block', padding: '11px 12px', borderRadius: 8,
+                      fontSize: 14, fontWeight: 500, color: isPublic ? LINK_COLOR : '#374151',
+                      textDecoration: 'none', transition: 'all 0.15s' }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLElement).style.color = isPublic ? CYAN : '#7c3aed';
+                      (e.currentTarget as HTMLElement).style.background = isPublic ? 'rgba(56,189,248,0.05)' : 'rgba(124,58,237,0.05)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLElement).style.color = isPublic ? LINK_COLOR : '#374151';
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                    }}
+                    onClick={() => setOpen(false)}>
                     {link.label}
                   </Link>
                 </motion.div>
