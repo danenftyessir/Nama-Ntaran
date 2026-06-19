@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NutriChain - Makan Bergizi Ga Bocor",
+  title: "Makan Bergizi Ga Bocor",
   description: "Platform transparansi distribusi makanan bergizi untuk sekolah berbasis blockchain",
   icons: {
     icon: "/MBG-removebg-preview copy.png",
