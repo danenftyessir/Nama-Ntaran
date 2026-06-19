@@ -4,20 +4,73 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
-import { createClient } from '@supabase/supabase-js';
 import {
   Facebook,
   Twitter,
   Instagram,
   Linkedin,
-  Loader2
+  Loader2,
+  Activity,
+  Shield,
+  Database,
+  Search,
+  Clock,
+  Zap,
+  TrendingUp,
+  CheckCircle,
+  AlertCircle,
+  PauseCircle,
+  BarChart3,
+  PieChart,
+  Hash,
+  Globe,
+  Cpu,
+  Layers
 } from 'lucide-react';
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Dummy data untuk backend yang mati
+const DUMMY_TRANSACTIONS = [
+  { time: '2024-12-18 08:30:45', amount: 'Rp 2.5 M', receiver: 'SDN 01 Jakarta', status: 'Selesai', hash: '0x3fa8...b1c2' },
+  { time: '2024-12-18 09:15:22', amount: 'Rp 1.8 M', receiver: 'SMAN 5 Surabaya', status: 'Selesai', hash: '0x7b2c...d4e5' },
+  { time: '2024-12-18 10:45:11', amount: 'Rp 3.2 M', receiver: 'SMPN 3 Bandung', status: 'Selesai', hash: '0x9f1e...a6b3' },
+  { time: '2024-12-18 11:20:33', amount: 'Rp 2.1 M', receiver: 'SMKN 2 Semarang', status: 'Proses', hash: '0x4c7a...f9d2' },
+  { time: '2024-12-18 12:10:18', amount: 'Rp 4.7 M', receiver: 'SDN 07 Yogyakarta', status: 'Selesai', hash: '0x8e3b...c5a1' }
+];
+
+const DUMMY_TREND_DATA = [
+  { month: 'Jul', alokasi: 420, distribusi: 380 },
+  { month: 'Agu', alokasi: 480, distribusi: 445 },
+  { month: 'Sep', alokasi: 520, distribusi: 489 },
+  { month: 'Okt', alokasi: 560, distribusi: 534 },
+  { month: 'Nov', alokasi: 590, distribusi: 561 },
+  { month: 'Des', alokasi: 620, distribusi: 595 }
+];
+
+const DUMMY_REGIONAL_DATA = [
+  { region: 'Jakarta', amount: 850, color: '#8b5cf6' },
+  { region: 'Surabaya', amount: 720, color: '#f59e0b' },
+  { region: 'Bandung', amount: 680, color: '#3b82f6' },
+  { region: 'Semarang', amount: 540, color: '#ec4899' },
+  { region: 'Yogyakarta', amount: 490, color: '#10b981' }
+];
+
+const DUMMY_SCORE_DATA = [
+  { category: 'Sangat Rendah', value: 12, color: '#ef4444' },
+  { category: 'Rendah', value: 28, color: '#f97316' },
+  { category: 'Sedang', value: 45, color: '#eab308' },
+  { category: 'Tinggi', value: 68, color: '#22c55e' },
+  { category: 'Sangat Tinggi', value: 92, color: '#3b82f6' }
+];
+
+const DUMMY_SYSTEM_STATS = {
+  totalSchools: 245,
+  totalAmount: 28500000000,
+  efficiency: 95.2,
+  gasCost: 18,
+  activeContracts: 3,
+  uptime: '99.97%',
+  lastUpdate: new Date().toLocaleString('id-ID')
+};
 
 export default function TransparansiPage() {
   const heroRef = useRef(null);
@@ -37,140 +90,29 @@ export default function TransparansiPage() {
   const [totalAmount, setTotalAmount] = useState<number>(0);
   const [totalSchools, setTotalSchools] = useState<number>(0);
 
-  // fetch transparency dashboard data from Supabase
+  // Menggunakan dummy data karena backend mati
   useEffect(() => {
-    const fetchTransparencyData = async () => {
+    const loadDummyData = () => {
       try {
         setLoading(true);
-        console.log('Fetching transparency data from Supabase...');
 
-        // Fetch ALL schools in batches to bypass Supabase's 1000 row limit
-        let schools: any[] = [];
-        let start = 0;
-        const batchSize = 1000;
-        let hasMore = true;
+        // Set dummy data
+        setTrendData(DUMMY_TREND_DATA);
+        setScoreData(DUMMY_SCORE_DATA);
+        setRegionalData(DUMMY_REGIONAL_DATA);
+        setTransactions(DUMMY_TRANSACTIONS);
+        setTotalSchools(DUMMY_SYSTEM_STATS.totalSchools);
+        setTotalAmount(DUMMY_SYSTEM_STATS.totalAmount);
 
-        while (hasMore) {
-          const { data: batch, error: batchError } = await supabase
-            .from('schools')
-            .select('*')
-            .range(start, start + batchSize - 1);
-
-          if (batchError) throw batchError;
-
-          if (batch && batch.length > 0) {
-            schools = [...schools, ...batch];
-            start += batchSize;
-
-            if (batch.length < batchSize) {
-              hasMore = false;
-            }
-          } else {
-            hasMore = false;
-          }
-        }
-
-        // Calculate statistics from schools data
-        const totalSchoolsCount = schools?.length || 0;
-        const totalBudget = schools?.reduce((sum, school) => sum + (school.budget || 0), 0) || 0;
-
-        setTotalSchools(totalSchoolsCount);
-        setTotalAmount(totalBudget);
-
-        // Group by province and calculate top regions
-        const provinceMap = new Map();
-        schools?.forEach(school => {
-          const province = school.province || 'Unknown';
-          if (!provinceMap.has(province)) {
-            provinceMap.set(province, { count: 0, totalBudget: 0 });
-          }
-          const data = provinceMap.get(province);
-          data.count++;
-          data.totalBudget += school.budget || 0;
-        });
-
-        // Convert to array and get top 5 provinces
-        const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
-        const topRegions = Array.from(provinceMap.entries())
-          .map(([province, data]) => ({
-            region: province,
-            count: data.count,
-            amount: data.totalBudget,
-            color: colors[Math.floor(Math.random() * colors.length)]
-          }))
-          .sort((a, b) => b.amount - a.amount)
-          .slice(0, 5);
-
-        setRegionalData(topRegions);
-
-        // Calculate score distribution
-        const scoreCategories = [
-          { name: 'Tinggi (≥70)', min: 70, max: 100, color: '#ef4444', count: 0 },
-          { name: 'Sedang (40-69)', min: 40, max: 69, color: '#f59e0b', count: 0 },
-          { name: 'Rendah (<40)', min: 0, max: 39, color: '#10b981', count: 0 }
-        ];
-
-        schools?.forEach(school => {
-          const score = school.priority_score || 0;
-          if (score >= 70) scoreCategories[0].count++;
-          else if (score >= 40) scoreCategories[1].count++;
-          else if (score > 0) scoreCategories[2].count++;
-        });
-
-        // Normalize to pixel heights for visualization (max 200px)
-        const maxCount = Math.max(...scoreCategories.map(c => c.count));
-        const scoreData = scoreCategories.map(cat => ({
-          category: cat.name,
-          value: maxCount > 0 ? (cat.count / maxCount) * 200 : 0,
-          color: cat.color,
-          count: cat.count
-        }));
-
-        setScoreData(scoreData);
-
-        // Fetch blockchain transactions (if table exists)
-        try {
-          const { data: txData, error: txError } = await supabase
-            .from('blockchain_transactions')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10);
-
-          if (!txError && txData) {
-            const formattedTx = txData.map(tx => ({
-              time: new Date(tx.created_at).toLocaleString('id-ID'),
-              amount: `Rp ${((tx.amount || 0) / 1000000).toFixed(1)} M`,
-              receiver: tx.school_name || 'Unknown',
-              status: tx.status || 'Selesai'
-            }));
-            setTransactions(formattedTx);
-          } else {
-            // If no transactions table, create sample data
-            setTransactions([
-              { time: new Date().toLocaleString('id-ID'), amount: 'Rp 2.5 M', receiver: 'SDN 01 Jakarta', status: 'Selesai' },
-              { time: new Date().toLocaleString('id-ID'), amount: 'Rp 1.8 M', receiver: 'SMAN 5 Surabaya', status: 'Selesai' }
-            ]);
-          }
-        } catch {
-          // Fallback if table doesn't exist
-          setTransactions([]);
-        }
-
-        setError(null);
-        console.log('All data fetched successfully from Supabase');
-      } catch (err: any) {
-        console.error('Error fetching transparency data from Supabase:', err);
-        setError('Gagal memuat data transparansi dari database. Silakan coba lagi nanti.');
-        setTrendData([]);
-        setRegionalData([]);
-        setTransactions([]);
-        setScoreData([]);
-      } finally {
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading dummy data:', error);
+        setError('Failed to load dashboard data');
         setLoading(false);
       }
     };
 
-    fetchTransparencyData();
+    loadDummyData();
   }, []);
 
   // variasi animasi
